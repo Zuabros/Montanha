@@ -1,0 +1,7 @@
+## Interface: 11507
+## Title: WeakAuras
+## Notes: Display powerful and flexible visual information.
+## Author: WeakAuras Team
+## Version: 3.4.2
+
+mosaic.lua
