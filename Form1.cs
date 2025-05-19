@@ -1176,6 +1176,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 	{
 	 solta(ANDA); // PARA DE ANDAR
 	 bool ja_deu_backpedal = false; // se estiver apanhando muito anda um pouco para tras pra nao dar as costas 
+	 bool jalogou = false; // se já logou o decay
 	 if (!emCombate) // decay
 	 {
 		decay.Start(me.hp);
@@ -1219,10 +1220,15 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		 {
 			ja_deu_backpedal = true; // só uma vez por combate
 			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
-			aperta(SKEY,3000);     // anda pra trás mantendo o facing
+			aperta(SKEY, 3000);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
-			
-			
+
+
+		 }
+		 else if (!jalogou)
+		 {
+			loga($"Backpedal não necessário: decay = {int.Parse(tbdecay.Text)}");
+			jalogou = true; // loga o decay apenas uma vez por combate
 		 }
 		}
 

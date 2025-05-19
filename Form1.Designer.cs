@@ -30,6 +30,8 @@
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.label18 = new System.Windows.Forms.Label();
+	 this.tb_back_limiar = new System.Windows.Forms.TextBox();
 	 this.label9 = new System.Windows.Forms.Label();
 	 this.label8 = new System.Windows.Forms.Label();
 	 this.tbavdecay = new System.Windows.Forms.TextBox();
@@ -155,8 +157,6 @@
 	 this.lb_yaw = new System.Windows.Forms.Label();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button12 = new System.Windows.Forms.Button();
-	 this.tb_back_limiar = new System.Windows.Forms.TextBox();
-	 this.label18 = new System.Windows.Forms.Label();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -219,6 +219,23 @@
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
 	 // 
+	 // label18
+	 // 
+	 this.label18.AutoSize = true;
+	 this.label18.Location = new System.Drawing.Point(466, 55);
+	 this.label18.Name = "label18";
+	 this.label18.Size = new System.Drawing.Size(51, 13);
+	 this.label18.TabIndex = 39;
+	 this.label18.Text = "BP Limiar";
+	 // 
+	 // tb_back_limiar
+	 // 
+	 this.tb_back_limiar.Location = new System.Drawing.Point(532, 52);
+	 this.tb_back_limiar.Name = "tb_back_limiar";
+	 this.tb_back_limiar.Size = new System.Drawing.Size(54, 20);
+	 this.tb_back_limiar.TabIndex = 38;
+	 this.tb_back_limiar.Text = "160";
+	 // 
 	 // label9
 	 // 
 	 this.label9.AutoSize = true;
@@ -243,6 +260,7 @@
 	 this.tbavdecay.Name = "tbavdecay";
 	 this.tbavdecay.Size = new System.Drawing.Size(54, 20);
 	 this.tbavdecay.TabIndex = 35;
+	 this.tbavdecay.Text = "0";
 	 // 
 	 // tbdecay
 	 // 
@@ -250,6 +268,7 @@
 	 this.tbdecay.Name = "tbdecay";
 	 this.tbdecay.Size = new System.Drawing.Size(60, 20);
 	 this.tbdecay.TabIndex = 34;
+	 this.tbdecay.Text = "0";
 	 // 
 	 // lbdecay
 	 // 
@@ -1459,23 +1478,6 @@
 	 this.button12.Text = "Combat";
 	 this.button12.UseVisualStyleBackColor = true;
 	 this.button12.Click += new System.EventHandler(this.button12_Click);
-	 // 
-	 // tb_back_limiar
-	 // 
-	 this.tb_back_limiar.Location = new System.Drawing.Point(532, 52);
-	 this.tb_back_limiar.Name = "tb_back_limiar";
-	 this.tb_back_limiar.Size = new System.Drawing.Size(54, 20);
-	 this.tb_back_limiar.TabIndex = 38;
-	 this.tb_back_limiar.Text = "125";
-	 // 
-	 // label18
-	 // 
-	 this.label18.AutoSize = true;
-	 this.label18.Location = new System.Drawing.Point(466, 55);
-	 this.label18.Name = "label18";
-	 this.label18.Size = new System.Drawing.Size(51, 13);
-	 this.label18.TabIndex = 39;
-	 this.label18.Text = "BP Limiar";
 	 // 
 	 // Form1
 	 // 
