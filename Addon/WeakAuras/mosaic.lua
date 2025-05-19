@@ -65,21 +65,60 @@ C_Timer.NewTicker(0.10, function()
     end
     pixels[0].texture:SetColorTexture(hp_r/255, hp_g/255, hp_b/255)
 
--- pixel 1 - Mana (canal azul) + Slots livres (canal vermelho)
+-- pixel 1 - Mana (B) + Slots livres (R) + Erros de combate (G)
+
 -- MANA
-local mana_cur = UnitPower("player", 0)           -- mana atual
-local mana_max = UnitPowerMax("player", 0)        -- mana máxima
-local mana_b = (mana_max > 0) and math.floor(mana_cur / mana_max * 255) or 0  
+local mana_cur = UnitPower("player", 0)
+local mana_max = UnitPowerMax("player", 0)
+local mana_b = (mana_max > 0) and math.floor(mana_cur / mana_max * 255) or 0
+
 -- SLOTS LIVRES NAS BAGS
 local livres = 0
 for bag = 0, 4 do
   local free, tipo = C_Container.GetContainerNumFreeSlots(bag)
   if tipo == 0 then livres = livres + free end
 end
-local bag_r = math.max(0, 255 - livres)           -- canal vermelho = 255 - slots livres (inverso)
--- APLICA NO PIXEL 1
-pixels[1].texture:SetColorTexture(bag_r/255, 0, mana_b/255)
-                                                  -- define cor do pixel 1: R = slots, B = mana
+local bag_r = math.max(0, 255 - livres)
+
+-- ERROS DE COMBATE (canal G)
+if erroG == nil then erroG = 0 end
+if erro_timeout == nil then erro_timeout = 0 end
+
+-- Frame de erro com detecção por mensagem
+if not erro_frame then
+  erro_frame = CreateFrame("Frame")
+  erro_frame:RegisterEvent("UI_ERROR_MESSAGE")
+  erro_frame:SetScript("OnEvent", function(self, event, errType, msg)
+    local novoErro = 0
+
+if msg and (msg:lower():find("facing") or msg:lower():find("Herbalism")) then
+      novoErro = novoErro + 128 -- erro de facing
+    end
+    if msg == "Out of range." or msg == "You are too far away!" then
+      novoErro = novoErro + 64 -- erro de range
+    end
+
+    if novoErro > 0 then
+      erroG = novoErro
+      erro_timeout = 10 -- mantém por 10 ticks de 0.10s = 1 segundo
+    end
+  end)
+end
+
+-- Ticker de 0.10s para expiração do erro
+if not erro_ticker then
+  erro_ticker = C_Timer.NewTicker(0.10, function()
+    if erro_timeout > 0 then
+      erro_timeout = erro_timeout - 1
+      if erro_timeout == 0 then
+        erroG = 0
+      end
+    end
+  end)
+end
+
+-- APLICA NO PIXEL 1: R = bag, G = erro, B = mana
+pixels[1].texture:SetColorTexture(bag_r/255, erroG/255, mana_b/255)
 
 
     -- pixel 2 - Posição X
@@ -124,16 +163,22 @@ if enabled == 1 and start > 0 and dur > 0 then                         -- se est
 end
 pixels[4].texture:SetColorTexture(r4/255, g4/255, b4/255)             -- aplica os valores no pixel 4
 
--- pixel 5 - Combate + Debuffs
-local r5 = UnitAffectingCombat("player") and 255 or 0             -- R: 255 se em combate
-local g5 = (r5 == 0) and 255 or 0                                 -- G: 255 se fora de combate
+-- -------------------------------------
+-- pixel 5 - Combate + Nadando + Debuffs
+-- -------------------------------------
+
+-- R: 255 se em combate, 0 se fora
+local r5 = UnitAffectingCombat("player") and 255 or 0
+
+-- G: 255 se nadando, 0 se não
+local g5 = IsSwimming() and 255 or 0
 
 -- B: codificação dos debuffs (Magic = 16, Disease = 8, Poison = 4, nil = 2, Curse = 1)
 local debuff_val = 0
 for i = 1, 40 do
     local _, _, _, dispelType = UnitDebuff("player", i)
-    if not dispelType and _ then -- se tem debuff mas sem dispelType (ex: bleed)
-        debuff_val = bit.bor(debuff_val, 2)
+    if not dispelType and _ then
+        debuff_val = bit.bor(debuff_val, 2) -- sem tipo (ex: bleed)
     elseif dispelType == "Magic" then
         debuff_val = bit.bor(debuff_val, 16)
     elseif dispelType == "Disease" then
@@ -144,36 +189,84 @@ for i = 1, 40 do
         debuff_val = bit.bor(debuff_val, 1)
     end
 end
-local b5 = debuff_val * 8 -- Debuffs no player, igual vestibular (somatória)
+
+local b5 = debuff_val * 8 -- amplificado pra granular o azul
+
 pixels[5].texture:SetColorTexture(r5/255, g5/255, b5/255)
-
-
--- pixel 6 - Level (R) + Classe Paladino (G) + CD da Bolha (B)
+-- -------------------------------------
+-- PIXEL 6 - Level (R) + Classe (G) + FLAGS (B)
+-- -------------------------------------
 local lvl = UnitLevel("player")
 local _, class = UnitClass("player")
-local b6 = 0 -- cooldown da bolha (Divine Protection)
 
-local start, dur, enabled = GetSpellCooldown("Divine Protection")
-if enabled == 1 and start > 0 and dur > 0 then
-	b6 = math.min(math.floor(dur - (GetTime() - start)), 255)
+-- codificação da própria classe (sem targets)
+local class_val = 0
+if class == "Paladin" then class_val = 255
+elseif class == "Warrior" then class_val = 250
+elseif class == "Hunter" then class_val = 245
+elseif class == "Rogue" then class_val = 240
+elseif class == "Priest" then class_val = 235
+elseif class == "Shaman" then class_val = 230
+elseif class == "Mage" then class_val = 225
+elseif class == "Warlock" then class_val = 220
+elseif class == "Druid" then class_val = 215
 end
+
+-- codificação das flags no canal B
+local b6 = 0
+
+-- bolha (Divine Protection) disponível?
+local dpName = GetSpellInfo("Divine Protection")
+if dpName then
+    local s, d, e = GetSpellCooldown(dpName)
+    if e == 1 and (s == 0 or d == 0) then
+        b6 = b6 + 128
+    end
+end
+
+-- exorcism disponível?
+local exoName = GetSpellInfo("Exorcism")
+if exoName then
+    local s2, d2, e2 = GetSpellCooldown(exoName)
+    if e2 == 1 and (s2 == 0 or d2 == 0) then
+        b6 = b6 + 64
+    end
+end
+
+-- target com debuff contendo "justice"
+for i = 1, 40 do
+    local name = UnitDebuff("target", i)
+    if name and name:lower():find("justice") then
+        b6 = b6 + 32
+        break
+    end
+end
+
+-- exorcism está em alcance?
+if exoName and UnitExists("target") and IsSpellInRange(exoName, "target") == 1 then
+    b6 = b6 + 16
+end
+
+-- aplica no pixel
 pixels[6].texture:SetColorTexture(
-	math.min(lvl * 4, 255)/255, -- canal vermelho = level × 4
-	(class == "Paladin" and 255 or 0)/255, -- canal verde = 255 se paladino
-	b6/255 -- canal azul = cooldown da bolha
+    math.min(lvl * 4, 255) / 255,  -- R: nível × 4
+    class_val / 255,               -- G: valor da classe
+    b6 / 255                       -- B: flags codificadas
 )
 
-    -- pixel 7 - Target HP (R), Existe (G)
-    local r7, g7 = 0, 0
-    if UnitExists("target") then
-        local thp = UnitHealth("target")
-        local thpmax = UnitHealthMax("target")
-        if thpmax > 0 then
-            r7 = math.floor(thp / thpmax * 255)
-            g7 = 255
-        end
+-- pixel 7 - Target HP (R), Existe (G), Level (B)
+local r7, g7, b7 = 0, 0, 0
+if UnitExists("target") then
+    local thp = UnitHealth("target")
+    local thpmax = UnitHealthMax("target")
+    if thpmax > 0 then
+        r7 = math.floor(thp / thpmax * 255)       -- HP em percentual (0 a 255)
+        g7 = 255                                   -- Confirma existência
+        b7 = UnitLevel("target") * 4               -- Level × 4 (cap implícito em 63)
     end
-    pixels[7].texture:SetColorTexture(r7/255, g7/255, 0)
+end
+
+pixels[7].texture:SetColorTexture(r7/255, g7/255, b7/255)
 
     -- pixel 8 - Target Level
     local r8 = (UnitExists("target") and math.min(UnitLevel("target") * 4, 255)) or 0
@@ -211,57 +304,92 @@ pixels[6].texture:SetColorTexture(
     end
     pixels[11].texture:SetColorTexture(r11/255, g11/255, b11/255)
 
-    -- pixel 12 - Buff SOR
-    local r12, g12 = 0, 255
-    for i = 1, 40 do
-        local name, _, _, _, dur, expira = UnitBuff("player", i)
-        if name and name:find("Seal of Righteousness") then
-            r12 = 255
-            if dur and expira then
-                local t = expira - GetTime()
-                g12 = math.max(0, 255 - math.floor(t * 4))
-            end
-            break
-        end
-    end
-    pixels[12].texture:SetColorTexture(r12/255, g12/255, 0)
+-- pixel 12 - Buff SOR + CD do Lay on Hands
+local r12, g12, b12 = 0, 255, 0
 
-    -- pixel 13 - BoM, HoJ CD, HoJ em range
-    local r13, g13, b13 = 0, 0, 0
-    for i = 1, 40 do
-        local name, _, _, _, dur, expira = UnitBuff("player", i)
-        if name and name:find("Blessing of Might") then
-            if dur and expira then
-                local t = expira - GetTime()
-                r13 = math.max(0, math.min(255, math.floor(t)))
-            else
-                r13 = 255
-            end
-            break
+for i = 1, 40 do
+    local name, _, _, _, dur, expira = UnitBuff("player", i)
+    if name and name:find("Seal of Righteousness") then
+        r12 = 255
+        if dur and expira then
+            local t = expira - GetTime()
+            g12 = math.max(0, 255 - math.floor(t * 4))
         end
+        break
     end
-    local s, d = GetSpellCooldown("Hammer of Justice")
-    if s and d and d > 0 then
-        g13 = math.min(255, math.floor((1 - (GetTime() - s)/d) * 255))
-    end
-    if UnitExists("target") and IsSpellInRange("Hammer of Justice", "target") == 1 then
-        b13 = 255
-    end
-    pixels[13].texture:SetColorTexture(r13/255, g13/255, b13/255)
+end
 
-    -- pixel 14 - Creature type
-    local tipo = UnitCreatureType("target")
-    local r14 = 0
-    if tipo == "Humanoid" then r14 = 50
-    elseif tipo == "Beast" then r14 = 100
-    elseif tipo == "Undead" then r14 = 150
-    elseif tipo == "Demon" then r14 = 200
-    elseif tipo == "Elemental" then r14 = 210
-    elseif tipo == "Mechanical" then r14 = 220
-    elseif tipo == "Dragonkin" then r14 = 230
-    elseif tipo == "Giant" then r14 = 240
-    elseif tipo == "Critter" then r14 = 80 end
-    pixels[14].texture:SetColorTexture(r14/255, 0, 0)
+-- cooldown do Lay on Hands
+local s, d, e = GetSpellCooldown("Lay on Hands")
+if e == 1 and s > 0 and d > 0 then
+    b12 = math.min(math.floor(d - (GetTime() - s)), 255)
+end
+
+pixels[12].texture:SetColorTexture(r12/255, g12/255, b12/255)
+
+-- pixel 13 - Blessings ativos (R) + CD do HoJ (G) + alcance do HoJ (B)
+local r13, g13, b13 = 0, 0, 0
+local bless_val = 0
+for i = 1, 40 do
+    local name = UnitBuff("player", i)
+    if name then
+        if name:find("Blessing of Might")      then bless_val = bit.bor(bless_val, 1) end
+        if name:find("Blessing of Wisdom")     then bless_val = bit.bor(bless_val, 2) end
+        if name:find("Blessing of Kings")      then bless_val = bit.bor(bless_val, 4) end
+        if name:find("Blessing of Salvation")  then bless_val = bit.bor(bless_val, 8) end
+        if name:find("Blessing of Sanctuary")  then bless_val = bit.bor(bless_val, 16) end
+        if name:find("Blessing of Freedom")    then bless_val = bit.bor(bless_val, 32) end
+        if name:find("Blessing of Protection") then bless_val = bit.bor(bless_val, 64) end
+    end
+end
+r13 = bit.bor(bless_val, 128) -- força o bit 7 pra manter o valor alto e visível
+-- canal G = cooldown do Hammer of Justice (inverso normalizado)
+local s, d = GetSpellCooldown("Hammer of Justice")
+if s and d and d > 0 then
+    g13 = math.min(255, math.floor((1 - (GetTime() - s)/d) * 255))
+end
+-- canal B = HoJ em alcance
+if UnitExists("target") and IsSpellInRange("Hammer of Justice", "target") == 1 then
+    b13 = 255
+end
+pixels[13].texture:SetColorTexture(r13/255, g13/255, b13/255)
+
+-- -------------------------------------
+-- PIXEL 14 - TIPO DA CRIATURA DO TARGET
+-- -------------------------------------
+local r14 = 0
+
+if UnitExists("target") then
+    if UnitIsPlayer("target") and UnitIsFriend("player", "target") then
+        local _, class = UnitClass("target")
+        if class == "MAGE" or class == "WARLOCK" or class == "PRIEST" or class == "SHAMAN" then
+            r14 = 110 -- caster (Blessing of Wisdom)
+        else
+            r14 = 105 -- melee (Blessing of Might)
+        end
+    else
+        local creatureType = UnitCreatureType("target")
+        local creatureTypes = {
+            ["Humanoid"] = 50,
+            ["Beast"] = 100,
+            ["Undead"] = 150,
+            ["Demon"] = 200,
+            ["Elemental"] = 210,
+            ["Mechanical"] = 220,
+            ["Dragonkin"] = 230,
+            ["Giant"] = 240,
+            ["Critter"] = 80
+        }
+        r14 = creatureTypes[creatureType] or 0
+    end
+
+
+end
+
+pixels[14].texture:SetColorTexture(r14 / 255, 0, 0)
+
+
+
 
     -- pixel 15 - Reaction + Threat
     local r15, g15, b15 = 0, 0, 0
