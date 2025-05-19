@@ -979,9 +979,16 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 			if (!me.combat)
 			{
 			 if (cb_loot.Checked)
-				{
+			 {
 				aperta(SETE, 100); // clear target 
+				aperta(OITO,100); // target last target pois perdeu o target quando morreu 
 				aperta(IKEY, 1500); // LOOT
+
+				if (cbskin.Checked)
+				{
+				 aperta(OITO, 100); // target last target pois perdeu o target quando morreu 
+				 aperta(IKEY, 2500); // LOOT
+				}
 			 }
 			}
 			checkme();
