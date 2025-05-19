@@ -1209,12 +1209,13 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		// -----------------------------------------
 		if (!ja_deu_backpedal && me.hp < 85)
 		{
-		 int d1, d2;
+		 
+		 int limiar = int.Parse(tb_back_limiar.Text); // Lê o valor do limiar 
+		 int decay = int.Parse(tbdecay.Text);// Obtém os valores de decay e avg_decay 
+		 int avg_decay = int.Parse(tbavdecay.Text);
 
-		 if (!tar.casting &&  int.TryParse(tbdecay.Text, out d1) 
-			&& int.TryParse(tbavdecay.Text, out d2) 
-			&& d1 > d2
-			&& tar.hp > 30) // só se o mob não estiver castando e o decay atual for maior que a média
+		 // Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
+		 if (!tar.casting && decay > limiar && tar.hp > 20)
 		 {
 			ja_deu_backpedal = true; // só uma vez por combate
 			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
@@ -2465,6 +2466,12 @@ else
 		ultimo_salvo = DateTime.Now;
 	 }
 	}
+
+	private void Form1_Load(object sender, EventArgs e)
+	{
+
+	}
+
 	// ----------------------------------------------
 	// LOOP DE SCAN CONTÍNUO DO MAPA (COM COR DE TERRENO)
 	// ----------------------------------------------

@@ -30,6 +30,11 @@
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.label9 = new System.Windows.Forms.Label();
+	 this.label8 = new System.Windows.Forms.Label();
+	 this.tbavdecay = new System.Windows.Forms.TextBox();
+	 this.tbdecay = new System.Windows.Forms.TextBox();
+	 this.lbdecay = new System.Windows.Forms.ListBox();
 	 this.rtbcursor = new System.Windows.Forms.TextBox();
 	 this.button11 = new System.Windows.Forms.Button();
 	 this.button10 = new System.Windows.Forms.Button();
@@ -38,7 +43,6 @@
 	 this.bt_saveWPas = new System.Windows.Forms.Button();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
 	 this.tb_filename = new System.Windows.Forms.TextBox();
-	 this.cb_legacyMove = new System.Windows.Forms.CheckBox();
 	 this.button8 = new System.Windows.Forms.Button();
 	 this.cb_anda = new System.Windows.Forms.CheckBox();
 	 this.bt_saveWP = new System.Windows.Forms.Button();
@@ -151,11 +155,8 @@
 	 this.lb_yaw = new System.Windows.Forms.Label();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button12 = new System.Windows.Forms.Button();
-	 this.lbdecay = new System.Windows.Forms.ListBox();
-	 this.tbdecay = new System.Windows.Forms.TextBox();
-	 this.tbavdecay = new System.Windows.Forms.TextBox();
-	 this.label8 = new System.Windows.Forms.Label();
-	 this.label9 = new System.Windows.Forms.Label();
+	 this.tb_back_limiar = new System.Windows.Forms.TextBox();
+	 this.label18 = new System.Windows.Forms.Label();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -182,6 +183,8 @@
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.label18);
+	 this.tabPage1.Controls.Add(this.tb_back_limiar);
 	 this.tabPage1.Controls.Add(this.label9);
 	 this.tabPage1.Controls.Add(this.label8);
 	 this.tabPage1.Controls.Add(this.tbavdecay);
@@ -195,7 +198,6 @@
 	 this.tabPage1.Controls.Add(this.bt_saveWPas);
 	 this.tabPage1.Controls.Add(this.bt_loadWP);
 	 this.tabPage1.Controls.Add(this.tb_filename);
-	 this.tabPage1.Controls.Add(this.cb_legacyMove);
 	 this.tabPage1.Controls.Add(this.button8);
 	 this.tabPage1.Controls.Add(this.cb_anda);
 	 this.tabPage1.Controls.Add(this.bt_saveWP);
@@ -216,6 +218,47 @@
 	 this.tabPage1.Size = new System.Drawing.Size(697, 440);
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
+	 // 
+	 // label9
+	 // 
+	 this.label9.AutoSize = true;
+	 this.label9.Location = new System.Drawing.Point(534, 6);
+	 this.label9.Name = "label9";
+	 this.label9.Size = new System.Drawing.Size(47, 13);
+	 this.label9.TabIndex = 37;
+	 this.label9.Text = "Average";
+	 // 
+	 // label8
+	 // 
+	 this.label8.AutoSize = true;
+	 this.label8.Location = new System.Drawing.Point(466, 6);
+	 this.label8.Name = "label8";
+	 this.label8.Size = new System.Drawing.Size(69, 13);
+	 this.label8.TabIndex = 36;
+	 this.label8.Text = "Decay HP/m";
+	 // 
+	 // tbavdecay
+	 // 
+	 this.tbavdecay.Location = new System.Drawing.Point(532, 26);
+	 this.tbavdecay.Name = "tbavdecay";
+	 this.tbavdecay.Size = new System.Drawing.Size(54, 20);
+	 this.tbavdecay.TabIndex = 35;
+	 // 
+	 // tbdecay
+	 // 
+	 this.tbdecay.Location = new System.Drawing.Point(466, 26);
+	 this.tbdecay.Name = "tbdecay";
+	 this.tbdecay.Size = new System.Drawing.Size(60, 20);
+	 this.tbdecay.TabIndex = 34;
+	 // 
+	 // lbdecay
+	 // 
+	 this.lbdecay.FormattingEnabled = true;
+	 this.lbdecay.Location = new System.Drawing.Point(466, 78);
+	 this.lbdecay.Name = "lbdecay";
+	 this.lbdecay.Size = new System.Drawing.Size(120, 199);
+	 this.lbdecay.Sorted = true;
+	 this.lbdecay.TabIndex = 33;
 	 // 
 	 // rtbcursor
 	 // 
@@ -288,18 +331,6 @@
 	 this.tb_filename.Size = new System.Drawing.Size(100, 20);
 	 this.tb_filename.TabIndex = 25;
 	 this.tb_filename.Text = "waypoints.txt";
-	 // 
-	 // cb_legacyMove
-	 // 
-	 this.cb_legacyMove.AutoSize = true;
-	 this.cb_legacyMove.Checked = true;
-	 this.cb_legacyMove.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_legacyMove.Location = new System.Drawing.Point(592, 29);
-	 this.cb_legacyMove.Name = "cb_legacyMove";
-	 this.cb_legacyMove.Size = new System.Drawing.Size(91, 17);
-	 this.cb_legacyMove.TabIndex = 24;
-	 this.cb_legacyMove.Text = "Legacy Move";
-	 this.cb_legacyMove.UseVisualStyleBackColor = true;
 	 // 
 	 // button8
 	 // 
@@ -1429,46 +1460,22 @@
 	 this.button12.UseVisualStyleBackColor = true;
 	 this.button12.Click += new System.EventHandler(this.button12_Click);
 	 // 
-	 // lbdecay
+	 // tb_back_limiar
 	 // 
-	 this.lbdecay.FormattingEnabled = true;
-	 this.lbdecay.Location = new System.Drawing.Point(466, 52);
-	 this.lbdecay.Name = "lbdecay";
-	 this.lbdecay.Size = new System.Drawing.Size(120, 225);
-	 this.lbdecay.Sorted = true;
-	 this.lbdecay.TabIndex = 33;
+	 this.tb_back_limiar.Location = new System.Drawing.Point(532, 52);
+	 this.tb_back_limiar.Name = "tb_back_limiar";
+	 this.tb_back_limiar.Size = new System.Drawing.Size(54, 20);
+	 this.tb_back_limiar.TabIndex = 38;
+	 this.tb_back_limiar.Text = "125";
 	 // 
-	 // tbdecay
+	 // label18
 	 // 
-	 this.tbdecay.Location = new System.Drawing.Point(466, 26);
-	 this.tbdecay.Name = "tbdecay";
-	 this.tbdecay.Size = new System.Drawing.Size(60, 20);
-	 this.tbdecay.TabIndex = 34;
-	 // 
-	 // tbavdecay
-	 // 
-	 this.tbavdecay.Location = new System.Drawing.Point(532, 26);
-	 this.tbavdecay.Name = "tbavdecay";
-	 this.tbavdecay.Size = new System.Drawing.Size(54, 20);
-	 this.tbavdecay.TabIndex = 35;
-	 // 
-	 // label8
-	 // 
-	 this.label8.AutoSize = true;
-	 this.label8.Location = new System.Drawing.Point(466, 6);
-	 this.label8.Name = "label8";
-	 this.label8.Size = new System.Drawing.Size(66, 13);
-	 this.label8.TabIndex = 36;
-	 this.label8.Text = "Decay HP/s";
-	 // 
-	 // label9
-	 // 
-	 this.label9.AutoSize = true;
-	 this.label9.Location = new System.Drawing.Point(534, 6);
-	 this.label9.Name = "label9";
-	 this.label9.Size = new System.Drawing.Size(47, 13);
-	 this.label9.TabIndex = 37;
-	 this.label9.Text = "Average";
+	 this.label18.AutoSize = true;
+	 this.label18.Location = new System.Drawing.Point(466, 55);
+	 this.label18.Name = "label18";
+	 this.label18.Size = new System.Drawing.Size(51, 13);
+	 this.label18.TabIndex = 39;
+	 this.label18.Text = "BP Limiar";
 	 // 
 	 // Form1
 	 // 
@@ -1502,7 +1509,8 @@
 	 this.Controls.Add(this.tb_x);
 	 this.Controls.Add(this.tab_nav);
 	 this.Name = "Form1";
-	 this.Text = "Form1";
+	 this.Text = "Discord 1.0";
+	 this.Load += new System.EventHandler(this.Form1_Load);
 	 this.tab_nav.ResumeLayout(false);
 	 this.tabPage1.ResumeLayout(false);
 	 this.tabPage1.PerformLayout();
@@ -1605,7 +1613,6 @@
 		private System.Windows.Forms.TextBox tb_map_zoom;
 	private System.Windows.Forms.Label lb_delta;
 	private System.Windows.Forms.Label lb_yaw;
-	private System.Windows.Forms.CheckBox cb_legacyMove;
 	private System.Windows.Forms.CheckBox cb_killgray;
 	private System.Windows.Forms.Label label16;
 	private System.Windows.Forms.TextBox tb_preheal;
@@ -1653,6 +1660,8 @@
 	private System.Windows.Forms.TextBox tbavdecay;
 	private System.Windows.Forms.TextBox tbdecay;
 	private System.Windows.Forms.ListBox lbdecay;
+	private System.Windows.Forms.Label label18;
+	private System.Windows.Forms.TextBox tb_back_limiar;
  }
 }
 
