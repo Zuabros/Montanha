@@ -251,12 +251,16 @@ namespace Discord
 	 }
 
 	 inicializa();
+	 //load_settings(); // carrega configuração do arquivo
 
+	 load_settings(); // carrega configuração do arquivo
 	 carregar_waypoints(); // Chama o carregamento automático	 
 	 tab_nav.SelectedIndex = 1; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
+	 lb_log.Clear(); // limpa todos os itens da ListBox log
 
-	 // ARRUMA INTERFACE---------------
-	 	}
+
+												 // ARRUMA INTERFACE---------------
+	}
 	// --------------------------------
 	// CLASSE PIXEL (capturado do addon)
 	// --------------------------------
@@ -626,8 +630,8 @@ readpixels(pixels);
 		tb_tarhp.Text = tar.hp.ToString();                 // mostra na textbox
 
 		e.hastarget = (pixels[7].g & 128) > 0;             // G: bit 7 → existe target
-		tar.skinnable = (pixels[7].g & 64) > 0;            // G: bit 6 → skinável
-		if (tar.morreu && me.hastarget) loga($"Target skinnable: {tar.skinnable}"); // debug 
+		//tar.skinnable = (pixels[7].g & 64) > 0;            // G: bit 6 → skinável
+		//if (tar.morreu && me.hastarget) loga($"Target skinnable: {tar.skinnable}"); // debug 
 
 		tar.level = (int)Math.Round(pixels[7].b / 4.0);    // B: level do target (×4)
 		//loga($"Level do target: {e.level}"); // debug
@@ -1011,8 +1015,8 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 				 if (p.x < 0) break;        // nada encontrado → encerra
 
 				 clica(p);                  // clica com botão direito
-				 wait(1500);                // espera pelo loot ou skin
-				 wait_cast();
+				 wait(1200);                // espera pelo loot ou skin
+				 if (cbskin.Checked) wait_cast(); // espera skin só se tiver ticado 
 				}
 			 }
 
@@ -1047,7 +1051,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		
 
 		
-	 }while (on && dist(me.pos, destino) > 100);        // enquanto ativo e longe do destino
+	 }while (on && dist(me.pos, destino) > 80);        // enquanto ativo e longe do destino
 	 loga("Alvo atingido. Partindo para proximo alvo.");
 	 //aperta(WKEY, 2); // solta W ao chegar no destino
 	}
@@ -1253,7 +1257,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		 {
 			ja_deu_backpedal = true; // só uma vez por combate
 			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
-			aperta(SKEY, 3000);     // anda pra trás mantendo o facing
+			aperta(SKEY, 2000);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
 
 
@@ -1684,6 +1688,88 @@ tb_debug3.Text = me.facing.ToString();
 	 tb_debug3.Text = dist(me.pos, go).ToString() ;
 	}
 
+	// -------------------------------------------------
+	// MÉTODO LOAD_SETTINGS - Carrega CheckBox e TextBox
+	// -------------------------------------------------
+	private void load_settings()
+	{
+	 if (!File.Exists("discord.cfg")) return; // se não existe, sai do método
+
+	 string[] linhas = File.ReadAllLines("discord.cfg"); // lê todas as linhas do arquivo
+
+	 foreach (string linha in linhas) // percorre cada linha
+	 {
+		if (string.IsNullOrWhiteSpace(linha)) continue; // ignora linhas em branco
+		if (!linha.Contains("=")) continue; // ignora linhas inválidas
+
+		string[] partes = linha.Split('='); // separa nome e valor
+		if (partes.Length != 2) continue; // ignora se não tem duas partes
+
+		string nome = partes[0]; // nome do controle
+		string valor = partes[1]; // valor a ser atribuído
+
+		Control[] encontrados = this.Controls.Find(nome, true); // busca recursiva por nome
+
+		if (encontrados.Length == 0) continue; // se não achou, ignora
+
+		Control c = encontrados[0]; // pega o primeiro controle encontrado
+
+		if (c is CheckBox cb)
+		 cb.Checked = (valor == "true"); // define estado do checkbox
+
+		else if (c is TextBox tb)
+		 tb.Text = valor; // define texto do textbox
+	 }
+	 try
+	 {
+		int x = int.Parse(val("win_left", linhas));
+		int y = int.Parse(val("win_top", linhas));
+		int w = int.Parse(val("win_width", linhas));
+		int h = int.Parse(val("win_height", linhas));
+
+		string monitor = val("win_monitor", linhas);
+
+		// verifica se o monitor ainda existe
+		foreach (var tela in Screen.AllScreens)
+		{
+		 if (tela.DeviceName == monitor)
+		 {
+			this.StartPosition = FormStartPosition.Manual; // define posição manual
+			this.Location = new Point(x, y);               // aplica posição
+			this.Size = new Size(w, h);                    // aplica tamanho
+			break;
+		 }
+		}
+	 }
+	 catch { } // ignora erros se algo estiver faltando
+
+	}
+	// CONTINUAÇAO DO ACIMA
+	private string val(string chave, string[] linhas)
+	{
+	 foreach (string linha in linhas)
+		if (linha.StartsWith(chave + "="))
+		 return linha.Substring(chave.Length + 1);
+
+	 return "0"; // valor padrão
+	}
+	// ----------------------------------------------------------
+	// MÉTODO RECURSIVO - Adiciona CheckBox e TextBox na lista (pra salvar o cfg)
+	// ----------------------------------------------------------
+	private void coleta_controles(Control pai, List<string> linhas)
+	{
+	 foreach (Control c in pai.Controls) // percorre todos os filhos
+	 {
+		if (c is CheckBox cb)
+		 linhas.Add(cb.Name + "=" + cb.Checked.ToString().ToLower()); // salva checkbox
+
+		else if (c is TextBox tb)
+		 linhas.Add(tb.Name + "=" + tb.Text); // salva textbox
+
+		if (c.HasChildren) // se esse controle tiver filhos também
+		 coleta_controles(c, linhas); // chama recursivamente
+	 }
+	}
 
 	// FIM DOS METODOS GLOBAIS 
 	//-------------------------------------- 
@@ -1938,9 +2024,9 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	{
 	 string nome = "waypoints.txt"; // nome padrão
 
-	 if (File.Exists("discord.cfg")) // se arquivo de config existir
+	 if (File.Exists("discord.ini")) // se arquivo de config existir
 	 {
-		string[] linhascfg = File.ReadAllLines("discord.cfg");
+		string[] linhascfg = File.ReadAllLines("discord.ini");
 		if (linhascfg.Length > 0 && linhascfg[0].Trim() != "")
 		 nome = linhascfg[0].Trim(); // usa nome do cfg
 	 }
@@ -2017,6 +2103,7 @@ lbwp.Items.Clear();
 	// ---------------------------------------
 	public loc scanloot()
 	{
+	 int pausa = 10; // tempo de espera entre cada movimento do mouse 
 	 focawow(); // traz o WoW pra frente
 
 	 int w = Screen.PrimaryScreen.Bounds.Width;
@@ -2026,7 +2113,7 @@ lbwp.Items.Clear();
 	 int cy = (int)(h / 2 + h * 0.05); // centro abaixo da cabeça do player
 
 	 mousemove(20, 20);                // calibra cursor neutro
-	 wait(50);
+	 wait(30); // calibra 
 	 IntPtr anterior = getcursor();   // cursor base
 
 	 // volta maior (20%) com 16 direções (22,5°)
@@ -2038,7 +2125,7 @@ lbwp.Items.Clear();
 		int y = cy - (int)(Math.Sin(ang) * raio1);
 
 		mousemove(x, y);
-		wait(50);
+		wait(pausa);
 
 		IntPtr atual = getcursor();
 		if (atual != anterior)
@@ -2058,7 +2145,7 @@ lbwp.Items.Clear();
 		int y = cy - (int)(Math.Sin(ang) * raio2);
 
 		mousemove(x, y);
-		wait(50);
+		wait(pausa);
 
 		IntPtr atual = getcursor();
 		if (atual != anterior)
@@ -2070,7 +2157,7 @@ lbwp.Items.Clear();
 
 	 // verificação final no centro
 	 mousemove(cx, cy);
-	 wait(50);
+	 wait(pausa);
 	 IntPtr final = getcursor();
 	 if (final != anterior)
 	 {
@@ -2139,7 +2226,7 @@ lbwp.Items.Clear();
 		else if (!nome.Contains(".")) nome += ".txt";
 
 		File.WriteAllLines(nome, linhas);        // salva os waypoints
-		File.WriteAllText("discord.cfg", nome);  // grava só o nome no cfg
+		File.WriteAllText("discord.ini", nome);  // grava só o nome no cfg
 
 		if (cb_log.Checked) loga($"Waypoints salvos ({linhas.Count} itens) no arquivo {nome}");
 	 }
@@ -2245,94 +2332,27 @@ else
 
 
 	// --------------------------------
-	// BOTÃO DRAWMAP
-	// Gera e exibe imagem do mapa com as entidades visíveis
+	// SAVE CONFIG (salva todas as checkbox e textbox) 
 	// --------------------------------
-	private void bt_debut3_Click(object sender, EventArgs e)
+	// ---------------------------------------------
+	// BOTÃO BT_SAVE_CFG - Salva status dos CheckBox e TextBox
+	// ---------------------------------------------
+	private void bt_save_cfg_Click(object sender, EventArgs e)
 	{
-	 checkme(); // atualiza player
-							// o facing começa em zero e cresce no sentido anti-horario até 359
-							// calcula yaw diretamente, sem usar getyaw()
-	 wait(100);
-	 loc alvo = new loc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text));
+	 List<string> linhas = new List<string>(); // lista de saída
 
-	 lb_delta.Text = getyaw(me.pos, alvo).ToString();//
+	 coleta_controles(this, linhas); // varre todos os controles do Form recursivamente
 
-	 double dx = alvo.x - me.pos.x;
-	 double dy = alvo.y - me.pos.y;
+	 linhas.Add("win_left=" + this.Left);      // posição X da janela
+	 linhas.Add("win_top=" + this.Top);        // posição Y da janela
+	 linhas.Add("win_width=" + this.Width);    // largura (opcional)
+	 linhas.Add("win_height=" + this.Height);  // altura (opcional)
+	 linhas.Add("win_monitor=" + Screen.FromControl(this).DeviceName); // nome do monitor
 
-	 double ang = Math.Atan2(dx, dy) * (180.0 / Math.PI); // angulo anti-horário
-	 if (ang < 0) ang += 360;
-
-	 int yaw = (int)Math.Round(ang);
-
-
-	 points.Clear();
-	 points.Add(new point(me.pos, 1)); // player
-	 points.Add(new point(new loc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text)), 4));
-
-	 float zoom = 100f;
-	 float esc = 1.5f * (zoom / 100f); // 3 pixels por unidade (com base no sistema inteiro)
-
-	 Bitmap bmp = new Bitmap(256, 256);
-
-	 using (Graphics g = Graphics.FromImage(bmp))
-	 {
-		g.Clear(Color.Black);
-
-		foreach (point p in points)
-		{
-		 int dxi = (int)((p.pos.x - me.pos.x) * esc); // X deslocado
-		 int dyi = (int)((p.pos.y - me.pos.y) * esc); // Y deslocado
-
-		 int px = 128 + dxi;
-		 int py = 128 + dyi;
-
-		 if (px >= 0 && px < 256 && py >= 0 && py < 256)
-		 {
-			Brush b = Brushes.White;
-
-			if (p.val == 1) b = Brushes.Red;
-			if (p.val == 2) b = Brushes.Blue;
-			if (p.val == 3) b = Brushes.Lime;
-			if (p.val == 4) b = Brushes.Yellow;
-
-			g.FillRectangle(b, px, py, 2, 2);
-		 }
-		}
-		// LINHA DE MIRADA
-		double rad = me.facing * Math.PI / 180.0;
-		int fx = 128 - (int)(Math.Sin(rad) * 20); // X já estava corrigido
-		int fy = 128 - (int)(Math.Cos(rad) * 20); // Y agora corrigido
-		g.DrawLine(Pens.White, 128, 128, fx, fy); // desenha a seta
-
-		// LINHA VERDE TRACEJADA: direção ao target
-		using (Pen penTracejada = new Pen(Color.Green, 1))
-		{
-		 penTracejada.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-		 int tx = 128 + (int)((alvo.x - me.pos.x) * esc);
-		 int ty = 128 + (int)((alvo.y - me.pos.y) * esc);
-
-		 // calcula yaw visual a partir da linha verde
-		 dx = tx - 128;
-		 dy = 128 - ty; // inverte o eixo Y visual
-
-		 ang = Math.Atan2(dx, dy) * (180.0 / Math.PI);
-		 if (ang < 0) ang += 360;
-
-		 int yaw_visual = (int)Math.Round(ang); // ESSE É O VALOR DO YAW CORRETO QUE VOCE DEVE RETORNAR NA FUNÇAO getyaw(loc orig, loc alvo)
-		 lb_yaw.Text = (360-yaw_visual).ToString(); // este valor esta certo 
-		 
-		 // desenha linha verde tracejada do player até o target - esta linha é o yaw real que a gente esta tentando obter
-		 g.DrawLine(penTracejada, 128, 128, tx, ty);
-
-		 
-		}
-	 }
-
-	 // Atualiza a PictureBox
-	 pb_map.Image = bmp;
+	 File.WriteAllLines("discord.cfg", linhas); // grava o arquivo
 	}
+
+
 
 	private void button8_Click(object sender, EventArgs e)
 	{
@@ -2381,7 +2401,7 @@ else
 		 tb_filename.Text = Path.GetFileName(nome);
 
 		 // Atualiza o discord.cfg com o novo nome
-		 File.WriteAllText("discord.cfg", tb_filename.Text.Trim());
+		 File.WriteAllText("discord.ini", tb_filename.Text.Trim());
 
 		 if (cb_log.Checked) loga($"Waypoints carregados de {tb_filename.Text} ({linhas.Length} itens)");
 		}
@@ -2406,7 +2426,7 @@ else
 		 string nomeSimples = Path.GetFileName(nomeCompleto); // só o nome, sem path
 
 		 tb_filename.Text = nomeSimples; // atualiza textbox
-		 File.WriteAllText("discord.cfg", nomeSimples); // salva nome no cfg
+		 File.WriteAllText("discord.ini", nomeSimples); // salva nome no cfg
 
 		 bt_saveWP.PerformClick(); // chama o botão de salvar
 		}
@@ -2608,7 +2628,7 @@ else
 
 	private void Form1_Load(object sender, EventArgs e)
 	{
-
+	 
 	}
 
 	// ----------------------------------------------

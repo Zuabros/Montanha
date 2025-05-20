@@ -149,7 +149,7 @@
 	 this.cb_debug = new System.Windows.Forms.CheckBox();
 	 this.cb_log = new System.Windows.Forms.CheckBox();
 	 this.button7 = new System.Windows.Forms.Button();
-	 this.but_debut3 = new System.Windows.Forms.Button();
+	 this.bt_save_cfg = new System.Windows.Forms.Button();
 	 this.tb_debug = new System.Windows.Forms.TextBox();
 	 this.label14 = new System.Windows.Forms.Label();
 	 this.label15 = new System.Windows.Forms.Label();
@@ -234,7 +234,7 @@
 	 this.tb_back_limiar.Name = "tb_back_limiar";
 	 this.tb_back_limiar.Size = new System.Drawing.Size(54, 20);
 	 this.tb_back_limiar.TabIndex = 38;
-	 this.tb_back_limiar.Text = "160";
+	 this.tb_back_limiar.Text = "200";
 	 // 
 	 // label9
 	 // 
@@ -1408,19 +1408,19 @@
 	 this.button7.UseVisualStyleBackColor = true;
 	 this.button7.Click += new System.EventHandler(this.button7_Click);
 	 // 
-	 // but_debut3
+	 // bt_save_cfg
 	 // 
-	 this.but_debut3.Location = new System.Drawing.Point(5, 234);
-	 this.but_debut3.Name = "but_debut3";
-	 this.but_debut3.Size = new System.Drawing.Size(75, 23);
-	 this.but_debut3.TabIndex = 22;
-	 this.but_debut3.Text = "Drawmap";
-	 this.but_debut3.UseVisualStyleBackColor = true;
-	 this.but_debut3.Click += new System.EventHandler(this.bt_debut3_Click);
+	 this.bt_save_cfg.Location = new System.Drawing.Point(2, 195);
+	 this.bt_save_cfg.Name = "bt_save_cfg";
+	 this.bt_save_cfg.Size = new System.Drawing.Size(75, 23);
+	 this.bt_save_cfg.TabIndex = 22;
+	 this.bt_save_cfg.Text = "Save Config";
+	 this.bt_save_cfg.UseVisualStyleBackColor = true;
+	 this.bt_save_cfg.Click += new System.EventHandler(this.bt_save_cfg_Click);
 	 // 
 	 // tb_debug
 	 // 
-	 this.tb_debug.Location = new System.Drawing.Point(5, 199);
+	 this.tb_debug.Location = new System.Drawing.Point(34, 429);
 	 this.tb_debug.Name = "tb_debug";
 	 this.tb_debug.Size = new System.Drawing.Size(47, 20);
 	 this.tb_debug.TabIndex = 23;
@@ -1494,7 +1494,7 @@
 	 this.Controls.Add(this.label15);
 	 this.Controls.Add(this.label14);
 	 this.Controls.Add(this.tb_debug);
-	 this.Controls.Add(this.but_debut3);
+	 this.Controls.Add(this.bt_save_cfg);
 	 this.Controls.Add(this.button7);
 	 this.Controls.Add(this.cb_log);
 	 this.Controls.Add(this.cb_debug);
@@ -1572,7 +1572,7 @@
 	private System.Windows.Forms.Button bt_saveWP;
 	private System.Windows.Forms.CheckBox cb_anda;
 	private System.Windows.Forms.CheckBox cb_combat;
-	private System.Windows.Forms.Button but_debut3;
+	private System.Windows.Forms.Button bt_save_cfg;
 	private System.Windows.Forms.Panel pan_tar;
 	private System.Windows.Forms.Panel pan_me;
 	private System.Windows.Forms.TextBox tb_mood;
