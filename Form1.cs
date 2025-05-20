@@ -162,6 +162,7 @@ namespace Discord
 	public const int JUDGEMENT = CINCO;  // Judgement
 	public const int PURIFY = SEIS;   // remove poison/disease
 	public const int CLEARTGT = SETE;   // limpa o target
+	public const int TARGETLAST = OITO;   // limpa o target
 	public const int HLIGHT = ZERO;   // Holy Light (cura)
 	public const int DPROT = N1;     // Divine Protection
 	public const int LOH = N2;       // Lay on Hands
@@ -173,6 +174,21 @@ namespace Discord
 	public const int HOJ = QUATRO;   // Hammer of Justice
 	public const int STONEFORM = NOVE;     // racial dos anões
 	public const int ANDA = WKEY;     // anda
+
+	// --------------------------------------------
+	// TIPOS DE CRIATURAS
+	// --------------------------------------------
+	public const int HUMANOID = 50; // humanoide
+	public const int BEAST = 100; // besta
+	public const int PLAYER_MELEE = 105; // player mané ogro (não-caster)
+	public const int PLAYER_CASTER = 110; // player mané caster
+	public const int UNDEAD = 150; // morto-vivo
+	public const int DEMON = 200; // demônio
+	public const int ELEMENTAL = 210; // elemental
+	public const int MECHANICAL = 220; // mecânico
+	public const int DRAGONKIN = 230; // dragonete
+	public const int GIANT = 240; // gigante
+	public const int CRITTER = 80; // criatura pequena (critter)
 
 	// --------------------------------------------
 	// UTILIDADES
@@ -316,7 +332,7 @@ namespace Discord
 
 	 //7 Target HP:
 	 //   R: HP atual do alvo × 255 / HP máx
-	 //   G: 255 se existe target
+	 //   G: bits do target → 128 se existe, 64 se skinável
 	 //   B: Level do alvo × 4 (cap em 255)
 
 	 //8 Blessings
@@ -596,22 +612,26 @@ readpixels(pixels);
 
 		bool isPaladino = (pixels[6].g >= 250) || true;
 		tb_class.Text = isPaladino ? "Paladino" : "Outro";
-		if (isPaladino) me.classe = 1;
+		if (isPaladino) e.classe = 1;
 	 }
 
 
 	 // -------------------------------------
-	 // Pixel 7: Target HP, Existência, Level
+	 // Pixel 7: Target HP, Flags, Level
 	 // -------------------------------------
 	 if (pixels.Count > 7)
 	 {
-		tar.hp = (pixels[7].r * 100) / 255;                 // R: HP do alvo (%)
-		tb_tarhp.Text = tar.hp.ToString();                  // atualiza textbox de HP
+		tar.hp = (pixels[7].r * 100) / 255;                // R: HP do alvo (%)
+		tar.morreu = tar.hp == 0;                 // morreu se HP = 0
+		tb_tarhp.Text = tar.hp.ToString();                 // mostra na textbox
 
-		e.hastarget = pixels[7].g > 250;                    // G: existe target se for 255
+		e.hastarget = (pixels[7].g & 128) > 0;             // G: bit 7 → existe target
+		tar.skinnable = (pixels[7].g & 64) > 0;            // G: bit 6 → skinável
+		if (tar.morreu && me.hastarget) loga($"Target skinnable: {tar.skinnable}"); // debug 
 
-		tar.level = (int)Math.Round(pixels[7].b / 4.0);     // B: Level codificado (×4)
-		tb_tarlevel.Text = tar.level.ToString();            // atualiza textbox de level
+		tar.level = (int)Math.Round(pixels[7].b / 4.0);    // B: level do target (×4)
+		//loga($"Level do target: {e.level}"); // debug
+		tb_tarlevel.Text = tar.level.ToString();           // mostra na textbox
 	 }
 
 	 // -------------------------------------
@@ -630,14 +650,14 @@ readpixels(pixels);
 		// canal R → está em alcance
 		pala.jud_range = (pixels[9].r > 250);           // Judgement em alcance
 		
-
+		
 		// canal G → cooldown restante (0–255)
 		pala.judge_cd = pixels[9].g;                     // cooldown em segundos (cap 255)
 		
 
 		// canal B → melee range
-		tar.meleerange = (pixels[9].b > 200);            // alcance melee com o target
-		cb_melee.Checked = tar.meleerange;               // marca checkbox só se estiver em alcance
+		e.meleerange = (pixels[9].b > 200);            // alcance melee com o target
+		cb_melee.Checked = e.meleerange;               // marca checkbox só se estiver em alcance
 	 }
 
 
@@ -645,10 +665,10 @@ readpixels(pixels);
 	 // -------------------------------------
 	 if (pixels.Count > 10)
 	 {
-		me.casting = pixels[10].r > 250;                           // está castando se canal R for 255
-		me.castbar = (pixels[10].g * 100) / 255;                   // progresso em %
-		me.spell = ((char)pixels[10].b).ToString();               // converte byte para letra
-		me.spellid = 0;                                            // ainda não disponível
+		e.casting = pixels[10].r > 250;                           // está castando se canal R for 255
+		e.castbar = (pixels[10].g * 100) / 255;                   // progresso em %
+		e.spell = ((char)pixels[10].b).ToString();               // converte byte para letra
+		e.spellid = 0;                                            // ainda não disponível
 
 		tb_playercast.Text = me.casting ? me.spell : "-";         // exibe a letra da spell
 		pb_playercast.Value = me.castbar;                         // atualiza progressbar (0-100)
@@ -658,9 +678,11 @@ readpixels(pixels);
 	 // -------------------------------------
 	 if (pixels.Count > 11)
 	 {
-		tar.casting = pixels[11].r > 250;                          // está castando se canal R = 255
 		tar.castbar = (pixels[11].g * 100) / 255;                  // progresso em %
-		tar.spell = ((char)pixels[11].b).ToString();              // converte byte para letra
+		tar.casting = tar.castbar > 0; // pixels[11].r > 250;                          // está castando se canal R = 255
+
+		tar.spell = ((char)pixels[11].b).ToString();              // converte byte p
+																															// ara letra
 		tar.spellid = 0;                                           // ainda não disponível
 
 		tb_tarcast.Text = tar.casting ? tar.spell : "-";          // mostra spell no textbox
@@ -779,12 +801,12 @@ void press(byte key)
 
 
 
-	// M01 - MÉTODO CLICA - MOVE O MOUSE PARA (X, Y) E REALIZA UM CLIQUE COM O BOTÃO INFORMADO.
-	public void clica(int x, int y, int botao = 1)
-{
-mousemove(x, y);
-DoMouseClick(botao);
-}
+	// M01 - MÉTODO CLICA - MOVE O MOUSE PARA (loc.x, loc.y) E CLICA COM O BOTÃO (padrão: direito)
+	public void clica(loc p, int botao = 2)
+	{
+	 mousemove(p.x, p.y);     // move até o ponto
+	 DoMouseClick(botao);     // executa clique com botão escolhido
+	}
 
 
 
@@ -980,16 +1002,20 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 			{
 			 if (cb_loot.Checked)
 			 {
-				aperta(SETE, 100); // clear target 
-				aperta(OITO,100); // target last target pois perdeu o target quando morreu 
-				aperta(IKEY, 1500); // LOOT
-
-				if (cbskin.Checked)
+				while (true)
 				{
-				 aperta(OITO, 100); // target last target pois perdeu o target quando morreu 
-				 aperta(IKEY, 2500); // LOOT
+				 checkme();                  // atualiza dados antes de cada busca
+				 if (me.combat) break;      // entrou em combate → sai do loop
+
+				 loc p = scanloot();        // tenta encontrar algo clicável
+				 if (p.x < 0) break;        // nada encontrado → encerra
+
+				 clica(p);                  // clica com botão direito
+				 wait(1500);                // espera pelo loot ou skin
+				 wait_cast();
 				}
 			 }
+
 			}
 			checkme();
 		 }
@@ -1223,7 +1249,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		 int avg_decay = int.Parse(tbavdecay.Text);
 
 		 // Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
-		 if (!tar.casting && decay > limiar && tar.hp > 20)
+		 if (tar.type!=DRAGONKIN && !tar.casting && decay > limiar && tar.hp > 20)
 		 {
 			ja_deu_backpedal = true; // só uma vez por combate
 			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
@@ -1417,7 +1443,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 
 	 if (tar.casting)
 	 {
-		if (tar.castbar <= limite) return true;
+		if (tar.castbar <= limite || tar.type == DRAGONKIN) return true;
 		if (tar.spell.StartsWith("H")) return true;
 	 }
 
@@ -1657,21 +1683,7 @@ tb_debug3.Text = me.facing.ToString();
 	 loc go = nloc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text));
 	 tb_debug3.Text = dist(me.pos, go).ToString() ;
 	}
-	public static CURSORINFO oldmouse;
-	//----------------------------------
-	// VE SE MUDOU CURSOR NAS NOVAS COORDENADAS
-	//---------------------------------
-	bool mudoucursor(int x, int y)
-	{
-	 DoMouseClick();
-	 wait(200);
-	 oldmouse.hCursor = getcursor();
-	 mousemove(x, y);
-	 DoMouseClick();
-	 wait(200);
-	 if (oldmouse.hCursor == getcursor()) return false;
-	 return true;
-	}
+
 
 	// FIM DOS METODOS GLOBAIS 
 	//-------------------------------------- 
@@ -1732,6 +1744,23 @@ return new loc { x = x, y = y };
 	 else if (botao == 2)
 		mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
 	}
+
+	public static CURSORINFO oldmouse;
+	//----------------------------------
+	// VE SE MUDOU CURSOR NAS NOVAS COORDENADAS
+	//---------------------------------
+	bool mudoucursor(int x, int y)
+	{
+	 DoMouseClick();
+	 wait(200);
+	 oldmouse.hCursor = getcursor();
+	 mousemove(x, y);
+	 DoMouseClick();
+	 wait(200);
+	 if (oldmouse.hCursor == getcursor()) return false;
+	 return true;
+	}
+
 	// Clica em ponto na tela 
 
 
@@ -1983,18 +2012,115 @@ private void button6_Click(object sender, EventArgs e)
 {
 lbwp.Items.Clear();
 }
+	// ---------------------------------------
+	// METODO SCANLOOT: RETORNA UM LOC DE LOOT
+	// ---------------------------------------
+	public loc scanloot()
+	{
+	 focawow(); // traz o WoW pra frente
 
-	//BOTAO DRAWLOOP
-private void button7_Click(object sender, EventArgs e)
-{
-while (on)
+	 int w = Screen.PrimaryScreen.Bounds.Width;
+	 int h = Screen.PrimaryScreen.Bounds.Height;
+
+	 int cx = w / 2;
+	 int cy = (int)(h / 2 + h * 0.05); // centro abaixo da cabeça do player
+
+	 mousemove(20, 20);                // calibra cursor neutro
+	 wait(50);
+	 IntPtr anterior = getcursor();   // cursor base
+
+	 // volta maior (20%) com 16 direções (22,5°)
+	 int raio1 = (int)(h * 0.20);
+	 for (int i = 0; i < 16; i++)
 	 {
-		bt_debut3_Click(null, null);
-		
-		wait(300);
+		double ang = Math.PI * i / 8.0;
+		int x = cx + (int)(Math.Cos(ang) * raio1);
+		int y = cy - (int)(Math.Sin(ang) * raio1);
+
+		mousemove(x, y);
+		wait(50);
+
+		IntPtr atual = getcursor();
+		if (atual != anterior)
+		{
+		 loga($"Cursor mudou (raio 20%) - ang {ang} rad.");
+		 return new loc { x = x, y = y };
+		}
 	 }
-	
+
+	 // volta menor (10%) com 8 direções (45°)
+	 int raio2 = (int)(h * 0.10);
+	 int[] ordem = { 1, 2, 3, 4, 5, 6, 7, 0 };
+	 foreach (int dir in ordem)
+	 {
+		double ang = Math.PI * dir / 4.0;
+		int x = cx + (int)(Math.Cos(ang) * raio2);
+		int y = cy - (int)(Math.Sin(ang) * raio2);
+
+		mousemove(x, y);
+		wait(50);
+
+		IntPtr atual = getcursor();
+		if (atual != anterior)
+		{
+		 loga($"Cursor mudou (raio 10%) - pos {dir}.");
+		 return new loc { x = x, y = y };
+		}
+	 }
+
+	 // verificação final no centro
+	 mousemove(cx, cy);
+	 wait(50);
+	 IntPtr final = getcursor();
+	 if (final != anterior)
+	 {
+		loga("Cursor mudou no centro do círculo.");
+		return new loc { x = cx, y = cy };
+	 }
+
+	 return new loc { x = -1, y = -1 }; // nada encontrado
 	}
+
+
+
+	private void button7_Click(object sender, EventArgs e)
+	{
+	 focawow(); // traz o WoW pro foco
+
+	 int w = Screen.PrimaryScreen.Bounds.Width;
+	 int h = Screen.PrimaryScreen.Bounds.Height;
+
+	 int cx = w / 2;
+	 int cy = (int)(h / 2 + h * 0.05);       // centro abaixo da cabeça
+	 int raio = (int)(h * 0.10);             // raio de varredura
+
+	 mousemove(20, 20);                      // calibra numa posição neutra
+	 wait(100);                                  // dá tempo de estabilizar
+	 IntPtr anterior = getcursor();         // captura o cursor-base
+
+	 int[] ordem = { 1, 2, 3, 4, 5, 6, 7, 0 }; // NE → anti-horário
+
+	 for (int k = 0; k < ordem.Length; k++)
+	 {
+		int dir = ordem[k];
+		double ang = Math.PI * dir / 4.0;
+		int x = cx + (int)(Math.Cos(ang) * raio);
+		int y = cy - (int)(Math.Sin(ang) * raio);
+
+		mousemove(x, y);
+		loga($"pos {dir} - x:{x} y:{y}");
+		wait(200);
+
+		IntPtr atual = getcursor();
+		if (atual != anterior)
+		{
+		 loga($"Cursor mudou na posição {dir}.");
+		 break;
+		}
+	 }
+	}
+
+
 
 	// --------------------------------
 	// BOTÃO SALVAR WAYPOINTS

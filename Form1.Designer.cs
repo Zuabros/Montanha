@@ -1089,6 +1089,8 @@
 	 // cbskin
 	 // 
 	 this.cbskin.AutoSize = true;
+	 this.cbskin.Checked = true;
+	 this.cbskin.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cbskin.Location = new System.Drawing.Point(3, 139);
 	 this.cbskin.Name = "cbskin";
 	 this.cbskin.Size = new System.Drawing.Size(67, 17);
@@ -1402,7 +1404,7 @@
 	 this.button7.Name = "button7";
 	 this.button7.Size = new System.Drawing.Size(75, 23);
 	 this.button7.TabIndex = 20;
-	 this.button7.Text = "Drawloop";
+	 this.button7.Text = "Testa Loot";
 	 this.button7.UseVisualStyleBackColor = true;
 	 this.button7.Click += new System.EventHandler(this.button7_Click);
 	 // 

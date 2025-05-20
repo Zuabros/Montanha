@@ -38,6 +38,7 @@ namespace Discord
 	public bool outofrange; // da spell ou corporeo
 	public bool swim; // nadando 
 	public bool aggroed; // aggro em mim
+	public bool skinnable; // da pra skinar (pixel 7)
 
 
 	// --- casting ---
@@ -53,7 +54,7 @@ namespace Discord
 	public bool trivial;      // Mob trivial (baixo nível)       // uso futuro
 	public bool lifeless;     // É um cadáver ou morto-vivo      // uso futuro
 	public int mobcount;      // Número de mobs ao redor         // uso futuro
-	public loc corpse;        // Posição do corpo/cadáver        // uso futuro
+
  }
 
 
