@@ -167,6 +167,7 @@ namespace Discord
 	public const int DPROT = N1;     // Divine Protection
 	public const int LOH = N2;       // Lay on Hands
 	public const int BOW = N4;     // Blessing of Wisdom
+	public const int BOK = N5;     // Blessing of Wisdom
 	public const int EXORCISM = N6; // Exorcism no slot N6
 	public const int HEARTHSTONE = N8;      // hearthstone
 	public const int HEALTHPOTION = N9;      // hearthstone
@@ -987,8 +988,12 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		 }
 		 if (me.mana < 60)
 		 {
-			if (me.mana < 50) aperta(N4); // Pala? BOW
-			aperta(N3); // Bebe
+			if (me.mana < 50); // mana baixa? B
+			{
+			 if (!pala.bow) aperta(BOW, 2);
+			 aperta(N3); // Bebe
+			
+			}
 			while (me.mana < 60 && !me.combat) // espera recuperar mana
 			{
 			 wait(1000);
@@ -1006,17 +1011,38 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 			{
 			 if (cb_loot.Checked)
 			 {
+				int loopcount = 0; // contador de tentativas de loot
+
 				while (true)
 				{
 				 checkme();                  // atualiza dados antes de cada busca
 				 if (me.combat) break;      // entrou em combate → sai do loop
 
+				 if (loopcount++ >= 6)      // passou do limite → força saída
+				 {
+					loga("Loop de loot interrompido após 6 tentativas.");
+					break;
+				 }
+
 				 loc p = scanloot();        // tenta encontrar algo clicável
 				 if (p.x < 0) break;        // nada encontrado → encerra
 
 				 clica(p);                  // clica com botão direito
-				 wait(1200);                // espera pelo loot ou skin
-				 if (cbskin.Checked) wait_cast(); // espera skin só se tiver ticado 
+				 wait(100);
+				 checkme();
+
+				 if (me.spd == 0 && !me.combat) // se continuou parado e sem combate
+				 {
+					wait(1200);                 // espera pelo loot ou skin
+					if (cbskin.Checked) wait_cast(); // espera skin só se tiver ticado 
+				 }
+				 else
+				 {
+					loga("Clicou errado ao tentar loot.");
+					break; // se clicou no mundo e saiu andando 
+				 }
+
+
 				}
 			 }
 
@@ -1084,7 +1110,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 	 if (me.level >= 20 && cb_BOK.Checked && mana(Math.Min(wiztrig + 30, 100)))                // quer Kings e tem mana suficiente
 		blessneeded = 3;
 
-	 else if (cb_BOM.Checked && mana(Math.Min(wiztrig + 30, 100)))
+	 else if (cb_BOM.Checked && mana(Math.Min(wiztrig + 40, 100)))
 		blessneeded = 1;                            // quer Might se tiver mana
 
 	 else if (me.level >= 14 && cb_BOW.Checked && mana(10) && !mana(wiztrig))
@@ -1094,7 +1120,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 	 // Executa o buff conforme a necessidade
 	 // --------------------------------------------
 	 if (blessneeded == 3 && !pala.bok)
-		aperta(N5);                                // aplica Blessing of Kings
+		aperta(BOK);                                // aplica Blessing of Kings
 
 	 else if (blessneeded == 1 && !pala.bom)
 		aperta(BOM);                                // aplica Blessing of Might
@@ -2098,12 +2124,37 @@ private void button6_Click(object sender, EventArgs e)
 {
 lbwp.Items.Clear();
 }
+
+	// ------------------------------------------
+	// VARIAVEIS GLOBAIS DE ESTATISTICA DE LOOT (usa no metodo abaixo) 
+	// ------------------------------------------
+	int[] lootfreq = new int[25]; // contador de frequência por posição
+	int total_loots = 0;          // total de localizações válidas
+																
+	// ---------------------------------------------
+	// METODO LOGASTATS: MOSTRA FREQUENCIA DE LOOT
+	// ---------------------------------------------
+	void logastats()
+	{
+	 if (total_loots == 0) return; // evita divisão por zero
+
+	 string linha = ""; // acumula string do log
+
+	 for (int i = 0; i < 25; i++)
+	 {
+		int pct = lootfreq[i] * 100 / total_loots; // calcula porcentagem
+		linha += $"[{i:00}]: {pct}% ";              // adiciona ao texto
+	 }
+
+	 loga("Estatísticas: " + linha.Trim()); // imprime no log
+	}
+
 	// ---------------------------------------
 	// METODO SCANLOOT: RETORNA UM LOC DE LOOT
 	// ---------------------------------------
 	public loc scanloot()
 	{
-	 int pausa = 10; // tempo de espera entre cada movimento do mouse 
+	 int pausa = 35; // tempo de espera entre cada movimento do mouse 
 	 focawow(); // traz o WoW pra frente
 
 	 int w = Screen.PrimaryScreen.Bounds.Width;
@@ -2113,8 +2164,26 @@ lbwp.Items.Clear();
 	 int cy = (int)(h / 2 + h * 0.05); // centro abaixo da cabeça do player
 
 	 mousemove(20, 20);                // calibra cursor neutro
-	 wait(30); // calibra 
-	 IntPtr anterior = getcursor();   // cursor base
+	 wait(50);                         // aguarda calibrar
+	 mousemove(25, 25);                // calibra cursor neutro
+	 wait(50);
+	 IntPtr anterior = getcursor();   // cursor base antes de mover
+
+	 // testa imediatamente o centro do círculo
+	 mousemove(cx, cy);               // move pro centro da tela
+	 wait(pausa);                     // espera
+	 IntPtr centro = getcursor();     // pega cursor atual
+	 if (centro != anterior)          // se mudou, encontrou algo
+	 {
+		loga("Cursor mudou no centro do círculo.");
+		
+		lootfreq[0]++;      // centro = índice 0
+		total_loots++;      // incrementa total
+		logastats();        // mostra estatística atual
+		return new loc { x = cx, y = cy }; // retorno original
+
+		
+	 }
 
 	 // volta maior (20%) com 16 direções (22,5°)
 	 int raio1 = (int)(h * 0.20);
@@ -2131,15 +2200,22 @@ lbwp.Items.Clear();
 		if (atual != anterior)
 		{
 		 loga($"Cursor mudou (raio 20%) - ang {ang} rad.");
+
+		 lootfreq[i + 1]++;  // índice de 1 a 16
+		 total_loots++;
+		 logastats();
+		 
 		 return new loc { x = x, y = y };
 		}
 	 }
 
 	 // volta menor (10%) com 8 direções (45°)
-	 int raio2 = (int)(h * 0.10);
-	 int[] ordem = { 1, 2, 3, 4, 5, 6, 7, 0 };
-	 foreach (int dir in ordem)
+	 int raio2 = (int)(h * 0.10); // calcula raio da volta menor
+	 int[] ordem = { 1, 2, 3, 4, 5, 6, 7, 0 }; // ordem dos ângulos
+
+	 for (int j = 0; j < ordem.Length; j++)
 	 {
+		int dir = ordem[j];
 		double ang = Math.PI * dir / 4.0;
 		int x = cx + (int)(Math.Cos(ang) * raio2);
 		int y = cy - (int)(Math.Sin(ang) * raio2);
@@ -2150,19 +2226,12 @@ lbwp.Items.Clear();
 		IntPtr atual = getcursor();
 		if (atual != anterior)
 		{
+		 lootfreq[17 + j]++; // índice de 17 a 24
+		 total_loots++;
+		 logastats();
 		 loga($"Cursor mudou (raio 10%) - pos {dir}.");
 		 return new loc { x = x, y = y };
 		}
-	 }
-
-	 // verificação final no centro
-	 mousemove(cx, cy);
-	 wait(pausa);
-	 IntPtr final = getcursor();
-	 if (final != anterior)
-	 {
-		loga("Cursor mudou no centro do círculo.");
-		return new loc { x = cx, y = cy };
 	 }
 
 	 return new loc { x = -1, y = -1 }; // nada encontrado
