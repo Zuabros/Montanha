@@ -709,7 +709,7 @@
 	 this.tb_loh_hp.Name = "tb_loh_hp";
 	 this.tb_loh_hp.Size = new System.Drawing.Size(33, 20);
 	 this.tb_loh_hp.TabIndex = 57;
-	 this.tb_loh_hp.Text = "15";
+	 this.tb_loh_hp.Text = "20";
 	 // 
 	 // cb_loh
 	 // 

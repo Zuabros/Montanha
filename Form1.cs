@@ -943,7 +943,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		// -----------------------------
 		// LIMPA TARGET MORTO FORA DE COMBATE
 		// -----------------------------
-		if (!me.combat && tar.morreu)
+		if (!me.combat && tar.morreu && me.hastarget)
 		{
 		 aperta(SETE); // limpa target se estiver morto
 		 if (cb_log.Checked) loga("Target morto fora de combate — limpando.");
@@ -1406,10 +1406,10 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 	// --------------------------------
 	void tenta_curar()
 	{
-	 int limiar_loh = 15;
+	 int limiar_loh = 20;
 	 int.TryParse(tb_loh_hp.Text, out limiar_loh);
 
-	 if (cb_loh.Checked && me.hp < limiar_loh && !has(pala.loh_cd))
+	 if (me.mana < 40 && cb_loh.Checked && me.hp < limiar_loh && !has(pala.loh_cd))
 	 {
 		aperta(LOH);
 		return;
@@ -2130,7 +2130,7 @@ lbwp.Items.Clear();
 	// ------------------------------------------
 	int[] lootfreq = new int[25]; // contador de frequência por posição
 	int total_loots = 0;          // total de localizações válidas
-																
+
 	// ---------------------------------------------
 	// METODO LOGASTATS: MOSTRA FREQUENCIA DE LOOT
 	// ---------------------------------------------
@@ -2142,19 +2142,35 @@ lbwp.Items.Clear();
 
 	 for (int i = 0; i < 25; i++)
 	 {
-		int pct = lootfreq[i] * 100 / total_loots; // calcula porcentagem
-		linha += $"[{i:00}]: {pct}% ";              // adiciona ao texto
+		if (lootfreq[i] == 0) continue;                 // ignora zero
+		int pct = lootfreq[i] * 100 / total_loots;      // calcula %
+		linha += $"[{i:00}]: {pct}% ";                  // adiciona ao texto
 	 }
 
-	 loga("Estatísticas: " + linha.Trim()); // imprime no log
+	 if (linha != "") loga("Estatísticas: " + linha.Trim()); // loga se tiver algo
+	}
+
+
+	// VARIAVEIS GLOBAIS DE LOOT
+	int pausa = 35; // delay padrão entre movimentos do mouse
+	loc last_success = new loc { x = -1, y = -1 }; // último ponto que deu loot
+
+	// ---------------------------------------
+	// METODO TESTEPONTO: MOVE E VERIFICA CURSOR
+	// ---------------------------------------
+	private bool testeponto(loc p, IntPtr refcur)
+	{
+	 mousemove(p.x, p.y);   // move o mouse até o ponto
+	 wait(pausa);           // aguarda tempo global
+	 IntPtr atual = getcursor(); // lê o cursor
+	 return atual != refcur;     // compara
 	}
 
 	// ---------------------------------------
-	// METODO SCANLOOT: RETORNA UM LOC DE LOOT
+	// METODO SCANLOOT: COM ADAPTACAO BALANCEADA
 	// ---------------------------------------
 	public loc scanloot()
 	{
-	 int pausa = 35; // tempo de espera entre cada movimento do mouse 
 	 focawow(); // traz o WoW pra frente
 
 	 int w = Screen.PrimaryScreen.Bounds.Width;
@@ -2163,74 +2179,110 @@ lbwp.Items.Clear();
 	 int cx = w / 2;
 	 int cy = (int)(h / 2 + h * 0.05); // centro abaixo da cabeça do player
 
-	 mousemove(20, 20);                // calibra cursor neutro
-	 wait(50);                         // aguarda calibrar
-	 mousemove(25, 25);                // calibra cursor neutro
-	 wait(50);
-	 IntPtr anterior = getcursor();   // cursor base antes de mover
+	 mousemove(20, 20); // calibra cursor neutro
+	 wait(pausa);
+	 mousemove(25, 25); // calibra cursor neutro
+	 wait(pausa);
 
-	 // testa imediatamente o centro do círculo
-	 mousemove(cx, cy);               // move pro centro da tela
-	 wait(pausa);                     // espera
-	 IntPtr centro = getcursor();     // pega cursor atual
-	 if (centro != anterior)          // se mudou, encontrou algo
+	 IntPtr refcur = getcursor(); // salva forma atual do cursor
+
+	 loc centro = new loc { x = cx, y = cy }; // ponto central
+	 if (testeponto(centro, refcur)) // testa centro primeiro
 	 {
-		loga("Cursor mudou no centro do círculo.");
-		
-		lootfreq[0]++;      // centro = índice 0
-		total_loots++;      // incrementa total
-		logastats();        // mostra estatística atual
-		return new loc { x = cx, y = cy }; // retorno original
-
-		
+		last_success = centro;      // salva sucesso
+		lootfreq[0]++;              // centro = índice 0
+		total_loots++;
+		logastats();
+		return centro;
 	 }
 
-	 // volta maior (20%) com 16 direções (22,5°)
-	 int raio1 = (int)(h * 0.20);
+	 List<loc> pts = new List<loc>();    // pontos a testar (exceto centro)
+	 List<int> pesos = new List<int>();  // pesos adaptativos dos pontos
+
+	 // monta 16 pontos no raio 20% (índices 1 a 16 em lootfreq)
+	 int r1 = (int)(h * 0.20);
 	 for (int i = 0; i < 16; i++)
 	 {
 		double ang = Math.PI * i / 8.0;
-		int x = cx + (int)(Math.Cos(ang) * raio1);
-		int y = cy - (int)(Math.Sin(ang) * raio1);
+		int x = cx + (int)(Math.Cos(ang) * r1);
+		int y = cy - (int)(Math.Sin(ang) * r1);
+		pts.Add(new loc { x = x, y = y });
 
-		mousemove(x, y);
-		wait(pausa);
+		int freq = lootfreq[i + 1]; // índice real no vetor
+		int peso = total_loots > 0 ? 1 + (9 * freq / total_loots) : 1;
+		pesos.Add(peso); // peso adaptativo de 1x a 10x
+	 }
 
-		IntPtr atual = getcursor();
-		if (atual != anterior)
+	 // monta 8 pontos no raio 10% (índices 17 a 24 em lootfreq)
+	 int r2 = (int)(h * 0.10);
+	 for (int j = 0; j < 8; j++)
+	 {
+		double ang = Math.PI * j / 4.0;
+		int x = cx + (int)(Math.Cos(ang) * r2);
+		int y = cy - (int)(Math.Sin(ang) * r2);
+		pts.Add(new loc { x = x, y = y });
+
+		int freq = lootfreq[j + 17]; // índice real no vetor
+		int peso = total_loots > 0 ? 1 + (9 * freq / total_loots) : 1;
+		pesos.Add(peso);
+	 }
+
+	 // tenta ponto anterior de sucesso, se válido
+	 if (last_success.x >= 0 && last_success.y >= 0)
+	 {
+		if (testeponto(last_success, refcur))
 		{
-		 loga($"Cursor mudou (raio 20%) - ang {ang} rad.");
-
-		 lootfreq[i + 1]++;  // índice de 1 a 16
+		 lootfreq[1]++; // usa índice 1 genérico só pra estatística
 		 total_loots++;
 		 logastats();
-		 
-		 return new loc { x = x, y = y };
+		 return last_success;
+		}
+
+		// remove da lista se estiver nela
+		for (int i = 0; i < pts.Count; i++)
+		{
+		 if (pts[i].x == last_success.x && pts[i].y == last_success.y)
+		 {
+			pts.RemoveAt(i);
+			pesos.RemoveAt(i);
+			break;
+		 }
 		}
 	 }
 
-	 // volta menor (10%) com 8 direções (45°)
-	 int raio2 = (int)(h * 0.10); // calcula raio da volta menor
-	 int[] ordem = { 1, 2, 3, 4, 5, 6, 7, 0 }; // ordem dos ângulos
-
-	 for (int j = 0; j < ordem.Length; j++)
+	 Random rnd = new Random();
+	 while (pts.Count > 0)
 	 {
-		int dir = ordem[j];
-		double ang = Math.PI * dir / 4.0;
-		int x = cx + (int)(Math.Cos(ang) * raio2);
-		int y = cy - (int)(Math.Sin(ang) * raio2);
+		int soma = pesos.Sum();           // soma total dos pesos
+		int alvo = rnd.Next(soma);        // valor aleatório de 0 até soma-1
 
-		mousemove(x, y);
-		wait(pausa);
-
-		IntPtr atual = getcursor();
-		if (atual != anterior)
+		// percorre acumulando os pesos até passar o alvo
+		int acum = 0;
+		int idx = 0;
+		for (int i = 0; i < pesos.Count; i++)
 		{
-		 lootfreq[17 + j]++; // índice de 17 a 24
+		 acum += pesos[i];
+		 if (acum > alvo)
+		 {
+			idx = i;
+			break;
+		 }
+		}
+
+		loc p = pts[idx];             // pega ponto sorteado
+		pts.RemoveAt(idx);            // remove da lista
+		pesos.RemoveAt(idx);          // remove peso correspondente
+
+		if (testeponto(p, refcur))
+		{
+		 int lootidx = idx + 1;    // ajuste do índice (1 a 24)
+		 if (lootidx < lootfreq.Length)
+			lootfreq[lootidx]++; // salva estatística correta
+
+		 last_success = p;
 		 total_loots++;
 		 logastats();
-		 loga($"Cursor mudou (raio 10%) - pos {dir}.");
-		 return new loc { x = x, y = y };
+		 return p;
 		}
 	 }
 
