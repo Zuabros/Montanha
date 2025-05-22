@@ -157,6 +157,9 @@
 	 this.lb_yaw = new System.Windows.Forms.Label();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button12 = new System.Windows.Forms.Button();
+	 this.tb_loot_tries = new System.Windows.Forms.TextBox();
+	 this.label22 = new System.Windows.Forms.Label();
+	 this.cb_concentration_aura = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -618,6 +621,7 @@
 	 // 
 	 this.Paladin.AllowDrop = true;
 	 this.Paladin.BackColor = System.Drawing.Color.Gray;
+	 this.Paladin.Controls.Add(this.cb_concentration_aura);
 	 this.Paladin.Controls.Add(this.cb_use_exorcism);
 	 this.Paladin.Controls.Add(this.cb_BOK);
 	 this.Paladin.Controls.Add(this.tb_bow_trig);
@@ -1400,11 +1404,11 @@
 	 // 
 	 // button7
 	 // 
-	 this.button7.Location = new System.Drawing.Point(5, 261);
+	 this.button7.Location = new System.Drawing.Point(2, 224);
 	 this.button7.Name = "button7";
-	 this.button7.Size = new System.Drawing.Size(75, 23);
+	 this.button7.Size = new System.Drawing.Size(79, 23);
 	 this.button7.TabIndex = 20;
-	 this.button7.Text = "Testa Loot";
+	 this.button7.Text = "Melhora Loot";
 	 this.button7.UseVisualStyleBackColor = true;
 	 this.button7.Click += new System.EventHandler(this.button7_Click);
 	 // 
@@ -1481,12 +1485,43 @@
 	 this.button12.UseVisualStyleBackColor = true;
 	 this.button12.Click += new System.EventHandler(this.button12_Click);
 	 // 
+	 // tb_loot_tries
+	 // 
+	 this.tb_loot_tries.Location = new System.Drawing.Point(41, 253);
+	 this.tb_loot_tries.Name = "tb_loot_tries";
+	 this.tb_loot_tries.Size = new System.Drawing.Size(45, 20);
+	 this.tb_loot_tries.TabIndex = 30;
+	 this.tb_loot_tries.Text = "200";
+	 // 
+	 // label22
+	 // 
+	 this.label22.AutoSize = true;
+	 this.label22.Location = new System.Drawing.Point(5, 256);
+	 this.label22.Name = "label22";
+	 this.label22.Size = new System.Drawing.Size(30, 13);
+	 this.label22.TabIndex = 31;
+	 this.label22.Text = "Tries";
+	 // 
+	 // cb_concentration_aura
+	 // 
+	 this.cb_concentration_aura.AutoSize = true;
+	 this.cb_concentration_aura.Checked = true;
+	 this.cb_concentration_aura.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_concentration_aura.Location = new System.Drawing.Point(10, 100);
+	 this.cb_concentration_aura.Name = "cb_concentration_aura";
+	 this.cb_concentration_aura.Size = new System.Drawing.Size(116, 17);
+	 this.cb_concentration_aura.TabIndex = 64;
+	 this.cb_concentration_aura.Text = "Concentration aura";
+	 this.cb_concentration_aura.UseVisualStyleBackColor = true;
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 	 this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 	 this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 	 this.ClientSize = new System.Drawing.Size(819, 482);
+	 this.Controls.Add(this.label22);
+	 this.Controls.Add(this.tb_loot_tries);
 	 this.Controls.Add(this.button12);
 	 this.Controls.Add(this.button9);
 	 this.Controls.Add(this.lb_yaw);
@@ -1666,6 +1701,9 @@
 	private System.Windows.Forms.ListBox lbdecay;
 	private System.Windows.Forms.Label label18;
 	private System.Windows.Forms.TextBox tb_back_limiar;
+	private System.Windows.Forms.TextBox tb_loot_tries;
+	private System.Windows.Forms.Label label22;
+	private System.Windows.Forms.CheckBox cb_concentration_aura;
  }
 }
 

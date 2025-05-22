@@ -1,26 +1,27 @@
 ﻿// MÓDULO 01 - IMPORTAÇÕES
-using System;
-using System.Collections.Generic;
+using Discord; // garante acesso ao namespace da classe funcoes
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using System;
+using System.CodeDom;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices; // Required for Windows API functions
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.VisualBasic;
-using System.Runtime.InteropServices; // Required for Windows API functions
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
+using System.Xml;
 using static Discord.Form1;
 using static Discord.funcoes;
-using Discord; // garante acesso ao namespace da classe funcoes
-using System.Security.Cryptography;
-using System.Xml;
-using System.Drawing.Imaging;
-using System.CodeDom;
 
 namespace Discord
 {
@@ -258,9 +259,11 @@ namespace Discord
 	 carregar_waypoints(); // Chama o carregamento automático	 
 	 tab_nav.SelectedIndex = 1; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
 	 lb_log.Clear(); // limpa todos os itens da ListBox log
+	 carrega_loot(); // carrega frequencia de pontos de loot 
+	 //executa_simulacao();
 
 
-												 // ARRUMA INTERFACE---------------
+	 // ARRUMA INTERFACE---------------
 	}
 	// --------------------------------
 	// CLASSE PIXEL (capturado do addon)
@@ -803,7 +806,18 @@ void press(byte key)
 	{
 	 keybd_event(key, 0, KEYEVENTF_KEYUP, 0); // Simula soltura da tecla
 	}
+	
+	// método separado que executa a simulação
+	private void executa_simulacao()
+	{
+	 button7.Enabled = false;
+	 loga("Iniciando testes. Aguarde.");
 
+	 SimulaOtimos();
+
+	 loga("Simulação finalizada.");
+	 button7.Enabled = true;
+	}
 
 
 	// M01 - MÉTODO CLICA - MOVE O MOUSE PARA (loc.x, loc.y) E CLICA COM O BOTÃO (padrão: direito)
@@ -986,19 +1000,15 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 			aperta(HLIGHT); wait(2500);
 			bless(me);
 		 }
-		 if (me.mana < 60)
-		 {
-			if (me.mana < 50); // mana baixa? B
-			{
-			 if (!pala.bow) aperta(BOW, 2);
-			 aperta(N3); // Bebe
-			
-			}
+		 checkme();
+
+			if (me.mana <60) loga($"Esperando recuperação da mana: {me.mana}");
 			while (me.mana < 60 && !me.combat) // espera recuperar mana
 			{
+			 if (!pala.bow) aperta(BOW); // buffa se não tiver buff ativo
 			 wait(1000);
 			 checkme();
-			}
+			
 		 }
 		 // -----------------------------------
 		 // LOOT 
@@ -2132,28 +2142,32 @@ lbwp.Items.Clear();
 	int total_loots = 0;          // total de localizações válidas
 
 	// ---------------------------------------------
-	// METODO LOGASTATS: MOSTRA FREQUENCIA DE LOOT
+	// METODO LOGASTATS: MOSTRA FREQUENCIA DE LOOT ADAPTATIVO
 	// ---------------------------------------------
 	void logastats()
 	{
-	 if (total_loots == 0) return; // evita divisão por zero
+	 int total = fila_fifo.Count; // total adaptativo dos últimos loots
+	 if (total == 0) return;      // evita divisão por zero
 
 	 string linha = ""; // acumula string do log
 
 	 for (int i = 0; i < 25; i++)
 	 {
-		if (lootfreq[i] == 0) continue;                 // ignora zero
-		int pct = lootfreq[i] * 100 / total_loots;      // calcula %
+		if (lootfreq[i] == 0) continue;                 // ignora posições zeradas
+		int pct = lootfreq[i] * 100 / total;            // percentual da janela
 		linha += $"[{i:00}]: {pct}% ";                  // adiciona ao texto
 	 }
 
-	 if (linha != "") loga("Estatísticas: " + linha.Trim()); // loga se tiver algo
+	 if (linha != "") loga("Estatísticas recentes: " + linha.Trim()); // loga final
 	}
 
 
 	// VARIAVEIS GLOBAIS DE LOOT
 	int pausa = 35; // delay padrão entre movimentos do mouse
 	loc last_success = new loc { x = -1, y = -1 }; // último ponto que deu loot
+	double peso_otimo = 10.0; // valor padrão, será carregado do arquivo
+	double exp_otimo = 1.0;   // idem
+	DateTime prox_salva = DateTime.Now.AddMinutes(10); // inicial
 
 	// ---------------------------------------
 	// METODO TESTEPONTO: MOVE E VERIFICA CURSOR
@@ -2166,119 +2180,72 @@ lbwp.Items.Clear();
 	 return atual != refcur;     // compara
 	}
 
-	// ---------------------------------------
-	// METODO SCANLOOT: COM ADAPTACAO BALANCEADA
-	// ---------------------------------------
+	// ---------------------------------------------
+	// MÉTODO SCANLOOT: VERSÃO COM DESCARTE PARCIAL
+	// ---------------------------------------------
+	// Tenta pontos com maior frequência primeiro,
+	// mas se lootfreq == 0, 70% de chance de ignorar.
+	// Atualiza lootfreq com janela FIFO adaptativa.
+	// ---------------------------------------------
 	public loc scanloot()
 	{
+	 Random rnd = new Random(); // colocar no início da classe
+	 if (DateTime.Now >= prox_salva)
+	 {
+		salva_loot(); // salva stats e aplica trim se necessário
+		prox_salva = DateTime.Now.AddMinutes(10);
+	 }
+
 	 focawow(); // traz o WoW pra frente
 
 	 int w = Screen.PrimaryScreen.Bounds.Width;
 	 int h = Screen.PrimaryScreen.Bounds.Height;
 
 	 int cx = w / 2;
-	 int cy = (int)(h / 2 + h * 0.05); // centro abaixo da cabeça do player
+	 int cy = (int)(h / 2 + h * 0.05);
 
-	 mousemove(20, 20); // calibra cursor neutro
-	 wait(pausa);
-	 mousemove(25, 25); // calibra cursor neutro
-	 wait(pausa);
+	 mousemove(20, 20); wait(pausa);
+	 mousemove(25, 25); wait(pausa);
 
-	 IntPtr refcur = getcursor(); // salva forma atual do cursor
+	 IntPtr refcur = getcursor(); // forma original do cursor
 
-	 loc centro = new loc { x = cx, y = cy }; // ponto central
-	 if (testeponto(centro, refcur)) // testa centro primeiro
+	 List<int> ordem = Enumerable.Range(0, 25)
+		 .OrderByDescending(i => lootfreq[i])
+		 .ThenBy(i => i)
+		 .ToList();
+
+	 foreach (int idx in ordem)
 	 {
-		last_success = centro;      // salva sucesso
-		lootfreq[0]++;              // centro = índice 0
-		total_loots++;
-		logastats();
-		return centro;
-	 }
+		// regra nova: se frequência zero, 70% de chance de pular o ponto
+		if (lootfreq[idx] == 0 && rnd.NextDouble() < 0.70)
+		 continue;
 
-	 List<loc> pts = new List<loc>();    // pontos a testar (exceto centro)
-	 List<int> pesos = new List<int>();  // pesos adaptativos dos pontos
+		loc p;
 
-	 // monta 16 pontos no raio 20% (índices 1 a 16 em lootfreq)
-	 int r1 = (int)(h * 0.20);
-	 for (int i = 0; i < 16; i++)
-	 {
-		double ang = Math.PI * i / 8.0;
-		int x = cx + (int)(Math.Cos(ang) * r1);
-		int y = cy - (int)(Math.Sin(ang) * r1);
-		pts.Add(new loc { x = x, y = y });
-
-		int freq = lootfreq[i + 1]; // índice real no vetor
-		int peso = total_loots > 0 ? 1 + (9 * freq / total_loots) : 1;
-		pesos.Add(peso); // peso adaptativo de 1x a 10x
-	 }
-
-	 // monta 8 pontos no raio 10% (índices 17 a 24 em lootfreq)
-	 int r2 = (int)(h * 0.10);
-	 for (int j = 0; j < 8; j++)
-	 {
-		double ang = Math.PI * j / 4.0;
-		int x = cx + (int)(Math.Cos(ang) * r2);
-		int y = cy - (int)(Math.Sin(ang) * r2);
-		pts.Add(new loc { x = x, y = y });
-
-		int freq = lootfreq[j + 17]; // índice real no vetor
-		int peso = total_loots > 0 ? 1 + (9 * freq / total_loots) : 1;
-		pesos.Add(peso);
-	 }
-
-	 // tenta ponto anterior de sucesso, se válido
-	 if (last_success.x >= 0 && last_success.y >= 0)
-	 {
-		if (testeponto(last_success, refcur))
+		if (idx == 0)
 		{
-		 lootfreq[1]++; // usa índice 1 genérico só pra estatística
-		 total_loots++;
-		 logastats();
-		 return last_success;
+		 p = new loc { x = cx, y = cy };
 		}
-
-		// remove da lista se estiver nela
-		for (int i = 0; i < pts.Count; i++)
+		else if (idx >= 1 && idx <= 16)
 		{
-		 if (pts[i].x == last_success.x && pts[i].y == last_success.y)
-		 {
-			pts.RemoveAt(i);
-			pesos.RemoveAt(i);
-			break;
-		 }
+		 int r = (int)(h * 0.20);
+		 double ang = Math.PI * (idx - 1) / 8.0;
+		 int x = cx + (int)(Math.Cos(ang) * r);
+		 int y = cy - (int)(Math.Sin(ang) * r);
+		 p = new loc { x = x, y = y };
 		}
-	 }
-
-	 Random rnd = new Random();
-	 while (pts.Count > 0)
-	 {
-		int soma = pesos.Sum();           // soma total dos pesos
-		int alvo = rnd.Next(soma);        // valor aleatório de 0 até soma-1
-
-		// percorre acumulando os pesos até passar o alvo
-		int acum = 0;
-		int idx = 0;
-		for (int i = 0; i < pesos.Count; i++)
+		else
 		{
-		 acum += pesos[i];
-		 if (acum > alvo)
-		 {
-			idx = i;
-			break;
-		 }
+		 int r = (int)(h * 0.10);
+		 double ang = Math.PI * (idx - 17) / 4.0;
+		 int x = cx + (int)(Math.Cos(ang) * r);
+		 int y = cy - (int)(Math.Sin(ang) * r);
+		 p = new loc { x = x, y = y };
 		}
-
-		loc p = pts[idx];             // pega ponto sorteado
-		pts.RemoveAt(idx);            // remove da lista
-		pesos.RemoveAt(idx);          // remove peso correspondente
 
 		if (testeponto(p, refcur))
 		{
-		 int lootidx = idx + 1;    // ajuste do índice (1 a 24)
-		 if (lootidx < lootfreq.Length)
-			lootfreq[lootidx]++; // salva estatística correta
-
+		 atualiza_lootfreq(idx);
 		 last_success = p;
 		 total_loots++;
 		 logastats();
@@ -2286,47 +2253,248 @@ lbwp.Items.Clear();
 		}
 	 }
 
-	 return new loc { x = -1, y = -1 }; // nada encontrado
+	 return new loc { x = -1, y = -1 };
+	}
+
+	Queue<int> fila_fifo = new Queue<int>(); // fora do método, persistente
+
+
+	// ----------------------------------------  
+	// FUNÇÃO carrega_loot  
+	// ----------------------------------------  
+	// Lê loot.txt, inicializa lootfreq[] e fila_fifo  
+	// Se não existir, cria arquivo com dados padrão  
+	// ----------------------------------------
+	void carrega_loot()
+	{
+	 string arq = "loot.txt";
+
+	 if (!File.Exists(arq)) // cria padrão se não existe
+	 {
+		List<string> linhas = new List<string>();
+		linhas.Add("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"); // lootfreq zerada
+		linhas.Add(""); // fila_fifo vazia
+		File.WriteAllLines(arq, linhas);
+		loga("loot.txt não encontrado. Criado arquivo padrão.");
+	 }
+
+	 string[] dados = File.ReadAllLines(arq);
+	 if (dados.Length < 2) return;
+
+	 // carrega lootfreq[25] da primeira linha
+	 string[] partes1 = dados[0].Split(',');
+	 for (int i = 0; i < partes1.Length && i < 25; i++)
+		lootfreq[i] = int.Parse(partes1[i].Trim());
+
+	 // reconstrói fila_fifo com os índices da segunda linha
+	 fila_fifo.Clear();
+	 string[] partes2 = dados[1].Split(',');
+	 foreach (string s in partes2)
+	 {
+		if (int.TryParse(s.Trim(), out int idx) && idx >= 0 && idx < 25)
+		 fila_fifo.Enqueue(idx);
+	 }
+
+	 // atualiza total_loots como soma da fila (opcional, mas mantido)
+	 total_loots = fila_fifo.Count;
+	 loga($"lootfreq carregada: {string.Join(",", lootfreq)}");
+	 loga($"total_loots atualizado: {total_loots}");
 	}
 
 
+	// ----------------------------------------
+	// FUNÇÃO ATUALIZA LOOTFREQ (janela FIFO adaptativa)
+	// ----------------------------------------
+	void atualiza_lootfreq(int pos)
+	{
+	 if (pos < 0 || pos >= 25) return; // ignora índices inválidos
 
+	 if (fila_fifo.Count >= 500)
+	 {
+		int velho = fila_fifo.Dequeue();
+		if (velho >= 0 && velho < 25) // segurança extra
+		 lootfreq[velho]--;
+	 }
+
+	 fila_fifo.Enqueue(pos);
+	 lootfreq[pos]++;
+	}
+
+	// ----------------------------------------
+	// FUNÇÃO salva_loot
+	// ----------------------------------------
+	// Salva vetor lootfreq[25] e a fila_fifo no loot.txt
+	// Aplica trim leve se algum valor (exceto posição 0) passar de 400
+	// ----------------------------------------
+	void salva_loot()
+	{
+	 string arq = "loot.txt";
+
+	 // aplica trim leve se necessário (ignora pos 0 no cálculo)
+	 int max = lootfreq.Skip(1).Take(24).Max();
+	 if (max > 400)
+	 {
+		double fator = 400.0 / max;
+		for (int i = 1; i < 25; i++)
+		 lootfreq[i] = (int)(lootfreq[i] * fator);
+	 }
+
+	 // monta linha 1: lootfreq[25]
+	 string linha1 = string.Join(",", lootfreq);
+
+	 // monta linha 2: fila_fifo
+	 string linha2 = string.Join(",", fila_fifo);
+
+	 // grava arquivo com duas linhas
+	 File.WriteAllLines(arq, new[] { linha1, linha2 });
+
+	 // loga salvamento
+	 loga($"loot salvo: total_loots={fila_fifo.Count}, max_freq={max}");
+	}
+
+
+	// --------------------------------------------
+	// EVENTO DO BOTÃO button7: SIMULAÇÃO SÍNCRONA DE OTIMIZAÇÃO
+	// --------------------------------------------
+	// Executa a simulação direto no thread principal, sem async/await
+	// Log inicial e final para acompanhar o processo
+	// evento do botão chama o método
 	private void button7_Click(object sender, EventArgs e)
 	{
-	 focawow(); // traz o WoW pro foco
-
-	 int w = Screen.PrimaryScreen.Bounds.Width;
-	 int h = Screen.PrimaryScreen.Bounds.Height;
-
-	 int cx = w / 2;
-	 int cy = (int)(h / 2 + h * 0.05);       // centro abaixo da cabeça
-	 int raio = (int)(h * 0.10);             // raio de varredura
-
-	 mousemove(20, 20);                      // calibra numa posição neutra
-	 wait(100);                                  // dá tempo de estabilizar
-	 IntPtr anterior = getcursor();         // captura o cursor-base
-
-	 int[] ordem = { 1, 2, 3, 4, 5, 6, 7, 0 }; // NE → anti-horário
-
-	 for (int k = 0; k < ordem.Length; k++)
-	 {
-		int dir = ordem[k];
-		double ang = Math.PI * dir / 4.0;
-		int x = cx + (int)(Math.Cos(ang) * raio);
-		int y = cy - (int)(Math.Sin(ang) * raio);
-
-		mousemove(x, y);
-		loga($"pos {dir} - x:{x} y:{y}");
-		wait(200);
-
-		IntPtr atual = getcursor();
-		if (atual != anterior)
-		{
-		 loga($"Cursor mudou na posição {dir}.");
-		 break;
-		}
-	 }
+	 executa_simulacao();
+	 salva_loot();                   // salva loot.txt, frequencias de loot
 	}
+
+	// --------------------------------------------
+	// MÉTODO SimulaOtimos
+	// --------------------------------------------
+	// Simulação de força bruta para encontrar peso_otimo e exp_otimo ideais
+	// Usa seu vetor lootfreq atual como base para a simulação
+	private void SimulaOtimos()
+	{
+	 int total_tests = int.Parse(tb_loot_tries.Text);  
+	 double melhor_peso = 0.0;
+	 double melhor_exp = 0.0;
+	 double melhor_media = double.MaxValue;
+
+	 double peso_min = 1.0;
+	 double peso_max = 20.0;
+	 double exp_min = 0.5;
+	 double exp_max = 2.0;
+
+	 int n = (int)Math.Sqrt(total_tests);
+
+	 for (int i = 0; i < n; i++)
+	 {
+		double peso_teste = peso_min + (peso_max - peso_min) * i / (n - 1);
+
+		for (int j = 0; j < n; j++)
+		{
+		 double exp_teste = exp_min + (exp_max - exp_min) * j / (n - 1);
+
+		 double media = simula_media_tentativas(peso_teste, exp_teste);
+
+		 if (media < melhor_media)
+		 {
+			melhor_media = media;
+			melhor_peso = peso_teste;
+			melhor_exp = exp_teste;
+		 }
+		}
+
+		if (i % 10 == 0) wait(1);
+		if (i % (n / 10) == 0)
+		 loga($"Progresso da simulação: {(100 * i) / n}%");
+
+	 }
+
+	 peso_otimo = melhor_peso;
+	 exp_otimo = melhor_exp;
+
+	 loga($"Melhor peso_otimo = {melhor_peso:F3}, melhor exp_otimo = {melhor_exp:F3}, média tentativas = {melhor_media:F3}");
+	}
+
+	// --------------------------------------------
+	// MÉTODO simula_media_tentativas (placeholder)
+	// --------------------------------------------
+	// Implementar a lógica da simulação aqui conforme seu modelo
+	private double simula_media_tentativas(double peso_teste, double exp_teste)
+	{
+	 int simulacoes = 10000;  // número de rodadas simuladas para média
+	 Random rnd = new Random();
+
+	 // Calcula a soma das frequências ignorando posição 0 (central)
+	 int soma_freq = lootfreq.Skip(1).Take(24).Sum();
+
+	 // Gera vetor de probabilidades reais normalizadas para as 24 posições (1 a 24)
+	 double[] probs = new double[24];
+	 if (soma_freq == 0)
+	 {
+		for (int i = 0; i < 24; i++)
+		 probs[i] = 1.0 / 24.0;
+	 }
+	 else
+	 {
+		for (int i = 0; i < 24; i++)
+		 probs[i] = (double)lootfreq[i + 1] / soma_freq;
+	 }
+
+	 double soma_tentativas = 0;
+
+	 for (int rodada = 0; rodada < simulacoes; rodada++)
+	 {
+		// sorteia a posição correta de acordo com probs
+		double val = rnd.NextDouble();
+		double acumulado = 0;
+		int pos_certa = 0;
+		for (int i = 0; i < 24; i++)
+		{
+		 acumulado += probs[i];
+		 if (val <= acumulado)
+		 {
+			pos_certa = i;
+			break;
+		 }
+		}
+
+		// calcula pesos adaptativos para todas as posições (1 a 24)
+		double[] pesos = new double[24];
+		double soma_pesos = 0;
+		for (int i = 0; i < 24; i++)
+		{
+		 double chance = probs[i];
+		 double peso_real = 1 + Math.Pow(chance, exp_teste) * peso_teste;
+		 // aplica randomização no peso para simular o sorteio ponderado
+		 pesos[i] = peso_real * (rnd.NextDouble() * 0.9 + 0.1); // entre 10% e 100% do peso_real
+		 soma_pesos += pesos[i];
+		}
+
+		// simula o sorteio ponderado até encontrar a posição correta
+		// para isso, ordena as posições por peso decrescente, e tenta uma a uma
+		// ou simula o sorteio múltiplas vezes até achar pos_certa
+
+		// Optamos por ordenar e contar a posição do pos_certa na ordem decrescente
+		int tentativas = 1;
+		int[] indices = Enumerable.Range(0, 24).ToArray();
+
+		// ordena índices por peso decrescente
+		Array.Sort(indices, (a, b) => pesos[b].CompareTo(pesos[a]));
+
+		// conta quantas tentativas até achar pos_certa
+		foreach (int idx in indices)
+		{
+		 if (idx == pos_certa)
+			break;
+		 tentativas++;
+		}
+
+		soma_tentativas += tentativas;
+	 }
+
+	 return soma_tentativas / simulacoes;
+	}
+
+
 
 
 
@@ -2460,6 +2628,9 @@ else
 	// ---------------------------------------------
 	private void bt_save_cfg_Click(object sender, EventArgs e)
 	{
+	 salva_loot();                   // salva loot.txt, frequencias de loot
+	 prox_salva = DateTime.Now.AddMinutes(10); // reinicia o timer
+
 	 List<string> linhas = new List<string>(); // lista de saída
 
 	 coleta_controles(this, linhas); // varre todos os controles do Form recursivamente
