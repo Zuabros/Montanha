@@ -211,7 +211,10 @@ namespace Discord
 	public const int F7 = 0x76; // tecla F7 
 	public const int F8 = 0x77; // tecla F8 
 
-
+	// --------------------------------------------
+	// CLASSES 
+	// --------------------------------------------
+	public const int PALADIN = 1; // Paladin
 
 	// M10 - STRUCT LOC - REPRESENTA UMA POSIÇÃO (X, Y) NA ESCALA MULTIPLICADA POR 10.
 	public struct loc
@@ -257,7 +260,7 @@ namespace Discord
 
 	 load_settings(); // carrega configuração do arquivo
 	 carregar_waypoints(); // Chama o carregamento automático	 
-	 tab_nav.SelectedIndex = 1; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
+	 tab_nav.SelectedIndex = 0; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
 	 lb_log.Clear(); // limpa todos os itens da ListBox log
 	 carrega_loot(); // carrega frequencia de pontos de loot 
 	 //executa_simulacao();
@@ -859,6 +862,8 @@ return (int)distance;
 public element me;
 public element tar;
 public palatable pala = new palatable(); // inicializa tabela de status de paladino 
+public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
+
 
 
 	// --------------------------------
@@ -889,6 +894,24 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		// LOOP DE PAUSA
 		// --------------------------------
 		atualizamapa(me.pos);
+		get_minimap(); // atualiza minimapa
+		
+		// -----------------------------
+		// HERBALISTA - CATA PLANTA
+		// -----------------------------
+		loc planta = new loc(0, 0); // inicializa planta
+		if (cb_herbalism.Checked)
+		{
+		 
+		 planta = find_plants();
+		 if (!catando_planta && planta.x != 0 && near_hash(planta, hash_planta) > 20)
+		 {
+			hash_planta.Add(planta);   // adiciona planta nova ao hash
+			cataplanta(planta);        // vai atrás da planta
+		 }
+
+		}
+
 		// -----------------------------
 		// TIMEOUT DE 40 SEGUNDOS
 		// -----------------------------
@@ -990,7 +1013,7 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		 aperta(WKEY, 2); // para de andar
 		 if (cb_log.Checked) loga("Entrou em combate!");
 		 combatloop(); // entra na rotina de combate
-		 lb_combat_count.Text = (int.Parse(lb_combat_count.Text) + 1).ToString(); // increase o mob count
+	
 
 		 // -----------------------------------
 		 // CHECK PÓS COMBATE 
@@ -1084,61 +1107,153 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 		 //if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
 		 return; // sai do moveto após combate. 
 		}
-		
 
-		
-	 }while (on && dist(me.pos, destino) > 80);        // enquanto ativo e longe do destino
+
+
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 80)); // enquanto ativo e longe (20 se catando)
+
 	 loga("Alvo atingido. Partindo para proximo alvo.");
+	 if (catando_planta) catando_planta= false; // chegou na planta 
+
 	 //aperta(WKEY, 2); // solta W ao chegar no destino
 	}
+	bool catando_planta = false;
+
+
+	void andaplanta(loc alvo)
+	{
+	 solta(ANDA); // para de andar
+	 aperta(F2); // anda devagar ate a planta 
+	 int ticker = 0; // contador de ticks
+	 press(ANDA); // anda devagar até a planta
+	 
+		while (dist(me.pos, alvo) > 10)
+	 {
+		checkme();
+		wait(500);
+		giralvo(alvo); // gira para a planta
+		 if (ticker % 5 == 0) aperta(PULA); // pula
+		 if (me.combat || ticker++ > 30) break; // se entrar em combate, sai do loop
+	 }
+	 solta(ANDA); // para de andar
+	 aperta(F2); // Volta andar rapido 
+
+	}
+
+
 	// --------------------------------------------
-	// MÉTODO BLESS - Aplica o buff apropriado
+	// MÉTODO CATAPLANTA - CATA PLANTA
+	// --------------------------------------------
+	void cataplanta(loc planta)
+	{
+	 catando_planta = true; // ativa flag de catando planta
+	 
+	 moveto(planta); // anda até perto da planta
+	 andaplanta(planta); // anda devagar até a planta
+
+
+
+
+
+	 loga("Cheguei na planta. Catando planta: " + planta.x + "," + planta.y);
+	 solta(ANDA); // para de andar
+	 wait(1000); // espera 1 segundo
+	 checkme();
+
+	 loc p = scanloot();        // tenta encontrar algo clicável
+	 if (p.x < 0) return;        // nada encontrado → encerra
+
+	 clica(p);                  // clica com botão direito
+	 wait(100);
+	 checkme();
+
+	 if (me.spd == 0 && !me.combat) // se continuou parado e sem combate
+	 {
+		wait(1200);                 // espera pelo loot ou skin
+		if (cb_herbalism.Checked) wait_cast(); // espera skin só se tiver ticado 
+
+		foreach (var item in hash_planta) // remove a planta (ou clones) da hashset pra poder pegar de novo se respawnar
+		{
+		 if (dist(item, planta) < 20)
+		 {
+			hash_planta.Remove(p);
+			break; // evita "Collection was modified" se tiver mais de um
+		 }
+		}
+
+	 }
+	 else
+	 {
+		loga("Clicou errado ao tentar loot.");
+		return; // se clicou no mundo e saiu andando 
+	 }
+
+
+	}
+
+	// --------------------------------------------
+	// MÉTODO BLESS: APLICA O BUFF PALADINO ADEQUADO
 	// --------------------------------------------
 	public void bless(element e)
 	{
-	 checkme(); // atualiza status
+	 checkme(); // atualiza status do jogador e buffs
 
 	 // --------------------------------------------
-	 // PRIORIDADE 1: Buffar outro player (do grupo)
+	 // VERIFICA SE JÁ EXISTE BLESSING ATIVO
 	 // --------------------------------------------
-	 if ((tar.type == 105 || tar.type == 110))         // se o alvo for player
+	 if (pala.bok || pala.bom || pala.bow)
 	 {
-		if (tar.type == 110)
-		 aperta(BOW);                            // caster → Blessing of Wisdom
-		else
-		 aperta(BOM);                            // melee → Blessing of Might
-
-		aperta(CLEARTGT);                            // limpa o target depois do buff
+		if (!(pala.bow && mana(100))) // só permite substituir BOW se mana = 100%
+		 return;
 	 }
 
 	 // --------------------------------------------
-	 // PRIORIDADE 2: Buffar a si mesmo
+	 // AVALIA CONDIÇÃO DE MANA
 	 // --------------------------------------------
-	 int blessneeded = 0; // 0 = nada, 1 = BOM, 2 = BOW, 3 = BOK
-	 int wiztrig = int.Parse(tb_bow_trig.Text); // lê o limiar de mana
+	 int limiar = int.Parse(tb_bow_trig.Text); // limiar de mana para BOW
+	 bool mana_baixa = !mana(limiar);          // true se mana < limiar
 
-	 if (me.level >= 20 && cb_BOK.Checked && mana(Math.Min(wiztrig + 30, 100)))                // quer Kings e tem mana suficiente
-		blessneeded = 3;
-
-	 else if (cb_BOM.Checked && mana(Math.Min(wiztrig + 40, 100)))
-		blessneeded = 1;                            // quer Might se tiver mana
-
-	 else if (me.level >= 14 && cb_BOW.Checked && mana(10) && !mana(wiztrig))
-		blessneeded = 2;                            // quer Wisdom se com pouca mana
+	 int bless = 0; // 0 = nenhum, 1 = BOM, 2 = BOW, 3 = BOK
 
 	 // --------------------------------------------
-	 // Executa o buff conforme a necessidade
+	 // MANA BAIXA: BOW TEM PRIORIDADE
 	 // --------------------------------------------
-	 if (blessneeded == 3 && !pala.bok)
-		aperta(BOK);                                // aplica Blessing of Kings
+	 if (mana_baixa)
+	 {
+		if (cb_BOW.Checked)
+		 bless = 2;
+		else if (cb_BOK.Checked && cb_BOM.Checked)
+		 bless = 3;
+		else if (cb_BOM.Checked)
+		 bless = 1;
+		else if (cb_BOK.Checked)
+		 bless = 3;
+	 }
 
-	 else if (blessneeded == 1 && !pala.bom)
-		aperta(BOM);                                // aplica Blessing of Might
+	 // --------------------------------------------
+	 // MANA CHEIA: BOK > BOM > BOW
+	 // --------------------------------------------
+	 else
+	 {
+		if (cb_BOK.Checked && cb_BOM.Checked)
+		 bless = 3;
+		else if (cb_BOM.Checked)
+		 bless = 1;
+		else if (cb_BOK.Checked)
+		 bless = 3;
+		else if (cb_BOW.Checked)
+		 bless = 2;
+	 }
 
-	 else if (blessneeded == 2 && !pala.bow)
-		aperta(BOW);                                // aplica Blessing of Wisdom
+	 // --------------------------------------------
+	 // APLICA O BUFF DEFINIDO
+	 // --------------------------------------------
+	 if (bless == 3) aperta(BOK);
+	 else if (bless == 1) aperta(BOM);
+	 else if (bless == 2) aperta(BOW);
+
+	 checkme(); // atualiza status final
 	}
-
 
 
 
@@ -1160,6 +1275,10 @@ public palatable pala = new palatable(); // inicializa tabela de status de palad
 	 bool good_target = true;                                                  // assume que o mob é válido
 
 	 if (!me.hastarget)                                                        // sem alvo
+		good_target = false;
+	 else if (cb_pacifist.Checked)       // pacifista e não quer atacar
+		good_target = false;                                                  
+	 else if (tar.hp == 0)                                                     // mob já morto
 		good_target = false;
 	 else if (isgray(me.level, tar.level) && !cb_killgray.Checked)            // mob cinza e não queremos cinza
 		good_target = false;
@@ -1555,21 +1674,14 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	private void bt_debug1_Click(object sender, EventArgs e)
 	{
 	 checkme(); 
-	 int neardist = 100;
+	 
 	 on = true;
 
 	 loc go = nloc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text));
 
-	 while (dist(me.pos,go) > neardist)
-	 {
-		checkme();
-
-		if (!me.combat) giralvo(go);
-
-		if (!on) return;
-
+	 moveto(go);
 		
-	 }
+	 
 	}
 	// ------------------------------------------
 	// MÉTODO delta - Diferença angular entre me.facing e direção até b
@@ -1716,13 +1828,49 @@ tb_debug1.Text = me.pos.x.ToString();
 tb_debug2.Text = me.pos.y.ToString();
 tb_debug3.Text = me.facing.ToString();
 }
-	// BOTAO GIRALVO, LE COORDENADAS DAS TB E GIRA PARA ELAS. 
+	// LOCALIZADOR DA FLEXA DO MINIMAP
+	private Point localiza_flexa_brilho(Bitmap bmp, Point estimado)
+	{
+	 int cx = estimado.X;
+	 int cy = estimado.Y;
+	 int margem = 5; // varredura de 5px pra cada lado (total 11x11)
+
+	 int xmin = Math.Max(0, cx - margem);
+	 int xmax = Math.Min(bmp.Width - 1, cx + margem);
+	 int ymin = Math.Max(0, cy - margem);
+	 int ymax = Math.Min(bmp.Height - 1, cy + margem);
+
+	 int brilho_max = -1;
+	 Point melhor = new Point(-1, -1);
+
+	 for (int y = ymin; y <= ymax; y++)
+	 {
+		for (int x = xmin; x <= xmax; x++)
+		{
+		 Color c = bmp.GetPixel(x, y);
+		 int brilho = c.R + c.G + c.B;
+
+		 if (brilho > brilho_max)
+		 {
+			brilho_max = brilho;
+			melhor = new Point(x, y);
+		 }
+		}
+	 }
+
+	 loga($"Flecha localizada por brilho: {melhor.X}, {melhor.Y} (Brilho={brilho_max})");
+	 return melhor;
+	}
+
+	// --------------------------------------------
+	// BOTÃO DEBUG3: CAPTURA MANUAL DO MINIMAPA
+	// --------------------------------------------
 	private void bt_debug3_Click(object sender, EventArgs e)
 	{
-	 checkme();
-	 loc go = nloc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text));
-	 tb_debug3.Text = dist(me.pos, go).ToString() ;
+	 get_minimap(); // chama método novo
+	 loga("Captura manual feita."); // opcional
 	}
+
 
 	// -------------------------------------------------
 	// MÉTODO LOAD_SETTINGS - Carrega CheckBox e TextBox
@@ -1884,6 +2032,25 @@ return new loc { x = x, y = y };
 	}
 
 	// Clica em ponto na tela 
+
+	// --------------------------------
+	// MÉTODO NEAR_HASH
+	// Retorna a menor distância entre um loc e uma coleção (lista ou hashset)
+	// Retorna int.MaxValue se a coleção estiver vazia
+	// --------------------------------
+	int near_hash(loc origem, IEnumerable<loc> colecao)
+	{
+	 int menor = int.MaxValue; // inicializa com valor alto
+
+	 foreach (loc p in colecao) // percorre todos os pontos
+	 {
+		int d = dist(origem, p); // calcula distância entre origem e ponto
+		if (d < menor)           // se encontrou distância menor
+		 menor = d;           // atualiza distância mínima
+	 }
+
+	 return menor; // retorna a menor distância encontrada
+	}
 
 
 	// --------------------------------
@@ -2217,7 +2384,7 @@ lbwp.Items.Clear();
 	 foreach (int idx in ordem)
 	 {
 		// regra nova: se frequência zero, 70% de chance de pular o ponto
-		if (lootfreq[idx] == 0 && rnd.NextDouble() < 0.70)
+		if (!catando_planta && lootfreq[idx] == 0 && rnd.NextDouble() < 0.70)
 		 continue;
 
 		loc p;
@@ -2361,8 +2528,7 @@ lbwp.Items.Clear();
 	// evento do botão chama o método
 	private void button7_Click(object sender, EventArgs e)
 	{
-	 executa_simulacao();
-	 salva_loot();                   // salva loot.txt, frequencias de loot
+	 find_center(); // chama o método de encontrar o centro do minimapa
 	}
 
 	// --------------------------------------------
@@ -2922,6 +3088,382 @@ else
 	{
 	 
 	}
+
+
+
+	private void button10_Click(object sender, EventArgs e)
+	{
+	 if (pb_minimap.Image == null)
+	 {
+		loga("Nenhuma imagem carregada no pb_minimap.");
+		return;
+	 }
+
+	 // converte para bitmap e salva como arquivo .bmp
+	 Bitmap bmp = new Bitmap(pb_minimap.Image);
+	 bmp.Save("bmp.bmp", System.Drawing.Imaging.ImageFormat.Bmp);
+	 loga("Imagem salva como bmp.bmp");
+	}
+
+	private void pb_minimap_Click(object sender, MouseEventArgs e)
+	{
+	 if (pb_minimap.Image == null) return;
+
+	 // pega o bitmap real
+	 Bitmap bmp = (Bitmap)pb_minimap.Image;
+
+	 // pega tamanho real da imagem e do picturebox
+	 int bmp_w = bmp.Width;
+	 int bmp_h = bmp.Height;
+	 int box_w = pb_minimap.Width;
+	 int box_h = pb_minimap.Height;
+
+	 // calcula escala entre a imagem real e o PictureBox
+	 float escala_x = bmp_w / (float)box_w;
+	 float escala_y = bmp_h / (float)box_h;
+
+	 // converte clique para coordenadas da imagem
+	 int px = (int)(e.X * escala_x);
+	 int py = (int)(e.Y * escala_y);
+
+	 loga($"Clique em {e.X},{e.Y} → imagem: {px},{py}");
+
+	 // opcional: pega cor do pixel clicado
+	 Color c = bmp.GetPixel(px, py);
+	 loga($"Cor do pixel: R={c.R} G={c.G} B={c.B}");
+	}
+
+	private void pb_minimap_MouseClick(object sender, MouseEventArgs e)
+	{
+	 if (pb_minimap.Image == null) return;
+	 Bitmap bmp = (Bitmap)pb_minimap.Image;
+
+	 int bmp_w = bmp.Width;
+	 int bmp_h = bmp.Height;
+	 int box_w = pb_minimap.Width;
+	 int box_h = pb_minimap.Height;
+
+	 // converte clique visual para posição real no bitmap
+	 float escala_x = bmp_w / (float)box_w;
+	 float escala_y = bmp_h / (float)box_h;
+	 int px = (int)(e.X * escala_x);
+	 int py = (int)(e.Y * escala_y);
+
+	 loga($"Clique em {e.X},{e.Y} → imagem: {px},{py}");
+
+	 Color c = bmp.GetPixel(px, py);
+	 loga($"Cor do pixel: R={c.R} G={c.G} B={c.B}");
+
+	 // ---------------------------------------------
+	 // CÁLCULO DE POSIÇÃO ESTIMADA NO MUNDO
+	 // ---------------------------------------------
+	 int cx = 60; // centro fixo da flecha
+	 int cy = 65;
+
+	 int dx = px - cx;
+	 int dy = py - cy;
+
+	 float fator_x = 4.53f;
+	 float fator_y = 6.85f;
+
+	 float gx = me.pos.x + dx * fator_x;
+	 float gy = me.pos.y + dy * fator_y;
+
+	 float gx_real = gx / 100f;
+	 float gy_real = gy / 100f;
+
+	 loga($"Estimado no mapa: {gx_real:0.00}, {gy_real:0.00}");
+	}
+
+
+	private void pb_minimap_Click(object sender, EventArgs e)
+	{
+
+	}
+
+
+	 private void bt_loopminimap_Click(object sender, EventArgs e)
+	{
+	 while (on)
+	 {
+		int tela_w = Screen.PrimaryScreen.Bounds.Width;
+
+		int dx = int.Parse(tbx.Text);
+		int dy = int.Parse(tby.Text);
+		int raio = int.Parse(tbraio.Text);
+
+		int cx = tela_w - dx;
+		int cy = dy;
+		int lado = raio * 2;
+
+		int x = cx - raio;
+		int y = cy - raio;
+
+		Bitmap bmp = new Bitmap(lado, lado);
+		using (Graphics g = Graphics.FromImage(bmp))
+		{
+		 g.CopyFromScreen(x, y, 0, 0, new Size(lado, lado));
+		}
+
+		pb_minimap.Image = bmp;
+		loga("Loop minimap capturado");
+
+		wait(500); // pausa entre capturas
+
+		if (!on) break;
+	 }
+	
+
+
+
+	}
+
+	// --------------------------------------------
+	// BOTÃO 14: LOOP DE CAPTURA DO MINIMAPA
+	// --------------------------------------------
+	private void button14_Click(object sender, EventArgs e)
+	{
+	 while (on) // enquanto estiver ativado
+	 {
+		get_minimap(); // chama método novo
+		checkme();     // atualiza dados do jogador
+
+		if (!on) break; // se desativado, encerra
+	 }
+	}
+
+	// --------------------------------------------
+	// MÉTODO FIND_PLANTS: LOCALIZA PLANTAS NO MINIMAPA
+	// --------------------------------------------
+	loc find_plants()
+	{
+	 checkme(); // atualiza posição do player
+	 if (pb_minimap.Image == null) return new loc(); // se imagem ausente, retorna vazio
+
+	 Bitmap bmp = (Bitmap)pb_minimap.Image;
+	 int cx = 60;                        // centro da seta no bitmap
+	 int cy = 65;
+
+	 float fator_x = 4.53f;              // fator de conversão horizontal
+	 float fator_y = 6.85f;              // fator de conversão vertical
+
+	 int lim_r = 228, lim_g = 175, lim_b = 5;
+	 int lim_r2 = 231, lim_g2 = 190, lim_b2 = 40;
+	 int dist_max = 6;
+
+	 List<List<Point>> grupos = new List<List<Point>>();
+
+	 for (int y = 0; y < bmp.Height; y++)
+	 {
+		for (int x = 0; x < bmp.Width; x++)
+		{
+		 Color c = bmp.GetPixel(x, y);
+
+		 if (c.R >= lim_r && c.R <= lim_r2 &&
+			 c.G >= lim_g && c.G <= lim_g2 &&
+			 c.B >= lim_b && c.B <= lim_b2)
+		 {
+			Point p = new Point(x, y);
+			bool agrupado = false;
+
+			for (int i = 0; i < grupos.Count; i++)
+			{
+			 foreach (Point q in grupos[i])
+			 {
+				int dx = p.X - q.X;
+				int dy = p.Y - q.Y;
+				if (dx * dx + dy * dy <= dist_max * dist_max)
+				{
+				 grupos[i].Add(p);
+				 agrupado = true;
+				 break;
+				}
+			 }
+			 if (agrupado) break;
+			}
+
+			if (!agrupado)
+			{
+			 List<Point> novo = new List<Point>();
+			 novo.Add(p);
+			 grupos.Add(novo);
+			}
+		 }
+		}
+	 }
+
+	 List<loc> plantas = new List<loc>();
+
+	 foreach (var grupo in grupos)
+	 {
+		bool tem_nucleo = false;
+		int soma_x = 0;
+		int soma_y = 0;
+
+		foreach (Point p in grupo)
+		{
+		 soma_x += p.X;
+		 soma_y += p.Y;
+
+		 Color c = bmp.GetPixel(p.X, p.Y);
+		 if (c.B <= 12) tem_nucleo = true;
+		}
+
+		if (!tem_nucleo) continue;
+
+		int mx = soma_x / grupo.Count;
+		int my = soma_y / grupo.Count;
+
+		int dx = mx - cx;
+		int dy = my - cy;
+
+		float gx = me.pos.x + dx * fator_x;
+		float gy = me.pos.y + dy * fator_y;
+
+		float gx_real = gx / 100f;
+		float gy_real = gy / 100f;
+
+		loga($"Planta em: {gx_real:0.00}, {gy_real:0.00}");
+
+		loc l = new loc();
+		l.x = (int)(gx_real * 100); // armazenado em centésimos
+		l.y = (int)(gy_real * 100);
+		plantas.Add(l);
+	 }
+
+	 if (plantas.Count == 0)
+	 {
+		//loga("Nenhuma planta encontrada.");
+		return new loc();
+	 }
+
+	 // escolhe a mais próxima da posição atual
+	 loc melhor = plantas[0];
+	 int menor_dist = int.MaxValue;
+
+	 foreach (loc l in plantas)
+	 {
+		int dx = l.x - me.pos.x;
+		int dy = l.y - me.pos.y;
+		int dist = dx * dx + dy * dy;
+
+		if (dist < menor_dist)
+		{
+		 melhor = l;
+		 menor_dist = dist;
+		}
+	 }
+
+	 return melhor;
+	}
+
+	// --------------------------------------------
+	// BOTÃO FIND_DOTS: LOCALIZA UMA PLANTA
+	// --------------------------------------------
+	private void find_dots_Click(object sender, EventArgs e)
+	{
+	 loc alvo = find_plants(); // pega o mais próximo
+	 tb_debug1.Text = alvo.x.ToString(); // mostra X em centésimos
+	 tb_debug2.Text = alvo.y.ToString(); // mostra Y em centésimos
+	}
+
+
+
+	// --------------------------------------------
+	// MÉTODO GET_MINIMAP: CAPTURA O MINIMAPA ATUAL
+	// --------------------------------------------
+	void get_minimap()
+	{
+	 int tela_w = Screen.PrimaryScreen.Bounds.Width; // largura da tela principal
+
+	 int dx = int.Parse(tbx.Text);         // distância da borda direita
+	 int dy = int.Parse(tby.Text);         // distância do topo
+	 int raio = int.Parse(tbraio.Text);    // raio da captura
+
+	 int cx = tela_w - dx;                 // coordenada central X do minimapa
+	 int cy = dy;                          // coordenada central Y
+	 int lado = raio * 2;                  // lado total do quadrado
+
+	 int x = cx - raio;                    // canto superior esquerdo X
+	 int y = cy - raio;                    // canto superior esquerdo Y
+
+	 Bitmap bmp = new Bitmap(lado, lado);  // cria novo bitmap
+	 using (Graphics g = Graphics.FromImage(bmp))
+	 {
+		g.CopyFromScreen(x, y, 0, 0, new Size(lado, lado)); // captura da tela
+	 }
+
+	 pb_minimap.Image = bmp;               // exibe imagem capturada na picturebox
+	}
+
+
+	// --------------------------------------------
+	// MÉTODO FIND_CENTER: LOCALIZA A SETA DO PLAYER
+	// --------------------------------------------
+	void find_center()
+	{
+	 if (pb_minimap.Image == null) return; // cancela se não tiver imagem
+
+	 Bitmap bmp = (Bitmap)pb_minimap.Image; // pega bitmap atual do minimapa
+	 int w = bmp.Width;                     // largura do bitmap
+	 int h = bmp.Height;                    // altura do bitmap
+
+	 List<Point> pontos = new List<Point>(); // armazena os pixels válidos
+
+	 for (int y = 0; y < h; y++) // varre linhas do bitmap
+	 {
+		for (int x = 0; x < w; x++) // varre colunas
+		{
+		 Color c = bmp.GetPixel(x, y); // pega cor do pixel
+
+		 // verifica se é um tom claro de cinza
+		 if (c.R >= 230 && c.G >= 230 && c.B >= 230)
+			if (Math.Abs(c.R - c.G) <= 6 && Math.Abs(c.G - c.B) <= 6 && Math.Abs(c.R - c.B) <= 6)
+			{
+			 // restringe aos arredores do centro
+			 int dx = x - w / 2;
+			 int dy = y - h / 2;
+			 if (dx * dx + dy * dy <= 625) // até 25px de distância do centro
+				pontos.Add(new Point(x, y)); // adiciona pixel à lista
+			}
+		}
+	 }
+
+	 if (pontos.Count == 0) // se nenhum ponto for válido
+	 {
+		loga("Centro não encontrado."); // loga erro
+		return;
+	 }
+
+	 // calcula média dos pontos claros encontrados
+	 int soma_x = 0;
+	 int soma_y = 0;
+
+	 foreach (Point p in pontos)
+	 {
+		soma_x += p.X;
+		soma_y += p.Y;
+	 }
+
+	 int cx = soma_x / pontos.Count; // centro X estimado
+	 int cy = soma_y / pontos.Count; // centro Y estimado
+
+	 loga($"Centro estimado: {cx}, {cy}"); // loga resultado
+
+	 // pode preencher em textbox se quiser:
+	 // tb_debug1.Text = cx.ToString();
+	 // tb_debug2.Text = cy.ToString();
+	}
+
+	private void button15_Click(object sender, EventArgs e)
+	{
+	 loc pranta = new loc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text)); // pega valores dos textboxes
+	 andaplanta(pranta);
+
+	}
+
+
+
 
 	// ----------------------------------------------
 	// LOOP DE SCAN CONTÍNUO DO MAPA (COM COR DE TERRENO)

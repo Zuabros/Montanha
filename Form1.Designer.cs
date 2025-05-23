@@ -1,4 +1,6 @@
-﻿namespace Discord
+﻿using System.Windows.Forms;
+
+namespace Discord
 {
  partial class Form1
  {
@@ -30,6 +32,14 @@
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.cb_herbalism = new System.Windows.Forms.CheckBox();
+	 this.find_dots = new System.Windows.Forms.Button();
+	 this.button14 = new System.Windows.Forms.Button();
+	 this.button10 = new System.Windows.Forms.Button();
+	 this.tbraio = new System.Windows.Forms.TextBox();
+	 this.tby = new System.Windows.Forms.TextBox();
+	 this.tbx = new System.Windows.Forms.TextBox();
+	 this.pb_minimap = new System.Windows.Forms.PictureBox();
 	 this.label18 = new System.Windows.Forms.Label();
 	 this.tb_back_limiar = new System.Windows.Forms.TextBox();
 	 this.label9 = new System.Windows.Forms.Label();
@@ -39,12 +49,11 @@
 	 this.lbdecay = new System.Windows.Forms.ListBox();
 	 this.rtbcursor = new System.Windows.Forms.TextBox();
 	 this.button11 = new System.Windows.Forms.Button();
-	 this.button10 = new System.Windows.Forms.Button();
-	 this.lb_combat_count = new System.Windows.Forms.Label();
-	 this.label20 = new System.Windows.Forms.Label();
+	 this.button7 = new System.Windows.Forms.Button();
 	 this.bt_saveWPas = new System.Windows.Forms.Button();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
 	 this.tb_filename = new System.Windows.Forms.TextBox();
+	 this.bt_debug3 = new System.Windows.Forms.Button();
 	 this.button8 = new System.Windows.Forms.Button();
 	 this.cb_anda = new System.Windows.Forms.CheckBox();
 	 this.bt_saveWP = new System.Windows.Forms.Button();
@@ -71,6 +80,7 @@
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.Paladin = new System.Windows.Forms.TabPage();
+	 this.cb_concentration_aura = new System.Windows.Forms.CheckBox();
 	 this.cb_use_exorcism = new System.Windows.Forms.CheckBox();
 	 this.cb_BOK = new System.Windows.Forms.CheckBox();
 	 this.tb_bow_trig = new System.Windows.Forms.TextBox();
@@ -145,10 +155,8 @@
 	 this.tb_debug3 = new System.Windows.Forms.TextBox();
 	 this.bt_debug2 = new System.Windows.Forms.Button();
 	 this.tb_debug4 = new System.Windows.Forms.TextBox();
-	 this.bt_debug3 = new System.Windows.Forms.Button();
 	 this.cb_debug = new System.Windows.Forms.CheckBox();
 	 this.cb_log = new System.Windows.Forms.CheckBox();
-	 this.button7 = new System.Windows.Forms.Button();
 	 this.bt_save_cfg = new System.Windows.Forms.Button();
 	 this.tb_debug = new System.Windows.Forms.TextBox();
 	 this.label14 = new System.Windows.Forms.Label();
@@ -159,9 +167,11 @@
 	 this.button12 = new System.Windows.Forms.Button();
 	 this.tb_loot_tries = new System.Windows.Forms.TextBox();
 	 this.label22 = new System.Windows.Forms.Label();
-	 this.cb_concentration_aura = new System.Windows.Forms.CheckBox();
+	 this.cb_pacifist = new System.Windows.Forms.CheckBox();
+	 this.button15 = new System.Windows.Forms.Button();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
+	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
 	 this.tabPage2.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_map)).BeginInit();
 	 this.tab_buffs.SuspendLayout();
@@ -186,6 +196,16 @@
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.button15);
+	 this.tabPage1.Controls.Add(this.cb_pacifist);
+	 this.tabPage1.Controls.Add(this.cb_herbalism);
+	 this.tabPage1.Controls.Add(this.find_dots);
+	 this.tabPage1.Controls.Add(this.button14);
+	 this.tabPage1.Controls.Add(this.button10);
+	 this.tabPage1.Controls.Add(this.tbraio);
+	 this.tabPage1.Controls.Add(this.tby);
+	 this.tabPage1.Controls.Add(this.tbx);
+	 this.tabPage1.Controls.Add(this.pb_minimap);
 	 this.tabPage1.Controls.Add(this.label18);
 	 this.tabPage1.Controls.Add(this.tb_back_limiar);
 	 this.tabPage1.Controls.Add(this.label9);
@@ -195,12 +215,11 @@
 	 this.tabPage1.Controls.Add(this.lbdecay);
 	 this.tabPage1.Controls.Add(this.rtbcursor);
 	 this.tabPage1.Controls.Add(this.button11);
-	 this.tabPage1.Controls.Add(this.button10);
-	 this.tabPage1.Controls.Add(this.lb_combat_count);
-	 this.tabPage1.Controls.Add(this.label20);
+	 this.tabPage1.Controls.Add(this.button7);
 	 this.tabPage1.Controls.Add(this.bt_saveWPas);
 	 this.tabPage1.Controls.Add(this.bt_loadWP);
 	 this.tabPage1.Controls.Add(this.tb_filename);
+	 this.tabPage1.Controls.Add(this.bt_debug3);
 	 this.tabPage1.Controls.Add(this.button8);
 	 this.tabPage1.Controls.Add(this.cb_anda);
 	 this.tabPage1.Controls.Add(this.bt_saveWP);
@@ -222,10 +241,87 @@
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
 	 // 
+	 // cb_herbalism
+	 // 
+	 this.cb_herbalism.AutoSize = true;
+	 this.cb_herbalism.Checked = true;
+	 this.cb_herbalism.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_herbalism.Location = new System.Drawing.Point(113, 102);
+	 this.cb_herbalism.Name = "cb_herbalism";
+	 this.cb_herbalism.Size = new System.Drawing.Size(72, 17);
+	 this.cb_herbalism.TabIndex = 47;
+	 this.cb_herbalism.Text = "Herbalism";
+	 this.cb_herbalism.UseVisualStyleBackColor = true;
+	 // 
+	 // find_dots
+	 // 
+	 this.find_dots.Location = new System.Drawing.Point(186, 254);
+	 this.find_dots.Name = "find_dots";
+	 this.find_dots.Size = new System.Drawing.Size(75, 23);
+	 this.find_dots.TabIndex = 46;
+	 this.find_dots.Text = "Acha Planta";
+	 this.find_dots.UseVisualStyleBackColor = true;
+	 this.find_dots.Click += new System.EventHandler(this.find_dots_Click);
+	 // 
+	 // button14
+	 // 
+	 this.button14.Location = new System.Drawing.Point(204, 208);
+	 this.button14.Name = "button14";
+	 this.button14.Size = new System.Drawing.Size(75, 23);
+	 this.button14.TabIndex = 45;
+	 this.button14.Text = "Loop";
+	 this.button14.UseVisualStyleBackColor = true;
+	 this.button14.Click += new System.EventHandler(this.button14_Click);
+	 // 
+	 // button10
+	 // 
+	 this.button10.Location = new System.Drawing.Point(419, 254);
+	 this.button10.Name = "button10";
+	 this.button10.Size = new System.Drawing.Size(75, 23);
+	 this.button10.TabIndex = 44;
+	 this.button10.Text = "button10";
+	 this.button10.UseVisualStyleBackColor = true;
+	 this.button10.Click += new System.EventHandler(this.button10_Click);
+	 // 
+	 // tbraio
+	 // 
+	 this.tbraio.Location = new System.Drawing.Point(419, 9);
+	 this.tbraio.Name = "tbraio";
+	 this.tbraio.Size = new System.Drawing.Size(52, 20);
+	 this.tbraio.TabIndex = 43;
+	 this.tbraio.Text = "163";
+	 // 
+	 // tby
+	 // 
+	 this.tby.Location = new System.Drawing.Point(365, 10);
+	 this.tby.Name = "tby";
+	 this.tby.Size = new System.Drawing.Size(47, 20);
+	 this.tby.TabIndex = 42;
+	 this.tby.Text = "150";
+	 // 
+	 // tbx
+	 // 
+	 this.tbx.Location = new System.Drawing.Point(308, 11);
+	 this.tbx.Name = "tbx";
+	 this.tbx.Size = new System.Drawing.Size(51, 20);
+	 this.tbx.TabIndex = 41;
+	 this.tbx.Text = "150";
+	 // 
+	 // pb_minimap
+	 // 
+	 this.pb_minimap.Location = new System.Drawing.Point(285, 49);
+	 this.pb_minimap.Name = "pb_minimap";
+	 this.pb_minimap.Size = new System.Drawing.Size(200, 200);
+	 this.pb_minimap.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+	 this.pb_minimap.TabIndex = 40;
+	 this.pb_minimap.TabStop = false;
+	 this.pb_minimap.Click += new System.EventHandler(this.pb_minimap_Click);
+	 this.pb_minimap.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pb_minimap_MouseClick);
+	 // 
 	 // label18
 	 // 
 	 this.label18.AutoSize = true;
-	 this.label18.Location = new System.Drawing.Point(466, 55);
+	 this.label18.Location = new System.Drawing.Point(553, 58);
 	 this.label18.Name = "label18";
 	 this.label18.Size = new System.Drawing.Size(51, 13);
 	 this.label18.TabIndex = 39;
@@ -233,7 +329,7 @@
 	 // 
 	 // tb_back_limiar
 	 // 
-	 this.tb_back_limiar.Location = new System.Drawing.Point(532, 52);
+	 this.tb_back_limiar.Location = new System.Drawing.Point(619, 55);
 	 this.tb_back_limiar.Name = "tb_back_limiar";
 	 this.tb_back_limiar.Size = new System.Drawing.Size(54, 20);
 	 this.tb_back_limiar.TabIndex = 38;
@@ -259,7 +355,7 @@
 	 // 
 	 // tbavdecay
 	 // 
-	 this.tbavdecay.Location = new System.Drawing.Point(532, 26);
+	 this.tbavdecay.Location = new System.Drawing.Point(619, 29);
 	 this.tbavdecay.Name = "tbavdecay";
 	 this.tbavdecay.Size = new System.Drawing.Size(54, 20);
 	 this.tbavdecay.TabIndex = 35;
@@ -267,7 +363,7 @@
 	 // 
 	 // tbdecay
 	 // 
-	 this.tbdecay.Location = new System.Drawing.Point(466, 26);
+	 this.tbdecay.Location = new System.Drawing.Point(553, 29);
 	 this.tbdecay.Name = "tbdecay";
 	 this.tbdecay.Size = new System.Drawing.Size(60, 20);
 	 this.tbdecay.TabIndex = 34;
@@ -276,7 +372,7 @@
 	 // lbdecay
 	 // 
 	 this.lbdecay.FormattingEnabled = true;
-	 this.lbdecay.Location = new System.Drawing.Point(466, 78);
+	 this.lbdecay.Location = new System.Drawing.Point(512, 81);
 	 this.lbdecay.Name = "lbdecay";
 	 this.lbdecay.Size = new System.Drawing.Size(120, 199);
 	 this.lbdecay.Sorted = true;
@@ -284,7 +380,7 @@
 	 // 
 	 // rtbcursor
 	 // 
-	 this.rtbcursor.Location = new System.Drawing.Point(329, 64);
+	 this.rtbcursor.Location = new System.Drawing.Point(112, 237);
 	 this.rtbcursor.Name = "rtbcursor";
 	 this.rtbcursor.Size = new System.Drawing.Size(100, 20);
 	 this.rtbcursor.TabIndex = 32;
@@ -299,32 +395,15 @@
 	 this.button11.UseVisualStyleBackColor = true;
 	 this.button11.Click += new System.EventHandler(this.button11_Click);
 	 // 
-	 // button10
+	 // button7
 	 // 
-	 this.button10.Location = new System.Drawing.Point(373, 12);
-	 this.button10.Name = "button10";
-	 this.button10.Size = new System.Drawing.Size(75, 23);
-	 this.button10.TabIndex = 30;
-	 this.button10.Text = "button10";
-	 this.button10.UseVisualStyleBackColor = true;
-	 // 
-	 // lb_combat_count
-	 // 
-	 this.lb_combat_count.AutoSize = true;
-	 this.lb_combat_count.Location = new System.Drawing.Point(317, 218);
-	 this.lb_combat_count.Name = "lb_combat_count";
-	 this.lb_combat_count.Size = new System.Drawing.Size(13, 13);
-	 this.lb_combat_count.TabIndex = 29;
-	 this.lb_combat_count.Text = "0";
-	 // 
-	 // label20
-	 // 
-	 this.label20.AutoSize = true;
-	 this.label20.Location = new System.Drawing.Point(250, 218);
-	 this.label20.Name = "label20";
-	 this.label20.Size = new System.Drawing.Size(61, 13);
-	 this.label20.TabIndex = 28;
-	 this.label20.Text = "Mob count:";
+	 this.button7.Location = new System.Drawing.Point(342, 254);
+	 this.button7.Name = "button7";
+	 this.button7.Size = new System.Drawing.Size(79, 23);
+	 this.button7.TabIndex = 20;
+	 this.button7.Text = "Acha Flexa";
+	 this.button7.UseVisualStyleBackColor = true;
+	 this.button7.Click += new System.EventHandler(this.button7_Click);
 	 // 
 	 // bt_saveWPas
 	 // 
@@ -338,7 +417,7 @@
 	 // 
 	 // bt_loadWP
 	 // 
-	 this.bt_loadWP.Location = new System.Drawing.Point(201, 87);
+	 this.bt_loadWP.Location = new System.Drawing.Point(8, 11);
 	 this.bt_loadWP.Name = "bt_loadWP";
 	 this.bt_loadWP.Size = new System.Drawing.Size(75, 23);
 	 this.bt_loadWP.TabIndex = 26;
@@ -354,11 +433,21 @@
 	 this.tb_filename.TabIndex = 25;
 	 this.tb_filename.Text = "waypoints.txt";
 	 // 
+	 // bt_debug3
+	 // 
+	 this.bt_debug3.Location = new System.Drawing.Point(261, 254);
+	 this.bt_debug3.Name = "bt_debug3";
+	 this.bt_debug3.Size = new System.Drawing.Size(75, 23);
+	 this.bt_debug3.TabIndex = 17;
+	 this.bt_debug3.Text = "Debug";
+	 this.bt_debug3.UseVisualStyleBackColor = true;
+	 this.bt_debug3.Click += new System.EventHandler(this.bt_debug3_Click);
+	 // 
 	 // button8
 	 // 
-	 this.button8.Location = new System.Drawing.Point(608, 189);
+	 this.button8.Location = new System.Drawing.Point(638, 189);
 	 this.button8.Name = "button8";
-	 this.button8.Size = new System.Drawing.Size(75, 23);
+	 this.button8.Size = new System.Drawing.Size(45, 23);
 	 this.button8.TabIndex = 23;
 	 this.button8.Text = "Clear";
 	 this.button8.UseVisualStyleBackColor = true;
@@ -411,7 +500,7 @@
 	 // 
 	 // tb_WP_distance
 	 // 
-	 this.tb_WP_distance.Location = new System.Drawing.Point(194, 152);
+	 this.tb_WP_distance.Location = new System.Drawing.Point(230, 172);
 	 this.tb_WP_distance.Name = "tb_WP_distance";
 	 this.tb_WP_distance.Size = new System.Drawing.Size(31, 20);
 	 this.tb_WP_distance.TabIndex = 10;
@@ -419,7 +508,7 @@
 	 // 
 	 // button5
 	 // 
-	 this.button5.Location = new System.Drawing.Point(113, 150);
+	 this.button5.Location = new System.Drawing.Point(201, 148);
 	 this.button5.Name = "button5";
 	 this.button5.Size = new System.Drawing.Size(75, 23);
 	 this.button5.TabIndex = 9;
@@ -441,7 +530,7 @@
 	 // 
 	 // button4
 	 // 
-	 this.button4.Location = new System.Drawing.Point(614, 218);
+	 this.button4.Location = new System.Drawing.Point(638, 218);
 	 this.button4.Name = "button4";
 	 this.button4.Size = new System.Drawing.Size(59, 23);
 	 this.button4.TabIndex = 7;
@@ -654,6 +743,18 @@
 	 this.Paladin.Size = new System.Drawing.Size(351, 347);
 	 this.Paladin.TabIndex = 0;
 	 this.Paladin.Text = "Paladin";
+	 // 
+	 // cb_concentration_aura
+	 // 
+	 this.cb_concentration_aura.AutoSize = true;
+	 this.cb_concentration_aura.Checked = true;
+	 this.cb_concentration_aura.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_concentration_aura.Location = new System.Drawing.Point(10, 100);
+	 this.cb_concentration_aura.Name = "cb_concentration_aura";
+	 this.cb_concentration_aura.Size = new System.Drawing.Size(116, 17);
+	 this.cb_concentration_aura.TabIndex = 64;
+	 this.cb_concentration_aura.Text = "Concentration aura";
+	 this.cb_concentration_aura.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_use_exorcism
 	 // 
@@ -1368,16 +1469,6 @@
 	 this.tb_debug4.TabIndex = 15;
 	 this.tb_debug4.Text = "0";
 	 // 
-	 // bt_debug3
-	 // 
-	 this.bt_debug3.Location = new System.Drawing.Point(5, 290);
-	 this.bt_debug3.Name = "bt_debug3";
-	 this.bt_debug3.Size = new System.Drawing.Size(75, 23);
-	 this.bt_debug3.TabIndex = 17;
-	 this.bt_debug3.Text = "Debug";
-	 this.bt_debug3.UseVisualStyleBackColor = true;
-	 this.bt_debug3.Click += new System.EventHandler(this.bt_debug3_Click);
-	 // 
 	 // cb_debug
 	 // 
 	 this.cb_debug.AutoSize = true;
@@ -1401,16 +1492,6 @@
 	 this.cb_log.TabIndex = 19;
 	 this.cb_log.Text = "Log";
 	 this.cb_log.UseVisualStyleBackColor = true;
-	 // 
-	 // button7
-	 // 
-	 this.button7.Location = new System.Drawing.Point(2, 224);
-	 this.button7.Name = "button7";
-	 this.button7.Size = new System.Drawing.Size(79, 23);
-	 this.button7.TabIndex = 20;
-	 this.button7.Text = "Melhora Loot";
-	 this.button7.UseVisualStyleBackColor = true;
-	 this.button7.Click += new System.EventHandler(this.button7_Click);
 	 // 
 	 // bt_save_cfg
 	 // 
@@ -1502,17 +1583,27 @@
 	 this.label22.TabIndex = 31;
 	 this.label22.Text = "Tries";
 	 // 
-	 // cb_concentration_aura
+	 // cb_pacifist
 	 // 
-	 this.cb_concentration_aura.AutoSize = true;
-	 this.cb_concentration_aura.Checked = true;
-	 this.cb_concentration_aura.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_concentration_aura.Location = new System.Drawing.Point(10, 100);
-	 this.cb_concentration_aura.Name = "cb_concentration_aura";
-	 this.cb_concentration_aura.Size = new System.Drawing.Size(116, 17);
-	 this.cb_concentration_aura.TabIndex = 64;
-	 this.cb_concentration_aura.Text = "Concentration aura";
-	 this.cb_concentration_aura.UseVisualStyleBackColor = true;
+	 this.cb_pacifist.AutoSize = true;
+	 this.cb_pacifist.Checked = true;
+	 this.cb_pacifist.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_pacifist.Location = new System.Drawing.Point(186, 102);
+	 this.cb_pacifist.Name = "cb_pacifist";
+	 this.cb_pacifist.Size = new System.Drawing.Size(66, 17);
+	 this.cb_pacifist.TabIndex = 48;
+	 this.cb_pacifist.Text = "Pacifista";
+	 this.cb_pacifist.UseVisualStyleBackColor = true;
+	 // 
+	 // button15
+	 // 
+	 this.button15.Location = new System.Drawing.Point(112, 256);
+	 this.button15.Name = "button15";
+	 this.button15.Size = new System.Drawing.Size(75, 23);
+	 this.button15.TabIndex = 49;
+	 this.button15.Text = "Andaplanta";
+	 this.button15.UseVisualStyleBackColor = true;
+	 this.button15.Click += new System.EventHandler(this.button15_Click);
 	 // 
 	 // Form1
 	 // 
@@ -1530,10 +1621,8 @@
 	 this.Controls.Add(this.label14);
 	 this.Controls.Add(this.tb_debug);
 	 this.Controls.Add(this.bt_save_cfg);
-	 this.Controls.Add(this.button7);
 	 this.Controls.Add(this.cb_log);
 	 this.Controls.Add(this.cb_debug);
-	 this.Controls.Add(this.bt_debug3);
 	 this.Controls.Add(this.tb_debug4);
 	 this.Controls.Add(this.bt_debug2);
 	 this.Controls.Add(this.tb_debug3);
@@ -1553,6 +1642,7 @@
 	 this.tab_nav.ResumeLayout(false);
 	 this.tabPage1.ResumeLayout(false);
 	 this.tabPage1.PerformLayout();
+	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).EndInit();
 	 this.tabPage2.ResumeLayout(false);
 	 this.tabPage2.PerformLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_map)).EndInit();
@@ -1663,11 +1753,8 @@
 	private System.Windows.Forms.Button bt_loadWP;
 	private System.Windows.Forms.TextBox tb_filename;
 	private System.Windows.Forms.Button bt_saveWPas;
-	private System.Windows.Forms.Label lb_combat_count;
-	private System.Windows.Forms.Label label20;
 		private System.Windows.Forms.Button button9;
 		private System.Windows.Forms.Button button11;
-		private System.Windows.Forms.Button button10;
 		private System.Windows.Forms.CheckBox cb_loot;
 		private System.Windows.Forms.TextBox rtbcursor;
 		private System.Windows.Forms.CheckBox cbskin;
@@ -1704,6 +1791,16 @@
 	private System.Windows.Forms.TextBox tb_loot_tries;
 	private System.Windows.Forms.Label label22;
 	private System.Windows.Forms.CheckBox cb_concentration_aura;
+	private System.Windows.Forms.PictureBox pb_minimap;
+	private System.Windows.Forms.TextBox tbraio;
+	private System.Windows.Forms.TextBox tby;
+	private System.Windows.Forms.TextBox tbx;
+	private System.Windows.Forms.Button button10;
+	private Button button14;
+	private Button find_dots;
+	private CheckBox cb_herbalism;
+	private CheckBox cb_pacifist;
+	private Button button15;
  }
 }
 
