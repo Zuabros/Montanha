@@ -13,8 +13,10 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices; // Required for Windows API functions
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -155,27 +157,41 @@ namespace Discord
 	public const int N9 = 0x69; // NumPad 9 
 
 	// --------------------------------------------
-	// ALIAS SEMÂNTICOS - NOMES DAS SKILLS
+	// SKILLS GERAIS (comuns ou reutilizáveis)
 	// --------------------------------------------
 	public const int AUTOATTACK = UM;     // ataque automático
-	public const int SOR = DOIS;   // Seal of Righteousness
-	public const int BOM = TRES;   // Blessing of Might
-	public const int JUDGEMENT = CINCO;  // Judgement
-	public const int PURIFY = SEIS;   // remove poison/disease
 	public const int CLEARTGT = SETE;   // limpa o target
-	public const int TARGETLAST = OITO;   // limpa o target
-	public const int HLIGHT = ZERO;   // Holy Light (cura)
-	public const int DPROT = N1;     // Divine Protection
-	public const int LOH = N2;       // Lay on Hands
+	public const int TARGETLAST = OITO;   // retarget último inimigo
+	public const int HEARTHSTONE = N8;     // Hearthstone
+	public const int HEALTHPOTION = N9;     // Poção de vida
+	public const int MANAPOTION = N0;     // Poção de mana
+	public const int ANDA = WKEY;   // comando de andar
+	public const int SLOW = F2;     // debuff de lentidão (genérico)
+
+	// --------------------------------------------
+	// SKILLS EXCLUSIVAS DO PALADINO
+	// --------------------------------------------
+	public const int SOR = DOIS;   // Seal of Righteousness
+	public const int SOL = N3;     // Seal of Light
+	public const int SOTC = F5;      // Seal of the Crusader
+	public const int JUDGEMENT = CINCO;  // Judgement
+	public const int HOJ = QUATRO; // Hammer of Justice
+	public const int PURIFY = SEIS;   // remove poison/disease
+	public const int HLIGHT = ZERO;   // Holy Light
+	public const int EXORCISM = N6;     // Exorcism
+
+	public const int BOM = TRES;   // Blessing of Might
 	public const int BOW = N4;     // Blessing of Wisdom
-	public const int BOK = N5;     // Blessing of Wisdom
-	public const int EXORCISM = N6; // Exorcism no slot N6
-	public const int HEARTHSTONE = N8;      // hearthstone
-	public const int HEALTHPOTION = N9;      // hearthstone
-	public const int MANAPOTION = N0;      // hearthstone
-	public const int HOJ = QUATRO;   // Hammer of Justice
-	public const int STONEFORM = NOVE;     // racial dos anões
-	public const int ANDA = WKEY;     // anda
+	public const int BOK = N5;     // Blessing of Kings
+	public const int BOSA = N7;     // Blessing of Sanctuary
+
+	public const int DPROT = N1;     // Divine Protection
+	public const int LOH = N2;     // Lay on Hands
+	public const int STONEFORM = NOVE;   // racial dos anões (caso use anão paladino)
+
+	public const int DEVAURA = F3;     // Devotion Aura
+	public const int RETAURA = F4;     // Retribution Aura
+
 
 	// --------------------------------------------
 	// TIPOS DE CRIATURAS
@@ -199,11 +215,12 @@ namespace Discord
 	public const int INTERACT = IKEY;      // interage com o alvo
 	
 
+
 	// --------------------------------------------
 	// F KEYS
 	// --------------------------------------------
 	public const int F1 = 0x70; // tecla F1
-	public const int F2 = 0x71; // tecla F2 
+	public const int F2 = 0x71; // tecla F2 // WALK 
 	public const int F3 = 0x72; // tecla F3 
 	public const int F4 = 0x73; // tecla F4 
 	public const int F5 = 0x74; // tecla F5 
@@ -326,10 +343,14 @@ namespace Discord
 	 //   G: parte decimal de Y × 2.5 (até 100)
 	 //   B: (parte inteira de Y % 10) × 25
 
-	 //4 Facing e Velocidade:
+	 // 4 Facing e Velocidade:
 	 //   R: Facing normalizado (0 a 1) × 255
 	 //   G: 255 - Velocidade atual (em unidades do jogo)
-	 //   B: Cooldown Stoneform
+	 //   B: Bits combinados:
+	 //      bits 0–5: Cooldown do Stoneform (0 a 63 segundos)
+	 //      bit 6  (64): Racial disponível (Stoneform ou Shadowmeld)
+	 //      bit 7 (128): Buff "Furbolg Form" ativo
+
 
 	 //5 Status de Combate:
 	 //   R: 0 = fora de combate, 255 se em combate
@@ -346,15 +367,22 @@ namespace Discord
 	 //   G: bits do target → 128 se existe, 64 se skinável
 	 //   B: Level do alvo × 4 (cap em 255)
 
-	 //8 Blessings
+	 //8 vazio 
 	 //   R: 0 
 	 //   G: 0
 	 //   B: 0
 
-	 //9 Julgamento e Melee:
-	 //   R: 255 se Judgement estiver em alcance
-	 //   G: Cooldown restante de Judgement (0–255, proporcional)
-	 //   B: 255 se em melee range
+	 // -------------------------------------
+	 // PIXEL 9 – JUDGEMENT + MELEE + AURAS
+	 // -------------------------------------
+	 // R: 255 se Judgement estiver em alcance
+	 // G: Cooldown restante de Judgement (0–255, proporcional)
+	 // B: Bitflags combinados:
+	 //      1 = em melee range
+	 //      2 = Crusader Aura
+	 //      4 = Devotion Aura
+	 //      8 = Frost Resist | 16 = Shadow Resist | 32 = Fire Resist
+	 //      64 = Concentration | 128 = Retribution
 
 	 //10 Cast do Player:
 	 //   R: 255 se castando
@@ -366,18 +394,23 @@ namespace Discord
 	 //   G: Progresso da barra de cast (0–255)
 	 //   B: ASCII da primeira letra da magia
 
-	 //12 Buff Seal of Righteousness:
-	 //   R: 255 se ativo
-	 //   G: Segundos restantes × 4 (invertido, cap 255)
-	 //   B: Lay on Hands (cd) 
+	 // -------------------------------------
+	 // PIXEL 12 – SEALS + JUDGEMENTS + LAY
+	 // -------------------------------------
+	 // R: Bitflags dos seals ativos em você
+	 //      128 = SOR | 64 = SOTC | 32 = SOJ | 16 = SOL | 8 = SOW | 4 = SOC
+	 // G: Bitflags dos judgements no target (apenas os que aplicam debuff)
+	 //      64 = JOTC | 32 = JOJ | 16 = JOL | 8 = JOW
+	 // B: Cooldown restante de Lay on Hands (cap 255)
 
-	 // 13 Blessings / HoJ:
-	 //   R: Bitflags de Blessings ativos (com bit 7 sempre ligado) → 128–255
-	 //      Bit 0 = Might | 1 = Wisdom | 2 = Kings | 3 = Salvation
-	 //      Bit 4 = Sanctuary | 5 = Freedom | 6 = Protection
-	 //   G: Cooldown restante de Hammer of Justice (0–255)
-	 //   B: 255 se Hammer of Justice estiver em alcance
-
+	 // -------------------------------------
+	 // PIXEL 13 – BLESSINGS + HOJ STATUS
+	 // -------------------------------------
+	 // R: Bitflags dos blessings ativos em você
+	 //      1 = Salvation | 2 = Light | 4 = Freedom | 8 = Wisdom
+	 //      16 = Protection | 32 = Kings | 64 = Might | 128 = Sanctuary
+	 // G: 128 se Hammer of Justice estiver pronto (CD 0), senão 0
+	 // B: 255 se Hammer of Justice estiver em alcance do target
 	 // -------------------------------------
 	 // PIXEL 14 - TIPO DA CRIATURA DO TARGET
 	 // -------------------------------------
@@ -539,7 +572,7 @@ readpixels(pixels);
 	 int g = pixels[1].g;                              // canal G codifica erros combinados
 	 e.wrongway = (g & 128) > 0;                     // 128 = "You are facing the wrong way!"
 	 e.outofrange = (g & 64) > 0;                     //  64 = "Out of range" ou "You are too far away!"
-	 cb_wrongway.Checked = e.wrongway;
+	 
 	 
 
 
@@ -569,20 +602,25 @@ readpixels(pixels);
 	 {
 		// yaw (em W)
 		double yaw_raw = pixels[4].r * 360.0 / 256.0; // converte de byte para grau real
-		e.facing = (int)Math.Round(yaw_raw); // converte para W (milésimos de pi-rad)
-		if (cb_debug.Checked) tb_yaw.Text = e.facing.ToString(); // atualiza o textbox de yaw
+		e.facing = (int)Math.Round(yaw_raw);         // converte para W (milésimos de pi-rad)
+		if (cb_debug.Checked) tb_yaw.Text = e.facing.ToString();
 
 		// velocidade
-		e.spd = 255 - pixels[4].g; // inverte o valor do canal verde para obter a velocidade
-		if (cb_debug.Checked) tb_spd.Text = e.spd.ToString(); // atualiza o textbox de velocidade
+		e.spd = 255 - pixels[4].g; // canal G invertido
+		if (cb_debug.Checked) tb_spd.Text = e.spd.ToString();
 
-		if (cb_dwarf.Checked) // é anão? 
-		{
-		 // cooldown do Stoneform 
-		 int sform_cd = pixels[4].b; // canal azul traz o valor em segundos (0–255)
-		 e.racialready = (sform_cd == 0); // se cooldown for zero, racial está pronta
-		}
+		// leitura do canal B
+		var b = pixels[4].b;
+		int sform_cd = b & 63;                    // bits 0–5 = cooldown da Stoneform (0–63)
+		bool racial_up = (b & 64) != 0;           // bit 6 = racial disponível
+		bool furbolg = (b & 128) != 0;            // bit 7 = buff Furbolg ativo
+
+		if (cb_dwarf.Checked)                     // se for anão, usa racial como Stoneform
+		 e.racialready = racial_up;
+
+		e.furbolg_form = cb_furbolg.Checked && furbolg; // só ativa se checkbox estiver marcada
 	 }
+
 
 	 // ----------------------------------------------
 	 // combate, nadando e debuffs (pixel 5)
@@ -592,7 +630,7 @@ readpixels(pixels);
 		e.combat = pixels[5].r > 250; // está em combate se vermelho alto
 		cb_combat.Checked = e.combat; // atualiza checkbox na UI
 
-		e.swim = pixels[5].g > 250; // está nadando se canal verde for 255
+		e.swim = pixels[5].g > 250; // está se afogando se canal verde for 255
 
 		int debuff_raw = pixels[5].b / 8; // extrai valor base dos debuffs (0–31)
 
@@ -654,21 +692,28 @@ readpixels(pixels);
 	 }
 
 	 // -------------------------------------
-	 // Pixel 9: Judgement (alcance, cooldown) + melee range
+	 // Pixel 9: Judgement (alcance, cooldown) + Auras + Melee range
 	 // -------------------------------------
 	 if (pixels.Count > 9)
 	 {
 		// canal R → está em alcance
 		pala.jud_range = (pixels[9].r > 250);           // Judgement em alcance
-		
-		
-		// canal G → cooldown restante (0–255)
-		pala.judge_cd = pixels[9].g;                     // cooldown em segundos (cap 255)
-		
 
-		// canal B → melee range
-		e.meleerange = (pixels[9].b > 200);            // alcance melee com o target
-		cb_melee.Checked = e.meleerange;               // marca checkbox só se estiver em alcance
+		// canal G → cooldown restante (0–255)
+		pala.judge_cd = pixels[9].g;                    // cooldown em segundos (cap 255)
+
+		// canal B → decodifica bitflags de aura e melee range
+		int b = pixels[9].b;                            // lê valor bruto (0–255)
+		e.meleerange = (b & 1) != 0;            // bit 0 = melee range
+		pala.crusader = (b & 2) != 0;            // bit 1 = Crusader Aura
+		pala.devotion = (b & 4) != 0;            // bit 2 = Devotion Aura
+		pala.frost = (b & 8) != 0;            // bit 3 = Frost Resist Aura
+		pala.shadow = (b & 16) != 0;            // bit 4 = Shadow Resist Aura
+		pala.fire = (b & 32) != 0;            // bit 5 = Fire Resist Aura
+		pala.concentration = (b & 64) != 0;            // bit 6 = Concentration Aura
+		pala.retribution = (b & 128) != 0;            // bit 7 = Retribution Aura
+
+		cb_melee.Checked = e.meleerange;                // marca checkbox se em alcance físico
 	 }
 
 
@@ -701,44 +746,57 @@ readpixels(pixels);
 	 }
 
 	 // -------------------------------------
-	 // Pixel 12: Buff de Combate (Seal of Righteousness) + CD do Lay on Hands
+	 // Pixel 12: Seals ativos (R) + Judgements no target (G) + CD do Lay on Hands (B)
 	 // -------------------------------------
 	 if (pixels.Count > 12)
 	 {
-		int ar = pixels[12].r;                      // canal R indica se Seal of Righteousness está ativo
-		int ag = pixels[12].g;                      // canal G codifica tempo restante do Seal
-		int ab = pixels[12].b;                      // canal B = cooldown restante do Lay on Hands (cap 255s)
+		int ar = pixels[12].r; // R = bitmask dos seals ativos
+		int ag = pixels[12].g; // G = bitmask dos judgements no target
+		int ab = pixels[12].b; // B = cooldown do Lay on Hands (cap 255)
 
-		cb_hasSOR.Checked = (ar > 200);             // marca checkbox se buff está presente
+		// SEALS ATIVOS (true se bit correspondente estiver ligado)
+		pala.sor = (ar & 128) != 0; // Seal of Righteousness
+		pala.sotc = (ar & 64) != 0; // Seal of the Crusader
+		pala.soc = (ar & 4) != 0;   // Seal of Command
+		pala.sol = (ar & 16) != 0;  // Seal of Light
+		pala.sow = (ar & 8) != 0;   // Seal of Wisdom
 
-		int tempo_restante = (255 - ag) / 4;        // converte canal G para segundos (duração do Seal)
-		pala.sor = tempo_restante;                  // armazena tempo restante no objeto
+		// JUDGEMENTS NO TARGET
+		pala.jotc = (ag & 64) != 0; // Judgement of the Crusader
+		pala.joj = (ag & 32) != 0; // Judgement of Justicew
+		pala.jol = (ag & 16) != 0; // Judgement of Light
+		pala.jow = (ag & 8) != 0; // Judgement of Wisdom
 
-		pala.loh_cd = ab;                           // armazena cooldown do Lay on Hands (0 a 255)
+		// COOLDOWN
+		pala.lay_cd = ab; // cooldown do Lay on Hands (0 a 255)
+		
 	 }
 
 	 // -------------------------------------
-	 // Pixel 13: Blessings ativos (RED) e HAMMER (G/B)
+	 // Pixel 13: Blessings ativos (R) + HoJ ready (G bit 7) + HoJ range (B)
 	 // -------------------------------------
 	 if (pixels.Count > 13)
 	 {
-		int ar = pixels[13].r;                    // canal R = bitflags de blessings (com bit 7 sempre ligado)
-		int ag = pixels[13].g;                    // canal G = cooldown do Hammer of Justice (0–255)
-		int ab = pixels[13].b;                    // canal B = 255 se HoJ está em alcance
+		int ar = pixels[13].r; // R = bitmask dos blessings ativos
+		int ag = pixels[13].g; // G = bitflags de cooldowns (bit 7 = HoJ pronto)
+		int ab = pixels[13].b; // B = 255 se HoJ está em alcance
 
-		// leitura dos bits de blessings
-		pala.bom = (ar & 1) != 0; // bit 0 = Blessing of Might
-		pala.bow = (ar & 2) != 0; // bit 1 = Blessing of Wisdom
-		pala.bok = (ar & 4) != 0; // bit 2 = Blessing of Kings
-		pala.bos = (ar & 8) != 0; // bit 3 = Blessing of Salvation
-		pala.bof = (ar & 32) != 0; // bit 5 = Blessing of Freedom
-		pala.bop = (ar & 64) != 0; // bit 6 = Blessing of Protection
+		// BLESSINGS ATIVOS (bit por ordem nova)
+		pala.bos = (ar & 1) != 0; // bit 0 = Salvation
+		pala.bol = (ar & 2) != 0; // bit 1 = Light
+		pala.bof = (ar & 4) != 0; // bit 2 = Freedom
+		pala.bow = (ar & 8) != 0; // bit 3 = Wisdom
+		pala.bop = (ar & 16) != 0; // bit 4 = Protection
+		pala.bok = (ar & 32) != 0; // bit 5 = Kings
+		pala.bom = (ar & 64) != 0; // bit 6 = Might
+		pala.bosanc = (ar & 128) != 0; // bit 7 = Sanctuary
 
-		// hammer of justice
-		pala.hoj_cd = ag;                         // cooldown do Hammer of Justice
-		pala.hoj_range = (ab > 250);              // se está em alcance
-		cb_hammer_range.Checked = pala.hoj_range; // marca se esta em range 
+		// HAMMER OF JUSTICE
+		pala.hoj_ready = (ag & 128) != 0;        // está pronto
+		pala.hoj_range = (ab > 250);             // está em alcance
+		cb_hammer_range.Checked = pala.hoj_range;
 	 }
+
 	 // Pixel 14: Creature Type
 	 // -------------------------------------
 	 if (pixels.Count > 14)
@@ -786,7 +844,8 @@ while (sw.ElapsedMilliseconds <= milliseconds) // Continua até atingir o tempo 
 // M05 - MÉTODO APERTA - ENVIA UM PRESSIONAMENTO DE TECLA PARA O WOW.
 public void aperta(byte key, int time = 50) // time 0 = pressiona, time 2 = solta
 {
-focawow(); // Garante que a janela do WoW está em foco
+	 if (key == 255) return; // ignora teclas nulas (usamos 255 como código de "nada")
+	 focawow(); // Garante que a janela do WoW está em foco
 	 if (time == 2) // codigo de soltar a tecla
 	 {
 		keybd_event(key, 0, KEYEVENTF_KEYUP, 0); // Simula soltura da tecla
@@ -837,10 +896,8 @@ void press(byte key)
 	// --------------------------------
 	public void giralvo(loc alvo)
 	{
-	 giraface(getyaw(me.pos, alvo),dist(me.pos,alvo));
+	 giraface(getyaw(me.pos, alvo), dist(me.pos, alvo));
 	}
-
-	
 
 
 	// M11 - MÉTODO DIST - CALCULA A DISTÂNCIA ENTRE DUAS COORDENADAS (LOC).
@@ -864,20 +921,30 @@ public element tar;
 public palatable pala = new palatable(); // inicializa tabela de status de paladino 
 public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
 
-
-
+	//------------------------------
+	// NAO DEIXA AFOGAR 
+	//------------------------------
+	void nao_afoga()
+	{
+	 if (me.swim)
+	 {
+		aperta(PULA, 2000); // nada para cima se estiver afogando
+		loga("Afogando: Nadando para cima.");
+	 }
+	}
 	// --------------------------------
 	// MÓDULO 14 - MÉTODO MOVETO (MAIN LOOP)
 	// Anda até destino, corrige direção, reage a combate, detecta morte e unstuck
 	// --------------------------------
 	public void moveto(loc destino)
 	{
-	 Func<bool> has_seal = () => has(pala.sor) || has(pala.soc) || has(pala.sow) || has(pala.sol) || has(pala.sotc); // tem algum seal
+	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // tem algum seal ativo
+
 	 Func<int, bool> mana = (p) => me.mana > p;            // verifica se tem mana acima de p
 
 	 getstats(ref me);                                     // atualiza status inicial
 	 drawmap(destino);
-	 atualizamapa(me.pos);
+	 if (cb_herbalism.Checked) atualizamapa(me.pos);
 	 int temp = 0;                                         // contador de ciclos
 	 loc oldloc = me.pos;                                  // guarda posição inicial para unstuck
 
@@ -895,7 +962,9 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		// --------------------------------
 		atualizamapa(me.pos);
 		get_minimap(); // atualiza minimapa
-		
+
+		nao_afoga(); // se afogando, tenta nadar
+
 		// -----------------------------
 		// HERBALISTA - CATA PLANTA
 		// -----------------------------
@@ -1013,7 +1082,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 aperta(WKEY, 2); // para de andar
 		 if (cb_log.Checked) loga("Entrou em combate!");
 		 combatloop(); // entra na rotina de combate
-	
+
 
 		 // -----------------------------------
 		 // CHECK PÓS COMBATE 
@@ -1025,13 +1094,16 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 }
 		 checkme();
 
-			if (me.mana <60) loga($"Esperando recuperação da mana: {me.mana}");
-			while (me.mana < 60 && !me.combat) // espera recuperar mana
-			{
-			 if (!pala.bow) aperta(BOW); // buffa se não tiver buff ativo
-			 wait(1000);
-			 checkme();
+		 if (me.mana < 60) loga($"Esperando recuperação da mana: {me.mana}");
+
+		 while (me.mana < atoi(tb_pull_mana) && !me.combat) // espera recuperar mana
+		 {
+			if (!pala.bow) aperta(BOW); // buffa se não tiver buff ativo
+
+
 			
+			wait(1000);
+			checkme();
 		 }
 		 // -----------------------------------
 		 // LOOT 
@@ -1042,6 +1114,8 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 {
 			if (!me.combat)
 			{
+
+
 			 if (cb_loot.Checked)
 			 {
 				int loopcount = 0; // contador de tentativas de loot
@@ -1198,29 +1272,69 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	{
 	 checkme(); // atualiza status do jogador e buffs
 
+	 int bless = 0; // 0 = nenhum, 1 = BOM, 2 = BOW, 3 = BOK, 4 = BOSA
+
 	 // --------------------------------------------
-	 // VERIFICA SE JÁ EXISTE BLESSING ATIVO
+	 // BLOQUEIA TROCA SE FOR BOW E MANA < 35%
 	 // --------------------------------------------
-	 if (pala.bok || pala.bom || pala.bow)
+	 if (pala.bow && !mana(35)) return; // única situação que bloqueia
+
+	 // --------------------------------------------
+	 // PARAMETROS EXTERNOS
+	 // --------------------------------------------
+	 int limiar_bosa = int.Parse(tb_BOSA_limiar.Text); // hp para ativar BOSA
+	 int limiar_bow = int.Parse(tb_bow_trig.Text);      // mana para ativar BOW fora de combate
+
+	 // --------------------------------------------
+	 // MODO COMBATE
+	 // --------------------------------------------
+	 if (me.combat)
 	 {
-		if (!(pala.bow && mana(100))) // só permite substituir BOW se mana = 100%
-		 return;
+		// REGIÃO 1: MANA < 20% → ENTRA EM MODO SEM MANA
+		if (!pala.nomana && !mana(20) && cb_BOW.Checked)
+		{
+		 bless = 2;
+		 pala.nomana = true; // trava BOW até o fim do combate
+		}
+		else if (pala.nomana && cb_BOW.Checked)
+		{
+		 bless = 2; // continua usando BOW até fim do combate
+		}
+		// REGIÃO 2: HP BAIXO → ENTRA EM MODO DEFENSIVO
+		else if (!pala.defbless && me.hp <= limiar_bosa && cb_BOSA.Checked)
+		{
+		 bless = 4;               // aplica BOSA
+		 pala.defbless = true;   // ativa modo defensivo
+		}
+		// REGIÃO 3: MODO NORMAL OU DEFENSIVO JÁ ATIVO
+		else if (pala.defbless)
+		{
+		 bless = 4; // mantém BOSA enquanto estiver em modo defensivo
+		}
+		else
+		{
+		 if (cb_BOK.Checked && cb_BOM.Checked)
+			bless = 3;
+		 else if (cb_BOM.Checked)
+			bless = 1;
+		 else if (cb_BOK.Checked)
+			bless = 3;
+		 else if (cb_BOW.Checked)
+			bless = 2;
+
+		 // evita trocar Wisdom por buff ofensivo se mana < 90%
+		 if ((bless == 1 || bless == 3) && pala.bow && !mana(atoi(tb_disable_BOW)))
+			bless = 2; // mantém Blessing of Wisdom
+		}
 	 }
-
 	 // --------------------------------------------
-	 // AVALIA CONDIÇÃO DE MANA
+	 // FORA DE COMBATE
 	 // --------------------------------------------
-	 int limiar = int.Parse(tb_bow_trig.Text); // limiar de mana para BOW
-	 bool mana_baixa = !mana(limiar);          // true se mana < limiar
-
-	 int bless = 0; // 0 = nenhum, 1 = BOM, 2 = BOW, 3 = BOK
-
-	 // --------------------------------------------
-	 // MANA BAIXA: BOW TEM PRIORIDADE
-	 // --------------------------------------------
-	 if (mana_baixa)
+	 else
 	 {
-		if (cb_BOW.Checked)
+		bool mana_baixa = !mana(limiar_bow); // true se mana < limiar externo
+
+		if (mana_baixa && cb_BOW.Checked)
 		 bless = 2;
 		else if (cb_BOK.Checked && cb_BOM.Checked)
 		 bless = 3;
@@ -1228,32 +1342,40 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 bless = 1;
 		else if (cb_BOK.Checked)
 		 bless = 3;
+		else if (cb_BOW.Checked)
+		 bless = 2;
+
+		// evita trocar Wisdom por buff ofensivo se mana < 80%
+		if ((bless == 1 || bless == 3) && pala.bow && !mana(80))
+		 bless = 2; // mantém Blessing of Wisdom
+
+		// RESET DE ESTADOS DEFENSIVOS
+		pala.defbless = false;
+		pala.nomana = false;
 	 }
 
 	 // --------------------------------------------
-	 // MANA CHEIA: BOK > BOM > BOW
+	 // EVITA RECASTAR BLESSING JÁ ATIVA
 	 // --------------------------------------------
-	 else
-	 {
-		if (cb_BOK.Checked && cb_BOM.Checked)
-		 bless = 3;
-		else if (cb_BOM.Checked)
-		 bless = 1;
-		else if (cb_BOK.Checked)
-		 bless = 3;
-		else if (cb_BOW.Checked)
-		 bless = 2;
-	 }
+	 if ((bless == 1 && pala.bom) ||
+		 (bless == 2 && pala.bow) ||
+		 (bless == 3 && pala.bok) ||
+		 (bless == 4 && pala.bosanc))
+		return;
 
 	 // --------------------------------------------
 	 // APLICA O BUFF DEFINIDO
 	 // --------------------------------------------
-	 if (bless == 3) aperta(BOK);
-	 else if (bless == 1) aperta(BOM);
+	 if (bless == 1) aperta(BOM);
 	 else if (bless == 2) aperta(BOW);
+	 else if (bless == 3) aperta(BOK);
+	 else if (bless == 4) aperta(BOSA);
 
 	 checkme(); // atualiza status final
 	}
+
+
+
 
 
 
@@ -1263,11 +1385,15 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	// --------------------------------------------
 	void puxa(palatable pala)
 	{
-	 Func<bool> has_seal = () => has(pala.sor) || has(pala.soc) || has(pala.sow) || has(pala.sol) || has(pala.sotc); // verifica se tem algum Seal
-	 Func<int, bool> mana = (p) => me.mana > p;                                // verifica se tem mana suficiente
-
+	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum Seal
+	 Func<int, bool> mana = (p) => me.mana > p;
 	 aperta(TAB);                                                               // seleciona inimigo próximo
 	 checkme();                                                                 // atualiza status depois do tab
+
+	 // NAO DEIXA AFOGAR 
+	 //------------------------------
+nao_afoga(); // nada para cima se estiver afogando
+
 
 	 // --------------------------------------------
 	 // VERIFICAÇÃO DO TARGET - bom ou ruim
@@ -1284,7 +1410,9 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		good_target = false;
 	 else if (tar.mood == 1)                                                  // mob amigável
 		good_target = false;
-	 else if (tar.combat && !me.combat)                                       // mob já em combate, e player não está
+	 else if (tar.combat)                                     // mob já em combate, e player não está
+		good_target = false;
+	 else if (tar.hp < 100)                                     // ja tem alguem batendo 
 		good_target = false;
 	 else if (tar.morreu)                                                     // mob já morreu
 		good_target = false;
@@ -1305,12 +1433,16 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	 // --------------------------------------------
 	 int ticker = 0; // contador de ciclos
 	 
-	 while (me.hastarget && !me.combat && tar.hp > 0) // alvo válido e ainda fora de combate
+	 while (me.hastarget && !me.combat && tar.hp==100) // alvo válido e ainda fora de combate
 	 {
 		checkme();
-		// aplica Seal of Righteousness se necessário
-		if (!has(pala.sor) && mana(7))
-		 aperta(SOR);
+
+		// NAO DEIXA AFOGAR 
+		//------------------------------
+		nao_afoga(); // nada para cima se estiver afogando
+
+
+		aperta(best_seal()); // aplica o melhor seal fora de combate
 
 		// verifica se pode puxar com EXORCISM
 		bool pode_exorcism = cb_use_exorcism.Checked
@@ -1378,19 +1510,25 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	 do
 	 {
 		ticker++;
-		Func<bool> has_seal = () => has(pala.sor) || has(pala.soc) || has(pala.sow) || has(pala.sol) || has(pala.sotc);
+		Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum seal ativo
+
 		Func<int, bool> mana = (p) => me.mana > p;
 
 		if (me.combat) // calculo do decay
 		{
 		 decay.Update(me.hp);
-		 tbdecay.Text = decay.Current.ToString();
+		 int curdecay = decay.Current(tracker.Average); // exibe o decay atual em hp/min (sliding window); nos primeiros 10s usa média dos combates anteriores
+		 if (curdecay <  2000)  tbdecay.Text = curdecay.ToString(); // exibe o decay atual no textbox 
 		}
 
 
 		// --------------------------------
 		// ROTINAS ALL-CLASS
 		// --------------------------------
+		// NAO DEIXA AFOGAR 
+		//------------------------------
+		nao_afoga(); // nada para cima se estiver afogando
+
 		//----- HEALTH POTION --------
 		if (me.hp < 30 && me.mana < 40) // Tá no bico do corvo 
 		 aperta(HEALTHPOTION);
@@ -1406,22 +1544,30 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 int limiar = int.Parse(tb_back_limiar.Text); // Lê o valor do limiar 
 		 int decay = int.Parse(tbdecay.Text);// Obtém os valores de decay e avg_decay 
 		 int avg_decay = int.Parse(tbavdecay.Text);
-
-		 // Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
+		 if (decay > 2000) decay = int.Parse(tbavdecay.Text); // se o decay estiver irreal
+																													 // Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
 		 if (tar.type!=DRAGONKIN && !tar.casting && decay > limiar && tar.hp > 20)
 		 {
 			ja_deu_backpedal = true; // só uma vez por combate
 			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
 			aperta(SKEY, 2000);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
-
-
 		 }
 		 else if (!jalogou)
 		 {
 			loga($"Backpedal não necessário: decay = {int.Parse(tbdecay.Text)}");
 			jalogou = true; // loga o decay apenas uma vez por combate
 		 }
+		}
+		// -----------------------------------------
+		// GIRA PARA O ALVO SE ESTIVER APANHANDO DE COSTAS
+		// -----------------------------------------
+		if (me.wrongway && cb_wrong_gira.Checked)
+		{
+		 roda(25); // gira pra manter face no inimigo
+		 loga("De costas para o alvo! Ativando correção.");
+		 wait(2000); // espera 2s para não ficar girando muito
+		 checkme(); // atualiza status após girar
 		}
 
 		// --------------------------------
@@ -1479,12 +1625,22 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 if (pode_exorcism)
 			aperta(EXORCISM);
 
-			//-----------------SOR-------------------
-			if (cb_useSOR.Checked && mana(7) && !has(pala.sor)) // quer usar SOR, tem mana, e não tem o buff
-			aperta(SOR, 500);         // ativa Seal of Righteousness
-		 //----------------BLESSINGS----------------
+		 //-----------------SOR-------------------
+		 aperta(best_seal(), 500); // ativa o melhor seal automaticamente
+																		 //----------------BLESSINGS----------------
 		 bless(me);                      // aplica blessing se necessário
-		 //---------------STONEFORM------------------
+																		 //---------------STONEFORM------------------
+
+		 //---------------AURAS------------------
+
+		 // hp < 50% e quer Devotion Aura, mas não está ativa
+		 if (me.hp < 50 && cb_devaura.Checked && !pala.devotion)
+			aperta(DEVAURA,1500); // ativa Devotion para defesa
+
+		 // hp > 50% e quer Retribution Aura, mas não está ativa
+		 else if (me.hp > 50 && cb_retaura.Checked && !pala.retribution)
+			aperta(RETAURA,1500); // ativa Retribution para dano
+		 //--------------------------------------
 
 		 if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
 		 {
@@ -1510,7 +1666,19 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		
 		checkme();
 
-	 } while (me.combat); // REGISTRO DO DECAY 
+	 } while (me.combat); // FIM DO LOOP DE COMBATE 
+
+	 //---------------------------------------------
+	 // TERMINA O COMBATE 
+	 // ---------------------------------------------
+
+	 // PALADINO (reseta variaveis de combate) 
+	 //----------------------------------------------
+	 pala.defseal = false;     // volta a permitir uso de SOR
+	 pala.defbless = false;    // libera BOK ou BOM de novo
+	 pala.defaura = false;     // pode voltar pra Ret Aura
+	 pala.nomana = false;      // desativa fixação de BOW
+	 //----------------------------------------------------
 
 	 int final = decay.End(me.hp);
 	 tracker.Add(final);
@@ -1535,16 +1703,21 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	// --------------------------------
 	void tenta_curar()
 	{
-	 int limiar_loh = 20;
+	 int limiar_loh = 30; // valor padrão para o limiar de Lay on Hands
 	 int.TryParse(tb_loh_hp.Text, out limiar_loh);
 
-	 if (me.mana < 40 && cb_loh.Checked && me.hp < limiar_loh && !has(pala.loh_cd))
+	 if (me.mana < 40 && cb_loh.Checked && me.hp < limiar_loh && pala.lay_cd == 0)
+
 	 {
 		aperta(LOH);
+		loga("Usando Lay on Hands!"); // loga o uso de Lay on Hands
+		loga(pala.lay_cd.CompareTo(0) == 0 ? "Lay on Hands pronto!" : "Lay on Hands em cooldown: " + pala.lay_cd.ToString() + " segundos.");
 		return;
 	 }
 
-	 if (me.hp < 40 && me.mana > 20) // vida baixa, mana boa 
+	 int limiar_hp = atoi(tb_combatheal);
+	 if (pala.sol) limiar_hp -= 7; // se tiver seal of light, diminui o limiar de cura
+	 if (me.hp < limiar_hp && me.mana > 20) // vida baixa, mana boa
 	 {
 		bool usou_bolha = false;
 
@@ -1556,7 +1729,8 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 
 		if (!usou_bolha) // nao castou bolha 
 		{
-		 if (pala.hoj_cd == 0 && pala.hoj_range) // tenta hammer 
+		 if (pala.hoj_ready && pala.hoj_range) // tenta hammer
+
 			aperta(HOJ, 1500);  // casta 
 		}
 		aperta(HLIGHT, 1000); // cura 
@@ -1571,46 +1745,79 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	 }
 	}
 
+	int atoi(TextBox t) => int.Parse(t.Text); // retorna valor inteiro da textbox
+
 	// --------------------------------
 	// VERIFICA SE DEVE USAR JUDGEMENT
 	// --------------------------------
 	bool should_judge()
 	{
-	 if (me.level < 4) return false;
-	 if (!cb_judge.Checked) return false;
-	 if ((tar.hp > 25 && !mana(15)) || (tar.hp <= 25 && !mana(4))) return false; // reserva manda pra curar 
-	 if (!has(pala.sor) && !has(pala.sow) && !has(pala.sol) && !has(pala.soc) && !has(pala.sotc)) return false;
-	 if (!pala.jud_range) return false;
-	 if (pala.judge_cd != 0) return false;
-	 return true;
+	 if (me.level < 4) return false;                  // abaixo do nível 4, não tem skill
+	 if (!cb_judge.Checked) return false;             // checkbox desativada → não julga
+	 if (pala.judge_cd>0) return false;               // cooldown de Judgement ativo
+
+	 bool ofensivo = pala.sor || pala.soc || pala.sotc; // seals ofensivos
+
+	 if (cb_savemana.Checked && !mana(atoi(tb_mana_min)) && ofensivo)
+		return false; // quer economizar mana com seal ofensivo
+
+	 if ((tar.hp > 25 && !mana(15)) || (tar.hp <= 25 && !mana(4)))
+		return false; // pouca mana → prioriza cura
+
+	 if (!pala.sor && !pala.sow && !pala.sol && !pala.soc && !pala.sotc)
+		return false; // nenhum seal ativo que permita julgamento
+
+	 if (pala.sor)
+	 {
+		int min = int.Parse(tb_mana_min.Text);       // lê limiar mínimo de mana
+		if (!mana(min) && tar.hp > 20)
+		 return false; // pouca mana e mob ainda forte
+	 }
+
+	 // -----------------------------------------------
+	 // EXCEÇÃO: SEAL OF LIGHT ATIVO → FORÇA JUDGEMENT
+	 // julga sempre no pull, e no combate se valer a pena
+	 // -----------------------------------------------
+	 if (pala.sol)
+	 {
+		if (pala.jol) return false;                  // já tem debuff → não julga
+		if (me.combat && tar.hp <= 25) return false; // em combate e mob já fraco → não julga
+		return true;                                 // fora de combate ou vida alta → julga
+	 }
+
+	 // -----------------------------------------------
+	 // EXCEÇÃO: SEAL OF THE CRUSADER ATIVO → FORÇA JUDGEMENT
+	 // julga apenas se ainda não aplicou JOTC
+	 // -----------------------------------------------
+	 if (pala.sotc)
+	 {
+		if (pala.jotc) return false;                 // já tem debuff → não julga
+		if (me.combat && tar.hp <= 25) return false; // mob fraco → não vale gastar
+		return true;                                 // vida alta ou pull → julga
+	 }
+
+	 if (!pala.jud_range) return false;        // alvo fora de alcance
+	 if (pala.judge_cd != 0) return false;     // cooldown ainda ativo
+
+	 return true; // passou por todos os filtros → pode julgar
 	}
+
 
 	// --------------------------------
 	// VERIFICA SE DEVE USAR HAMMER OF JUSTICE
 	// --------------------------------
 	bool should_stun()
 	{
-	 if (me.level < 8) return false;
-	 if (!cb_use_hammer.Checked) return false;
-	 if (!mana(13)) return false;
-	 if (pala.hoj_cd != 0) return false;
-	 if (!pala.hoj_range) return false;
+	 if (me.level < 8) return false;          // não tem skill ainda
+	 if (!cb_use_hammer.Checked) return false; // checkbox desmarcada
+	 if (!mana(13)) return false;              // mana insuficiente
+	 if (!pala.hoj_ready) return false;        // cooldown ativo
+	 if (!pala.hoj_range) return false;        // alvo fora do range
+	 if (tar.casting) return true; // se o alvo estiver castando
+	 if (me.hp < 40) return true;             // vida baixa → usa defensivamente
 
-	 int limite = 60;
-	 if (int.TryParse(tb_interrupt_at.Text, out int v) && v >= 1 && v <= 100)
-		limite = v;
-
-	 if (tar.casting)
-	 {
-		if (tar.castbar <= limite || tar.type == DRAGONKIN) return true;
-		if (tar.spell.StartsWith("H")) return true;
-	 }
-
-	 if (me.hp < 40) return true;
-
-	 return false;
+	 return false; // não atende critérios
 	}
-
 
 	void wait_cast() { checkme(); while (me.casting) { checkme(); wait(125); } } 
 	// METODO WAITCAST - ESPERA CASTAR 																												
@@ -1732,9 +1939,10 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 
 	 bool direita = deltaR <= deltaL;        // decide direção
 	 int delta = direita ? deltaR : deltaL;  // menor ângulo
-
+	 bool logar = true; // flag para logar o giro em movimento
 	 int tempo = Math.Min((int)(delta * 5.55), 1000); // tempo proporcional
-	 if (me.spd > 3) tempo = (int)(tempo * 1.25f);      // aumenta se correndo
+	 float fator_drift = 1.25f; // fator de drift (ajuste fino)
+	 if (me.spd > 3) tempo = (int)(tempo * fator_drift);      // aplica fator pra compensar o deslocamento lateral
 
 	 const byte BYTE_AKEY = 0x41;
 	 const byte BYTE_DKEY = 0x44;
@@ -1742,14 +1950,31 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 if (d < 200 && tempo > 200) // alvo muito perto e curva abrupta 
 	 {
 		solta(WKEY); // melhor parar de correr senao vai passar reto 
-		if (cb_log.Checked) loga($"Freando para virar: Dist {d}m {tempo * 0.18} graus");
+		if (cb_log.Checked) loga($"Giro parado: Dist {d}m {tempo * 0.18} graus");
+		logar = false;
 	 }
 
    press(tecla);       // pressiona tecla de giro
 	 wait(tempo);        // segura tempo proporcional
 	 solta(tecla);       // solta tecla de giro
 
+	 if (cb_log.Checked)
+	 {
+		checkme(); // atualiza posição e facing após o giro
+
+		int f2 = me.facing; // facing final
+		int erro = ((f2 - f1 + 540) % 360) - 180; // erro com sinal
+		if (!direita) erro = -erro; // ajusta sinal conforme direção
+		int delta_total = delta; // salva delta original (pra usar abaixo)
+
+	
+	 }
+
+
 	 if (correndo) press(WKEY);
+
+
+
 	}
 	
 
@@ -1773,14 +1998,14 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 
 	 if (ang > 0) // se ângulo for positivo, gira pra direita  
 	 {
-		loga("girando " + ang + "° pra direita");
+		loga("Girando " + ang + "° para direita");
 		press(DKEY); // pressiona tecla de girar pra direita  
 		wait(tempo); // espera o tempo proporcional  
 		solta(DKEY); // solta a tecla  
 	 }
 	 else // se ângulo for negativo, gira pra esquerda  
 	 {
-		loga("girando " + ang + "° pra esquerda");
+		loga("Girando " + ang + "° para esquerda");
 		press(AKEY); // pressiona tecla de girar pra esquerda  
 		wait(tempo); // espera o tempo proporcional  
 		solta(AKEY); // solta a tecla  
@@ -1954,6 +2179,102 @@ tb_debug3.Text = me.facing.ToString();
 		 coleta_controles(c, linhas); // chama recursivamente
 	 }
 	}
+
+	//	┌───────────────┬───────────────────────────────┬───────────────┐
+	//  │ Zona Inferior │      Zona Intermediária       │ Zona Superior │
+	//  │ (força SOL)   │ Depende do modo anterior      │ (força SOR)   │
+	//  └───────────────┴───────────────────────────────┴───────────────┘
+	//hp<L            L ≤ hp ≤ H                  hp> H
+
+	// ----------------------------------------
+	// MÉTODO BEST_SEAL
+	// Define o melhor Seal com base em combate, vida,
+	// intenção de aplicar JOL ou JOTC, e modo defensivo
+	// ----------------------------------------
+	byte best_seal()
+	{
+	 // ----------------------------------------
+	 // JOL – aplica SOL se mob não tiver debuff
+	 // Prioridade máxima
+	 // ----------------------------------------
+	 if (tar.hp > 10) // mob precisa estar com vida razoável
+	 {
+		if (cb_keep_JOL.Checked && !pala.jol)
+		{
+		 if (pala.sol) return 255; // já está ativo → não recasta
+		 return SOL; // aplica SOL pra julgar JOL
+		}
+
+		// ----------------------------------------
+		// JOTC – aplica SOTC se mob não tiver debuff
+		// Só se for mob relevante (nível suficiente)
+		// ----------------------------------------
+		if (cb_keep_JOTC.Checked && !pala.jotc)
+		{
+		 if (pala.sotc) return 255; // já está com SOTC → não recasta
+		 if (pala.sor) return 255;  // nunca substitui SOR por SOTC
+		 int dif = int.Parse(tb_JOTC_lvl.Text); // diferença mínima de nível
+		 if (tar.level >= me.level + dif)
+			return SOTC; // aplica SOTC pra julgar JOTC
+		}
+	 }
+
+	 // ----------------------------------------
+	 // BLOQUEIA SEAL SE NÃO TIVER MANA OU SPELLS
+	 // ----------------------------------------
+	 if (!mana(7)) return 255; // sem mana pra castar seal
+	 if (!cb_SOL.Checked && !cb_SOR.Checked) return 255; // nenhum seal habilitado
+	 if (pala.sol || pala.sow) return 255; // não remove seals emergenciais ativos
+
+	 // ----------------------------------------
+	 // DEFINE OS LIMITES DE HISTERSE
+	 // ----------------------------------------
+	 int L = int.Parse(tb_SOL_limiar.Text); // limiar inferior (ativa SOL)
+	 int H = 60;                             // limiar superior (ativa SOR)
+
+	 // ----------------------------------------
+	 // DETERMINA A REGIÃO E AJUSTA O ESTADO
+	 // ----------------------------------------
+	 if (me.hp < L)
+		pala.defseal = true;  // entra em modo defensivo
+	 else if (me.hp > H)
+		pala.defseal = false; // sai do modo defensivo
+
+	 // ----------------------------------------
+	 // DECIDE O SEAL COM BASE NO ESTADO ATUAL
+	 // ----------------------------------------
+	 byte seal = 255;
+
+	 if (pala.defseal && cb_SOL.Checked)
+		seal = SOL;           // modo defesa → usa SOL
+	 else if (!pala.defseal && cb_SOR.Checked)
+		seal = SOR;           // modo ofensivo → usa SOR
+
+	 // ----------------------------------------
+	 // JULGA ANTES DE TROCAR DE SEAL (SE POSSÍVEL)
+	 // ----------------------------------------
+	 if (seal != 255 && pala.jud_range && pala.judge_cd == 0)
+	 {
+		bool mudando =
+			(seal == SOL && !pala.sol && !pala.jol) ||     // julga SOL se JOL ainda não ativo
+			(seal == SOTC && !pala.sotc && !pala.jotc) ||  // julga SOTC se JOTC ainda não ativo
+			(seal == SOR && !pala.sor);                    // julga SOR sempre antes de trocar
+
+		if (mudando)
+		 aperta(JUDGEMENT); // aproveita seal atual antes de trocar
+	 }
+
+
+
+	 if ((seal == SOR && pala.sor) ||
+		(seal == SOL && pala.sol) ||
+		(seal == SOTC && pala.sotc))
+		return 255; // evita recast do mesmo seal
+
+	 return seal; // retorna seal escolhido
+	}
+
+
 
 	// FIM DOS METODOS GLOBAIS 
 	//-------------------------------------- 
@@ -2164,57 +2485,72 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		return;
 	 }
 	}
-
-	// --------------------------------
-	// BOTÃO PERCORRE LISTA (COM NOSTOP)
-	// Percorre waypoints em modo circular ou linear (de trás pra frente)
-		// --------------------------------
+	// -------------------------------------------------------
+	// BOTÃO: INICIAR PERCURSO DE WAYPOINTS (Linear ou Circular)
+	// Percorre os pontos de lwp a partir do ponto mais próximo.
+	// Usa uma variável de direção (dir = +1 ou -1) para alternar
+	// entre ida e volta no modo linear. Evita reversões de lista.
+	// Se nostop estiver marcado, o percurso é contínuo.
+	// Loga a inversão com mensagem no debug.
+	// -------------------------------------------------------
 	private void button1_Click_1(object sender, EventArgs e)
 	{
-	 on = true;                // ativa o bot
-	 lwp.Clear();              // limpa lista de waypoints
+	 on = true;                        // ativa o bot
+	 lwp.Clear();                      // limpa lista de waypoints
 
-	 foreach (var item in lbwp.Items)       // percorre itens da listbox
-		lwp.Add(unpack(item.ToString())); // desempacota e adiciona na lista
+	 foreach (var item in lbwp.Items) // carrega os waypoints da listbox
+		lwp.Add(unpack(item.ToString()));
 
-	 if (lwp.Count == 0) return; // não faz nada se a lista estiver vazia
+	 if (lwp.Count == 0) return;       // não faz nada se a lista estiver vazia
 
-	 checkme(); // atualiza posição atual
+	 checkme();                        // atualiza posição do bot
 
-	 List<int> ordem = new List<int>(); // ordem de execução dos pontos
+	 int idx = nearest(me.pos, lwp);   // encontra o ponto mais próximo
+	 if (idx == -1) return;
 
-	 if (cb_round.Checked) // modo circular
+	 indexAtual = idx; // começa a partir do ponto mais próximo
+	 int dir = +1;      // direção inicial: para frente
+
+	 while (on)
 	 {
-		int start = nearest(me.pos, lwp); // encontra o ponto mais próximo
-		if (start == -1) return;
+		lbwp.SelectedIndex = indexAtual;         // destaca na interface
 
-		for (int i = start; i < lwp.Count; i++) ordem.Add(i);  // do mais próximo até o fim
-		for (int i = 0; i < start; i++) ordem.Add(i);          // e depois do início até antes do mais próximo
-	 }
-	 else // modo linear (inverso)
-	 {
-		for (int i = lwp.Count - 1; i >= 0; i--) ordem.Add(i); // vai de trás pra frente
-	 }
+		if (dist(me.pos, lwp[indexAtual]) < 1) continue; // já está no ponto → ignora
 
-	 while (on) // enquanto ativo
-	 {
-		int idx = ordem[indexAtual];         // índice atual
-		lbwp.SelectedIndex = idx;            // destaca na interface
+		moveto(lwp[indexAtual]); // move até o ponto atual
 
-		if (dist(me.pos, lwp[idx]) < 1) continue;
+		indexAtual += dir; // avança na direção atual
 
-		 moveto(lwp[idx]);                // usa método clássico 
-
-		indexAtual++;                        // avança no índice
-
-		if (indexAtual >= ordem.Count)      // se chegou no fim da lista
+		// --------- CONTROLE DE EXTREMOS ---------
+		if (indexAtual >= lwp.Count) // passou do fim
 		{
-		 if (cb_nostop.Checked)          // se for nostop
+		 if (cb_round.Checked && cb_nostop.Checked)
 		 {
-			if (!cb_round.Checked) ordem.Reverse(); // inverte ordem se não for circular
-			indexAtual = 0;            // recomeça
+			indexAtual = 0;               // modo circular → volta ao início
+			loga("Loop completo. Recomeçando do início.");
 		 }
-		 else break;                     // senão, para
+		 else if (cb_nostop.Checked)
+		 {
+			dir = -1;                     // modo linear → inverte direção
+			indexAtual = lwp.Count - 2;   // volta pro penúltimo
+			loga("Término do caminho. Voltando.");
+		 }
+		 else break;                       // modo sem nostop → encerra
+		}
+		else if (indexAtual < 0) // passou do início
+		{
+		 if (cb_round.Checked && cb_nostop.Checked)
+		 {
+			indexAtual = lwp.Count - 1;   // modo circular → vai pro final
+			loga("Loop completo. Recomeçando do final.");
+		 }
+		 else if (cb_nostop.Checked)
+		 {
+			dir = +1;                     // modo linear → inverte direção
+			indexAtual = 1;               // vai pro segundo
+			loga("Término do caminho. Indo novamente.");
+		 }
+		 else break;                       // modo sem nostop → encerra
 		}
 	 }
 	}
@@ -2322,10 +2658,10 @@ lbwp.Items.Clear();
 	 {
 		if (lootfreq[i] == 0) continue;                 // ignora posições zeradas
 		int pct = lootfreq[i] * 100 / total;            // percentual da janela
-		linha += $"[{i:00}]: {pct}% ";                  // adiciona ao texto
+	//	linha += $"[{i:00}]: {pct}% ";                  // adiciona ao texto
 	 }
 
-	 if (linha != "") loga("Estatísticas recentes: " + linha.Trim()); // loga final
+	 //if (linha != "") loga("Estatísticas recentes: " + linha.Trim()); // loga final
 	}
 
 
@@ -3459,6 +3795,21 @@ else
 	{
 	 loc pranta = new loc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text)); // pega valores dos textboxes
 	 andaplanta(pranta);
+
+	}
+
+	private void cb_BOM_CheckedChanged(object sender, EventArgs e)
+	{
+
+	}
+
+	private void button16_Click(object sender, EventArgs e)
+	{
+	 Application.Exit(); // encerra o programa imediatamente
+	}
+
+	private void cb_pacifist_CheckedChanged(object sender, EventArgs e)
+	{
 
 	}
 

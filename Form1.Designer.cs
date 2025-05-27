@@ -32,7 +32,7 @@ namespace Discord
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
-	 this.cb_herbalism = new System.Windows.Forms.CheckBox();
+	 this.button15 = new System.Windows.Forms.Button();
 	 this.find_dots = new System.Windows.Forms.Button();
 	 this.button14 = new System.Windows.Forms.Button();
 	 this.button10 = new System.Windows.Forms.Button();
@@ -51,7 +51,6 @@ namespace Discord
 	 this.button11 = new System.Windows.Forms.Button();
 	 this.button7 = new System.Windows.Forms.Button();
 	 this.bt_saveWPas = new System.Windows.Forms.Button();
-	 this.bt_loadWP = new System.Windows.Forms.Button();
 	 this.tb_filename = new System.Windows.Forms.TextBox();
 	 this.bt_debug3 = new System.Windows.Forms.Button();
 	 this.button8 = new System.Windows.Forms.Button();
@@ -69,6 +68,8 @@ namespace Discord
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.bt_onoff = new System.Windows.Forms.Button();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_wrong_gira = new System.Windows.Forms.CheckBox();
+	 this.cb_furbolg = new System.Windows.Forms.CheckBox();
 	 this.cb_loot_cloth = new System.Windows.Forms.CheckBox();
 	 this.cb_hearth_bagfull = new System.Windows.Forms.CheckBox();
 	 this.cb_nohumanoid = new System.Windows.Forms.CheckBox();
@@ -80,6 +81,23 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.Paladin = new System.Windows.Forms.TabPage();
+	 this.tb_JOTC_lvl = new System.Windows.Forms.TextBox();
+	 this.cb_keep_JOTC = new System.Windows.Forms.CheckBox();
+	 this.label13 = new System.Windows.Forms.Label();
+	 this.tb_disable_BOW = new System.Windows.Forms.TextBox();
+	 this.cb_keep_JOL = new System.Windows.Forms.CheckBox();
+	 this.label12 = new System.Windows.Forms.Label();
+	 this.tb_combatheal = new System.Windows.Forms.TextBox();
+	 this.label10 = new System.Windows.Forms.Label();
+	 this.tb_pull_mana = new System.Windows.Forms.TextBox();
+	 this.cb_retaura = new System.Windows.Forms.CheckBox();
+	 this.cb_devaura = new System.Windows.Forms.CheckBox();
+	 this.tb_BOSA_limiar = new System.Windows.Forms.TextBox();
+	 this.tb_SOL_limiar = new System.Windows.Forms.TextBox();
+	 this.tb_mana_min = new System.Windows.Forms.TextBox();
+	 this.cb_savemana = new System.Windows.Forms.CheckBox();
+	 this.cb_SOL = new System.Windows.Forms.CheckBox();
+	 this.cb_BOSA = new System.Windows.Forms.CheckBox();
 	 this.cb_concentration_aura = new System.Windows.Forms.CheckBox();
 	 this.cb_use_exorcism = new System.Windows.Forms.CheckBox();
 	 this.cb_BOK = new System.Windows.Forms.CheckBox();
@@ -93,20 +111,14 @@ namespace Discord
 	 this.cb_purify = new System.Windows.Forms.CheckBox();
 	 this.label19 = new System.Windows.Forms.Label();
 	 this.tb_interrupt_at = new System.Windows.Forms.TextBox();
-	 this.label17 = new System.Windows.Forms.Label();
 	 this.cb_hammer_range = new System.Windows.Forms.CheckBox();
 	 this.cb_use_hammer = new System.Windows.Forms.CheckBox();
 	 this.label16 = new System.Windows.Forms.Label();
 	 this.tb_preheal = new System.Windows.Forms.TextBox();
-	 this.label13 = new System.Windows.Forms.Label();
-	 this.label12 = new System.Windows.Forms.Label();
-	 this.label11 = new System.Windows.Forms.Label();
-	 this.label10 = new System.Windows.Forms.Label();
 	 this.cb_judge_range = new System.Windows.Forms.CheckBox();
 	 this.cb_judge = new System.Windows.Forms.CheckBox();
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
-	 this.cb_hasSOR = new System.Windows.Forms.CheckBox();
-	 this.cb_useSOR = new System.Windows.Forms.CheckBox();
+	 this.cb_SOR = new System.Windows.Forms.CheckBox();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
@@ -123,9 +135,10 @@ namespace Discord
 	 this.tb_tarhp = new System.Windows.Forms.TextBox();
 	 this.label1 = new System.Windows.Forms.Label();
 	 this.pan_me = new System.Windows.Forms.Panel();
-	 this.cb_wrongway = new System.Windows.Forms.CheckBox();
+	 this.cb_pacifist = new System.Windows.Forms.CheckBox();
 	 this.cbskin = new System.Windows.Forms.CheckBox();
 	 this.cb_loot = new System.Windows.Forms.CheckBox();
+	 this.cb_herbalism = new System.Windows.Forms.CheckBox();
 	 this.cb_pull = new System.Windows.Forms.CheckBox();
 	 this.cb_autoattack = new System.Windows.Forms.CheckBox();
 	 this.tb_playercast = new System.Windows.Forms.TextBox();
@@ -143,6 +156,7 @@ namespace Discord
 	 this.button13 = new System.Windows.Forms.Button();
 	 this.button1 = new System.Windows.Forms.Button();
 	 this.tb_mapname = new System.Windows.Forms.TextBox();
+	 this.bt_loadWP = new System.Windows.Forms.Button();
 	 this.bt_anda = new System.Windows.Forms.Button();
 	 this.tb_y = new System.Windows.Forms.TextBox();
 	 this.tb_x = new System.Windows.Forms.TextBox();
@@ -167,8 +181,7 @@ namespace Discord
 	 this.button12 = new System.Windows.Forms.Button();
 	 this.tb_loot_tries = new System.Windows.Forms.TextBox();
 	 this.label22 = new System.Windows.Forms.Label();
-	 this.cb_pacifist = new System.Windows.Forms.CheckBox();
-	 this.button15 = new System.Windows.Forms.Button();
+	 this.button16 = new System.Windows.Forms.Button();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -197,8 +210,6 @@ namespace Discord
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
 	 this.tabPage1.Controls.Add(this.button15);
-	 this.tabPage1.Controls.Add(this.cb_pacifist);
-	 this.tabPage1.Controls.Add(this.cb_herbalism);
 	 this.tabPage1.Controls.Add(this.find_dots);
 	 this.tabPage1.Controls.Add(this.button14);
 	 this.tabPage1.Controls.Add(this.button10);
@@ -217,7 +228,6 @@ namespace Discord
 	 this.tabPage1.Controls.Add(this.button11);
 	 this.tabPage1.Controls.Add(this.button7);
 	 this.tabPage1.Controls.Add(this.bt_saveWPas);
-	 this.tabPage1.Controls.Add(this.bt_loadWP);
 	 this.tabPage1.Controls.Add(this.tb_filename);
 	 this.tabPage1.Controls.Add(this.bt_debug3);
 	 this.tabPage1.Controls.Add(this.button8);
@@ -241,17 +251,15 @@ namespace Discord
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
 	 // 
-	 // cb_herbalism
+	 // button15
 	 // 
-	 this.cb_herbalism.AutoSize = true;
-	 this.cb_herbalism.Checked = true;
-	 this.cb_herbalism.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_herbalism.Location = new System.Drawing.Point(113, 102);
-	 this.cb_herbalism.Name = "cb_herbalism";
-	 this.cb_herbalism.Size = new System.Drawing.Size(72, 17);
-	 this.cb_herbalism.TabIndex = 47;
-	 this.cb_herbalism.Text = "Herbalism";
-	 this.cb_herbalism.UseVisualStyleBackColor = true;
+	 this.button15.Location = new System.Drawing.Point(112, 256);
+	 this.button15.Name = "button15";
+	 this.button15.Size = new System.Drawing.Size(75, 23);
+	 this.button15.TabIndex = 49;
+	 this.button15.Text = "Andaplanta";
+	 this.button15.UseVisualStyleBackColor = true;
+	 this.button15.Click += new System.EventHandler(this.button15_Click);
 	 // 
 	 // find_dots
 	 // 
@@ -333,7 +341,7 @@ namespace Discord
 	 this.tb_back_limiar.Name = "tb_back_limiar";
 	 this.tb_back_limiar.Size = new System.Drawing.Size(54, 20);
 	 this.tb_back_limiar.TabIndex = 38;
-	 this.tb_back_limiar.Text = "200";
+	 this.tb_back_limiar.Text = "100";
 	 // 
 	 // label9
 	 // 
@@ -375,7 +383,6 @@ namespace Discord
 	 this.lbdecay.Location = new System.Drawing.Point(512, 81);
 	 this.lbdecay.Name = "lbdecay";
 	 this.lbdecay.Size = new System.Drawing.Size(120, 199);
-	 this.lbdecay.Sorted = true;
 	 this.lbdecay.TabIndex = 33;
 	 // 
 	 // rtbcursor
@@ -414,16 +421,6 @@ namespace Discord
 	 this.bt_saveWPas.Text = "Save As";
 	 this.bt_saveWPas.UseVisualStyleBackColor = true;
 	 this.bt_saveWPas.Click += new System.EventHandler(this.bt_saveWPas_Click);
-	 // 
-	 // bt_loadWP
-	 // 
-	 this.bt_loadWP.Location = new System.Drawing.Point(8, 11);
-	 this.bt_loadWP.Name = "bt_loadWP";
-	 this.bt_loadWP.Size = new System.Drawing.Size(75, 23);
-	 this.bt_loadWP.TabIndex = 26;
-	 this.bt_loadWP.Text = "Load List";
-	 this.bt_loadWP.UseVisualStyleBackColor = true;
-	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
 	 // tb_filename
 	 // 
@@ -589,6 +586,8 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_wrong_gira);
+	 this.tabPage2.Controls.Add(this.cb_furbolg);
 	 this.tabPage2.Controls.Add(this.cb_loot_cloth);
 	 this.tabPage2.Controls.Add(this.cb_hearth_bagfull);
 	 this.tabPage2.Controls.Add(this.cb_nohumanoid);
@@ -607,6 +606,28 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 440);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_wrong_gira
+	 // 
+	 this.cb_wrong_gira.AutoSize = true;
+	 this.cb_wrong_gira.Checked = true;
+	 this.cb_wrong_gira.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_wrong_gira.Location = new System.Drawing.Point(532, 9);
+	 this.cb_wrong_gira.Name = "cb_wrong_gira";
+	 this.cb_wrong_gira.Size = new System.Drawing.Size(122, 17);
+	 this.cb_wrong_gira.TabIndex = 65;
+	 this.cb_wrong_gira.Text = "Gira com Wrongway";
+	 this.cb_wrong_gira.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_furbolg
+	 // 
+	 this.cb_furbolg.AutoSize = true;
+	 this.cb_furbolg.Location = new System.Drawing.Point(432, 41);
+	 this.cb_furbolg.Name = "cb_furbolg";
+	 this.cb_furbolg.Size = new System.Drawing.Size(147, 17);
+	 this.cb_furbolg.TabIndex = 64;
+	 this.cb_furbolg.Text = "Keep Furbolg Form active";
+	 this.cb_furbolg.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_loot_cloth
 	 // 
@@ -644,9 +665,9 @@ namespace Discord
 	 // 
 	 // pb_map
 	 // 
-	 this.pb_map.Location = new System.Drawing.Point(48, 176);
+	 this.pb_map.Location = new System.Drawing.Point(113, 235);
 	 this.pb_map.Name = "pb_map";
-	 this.pb_map.Size = new System.Drawing.Size(261, 247);
+	 this.pb_map.Size = new System.Drawing.Size(196, 188);
 	 this.pb_map.TabIndex = 26;
 	 this.pb_map.TabStop = false;
 	 // 
@@ -682,7 +703,7 @@ namespace Discord
 	 // lb_map_zoom
 	 // 
 	 this.lb_map_zoom.AutoSize = true;
-	 this.lb_map_zoom.Location = new System.Drawing.Point(4, 176);
+	 this.lb_map_zoom.Location = new System.Drawing.Point(57, 377);
 	 this.lb_map_zoom.Name = "lb_map_zoom";
 	 this.lb_map_zoom.Size = new System.Drawing.Size(34, 13);
 	 this.lb_map_zoom.TabIndex = 28;
@@ -690,7 +711,7 @@ namespace Discord
 	 // 
 	 // tb_map_zoom
 	 // 
-	 this.tb_map_zoom.Location = new System.Drawing.Point(6, 194);
+	 this.tb_map_zoom.Location = new System.Drawing.Point(59, 395);
 	 this.tb_map_zoom.Name = "tb_map_zoom";
 	 this.tb_map_zoom.Size = new System.Drawing.Size(43, 20);
 	 this.tb_map_zoom.TabIndex = 27;
@@ -710,6 +731,23 @@ namespace Discord
 	 // 
 	 this.Paladin.AllowDrop = true;
 	 this.Paladin.BackColor = System.Drawing.Color.Gray;
+	 this.Paladin.Controls.Add(this.tb_JOTC_lvl);
+	 this.Paladin.Controls.Add(this.cb_keep_JOTC);
+	 this.Paladin.Controls.Add(this.label13);
+	 this.Paladin.Controls.Add(this.tb_disable_BOW);
+	 this.Paladin.Controls.Add(this.cb_keep_JOL);
+	 this.Paladin.Controls.Add(this.label12);
+	 this.Paladin.Controls.Add(this.tb_combatheal);
+	 this.Paladin.Controls.Add(this.label10);
+	 this.Paladin.Controls.Add(this.tb_pull_mana);
+	 this.Paladin.Controls.Add(this.cb_retaura);
+	 this.Paladin.Controls.Add(this.cb_devaura);
+	 this.Paladin.Controls.Add(this.tb_BOSA_limiar);
+	 this.Paladin.Controls.Add(this.tb_SOL_limiar);
+	 this.Paladin.Controls.Add(this.tb_mana_min);
+	 this.Paladin.Controls.Add(this.cb_savemana);
+	 this.Paladin.Controls.Add(this.cb_SOL);
+	 this.Paladin.Controls.Add(this.cb_BOSA);
 	 this.Paladin.Controls.Add(this.cb_concentration_aura);
 	 this.Paladin.Controls.Add(this.cb_use_exorcism);
 	 this.Paladin.Controls.Add(this.cb_BOK);
@@ -723,20 +761,14 @@ namespace Discord
 	 this.Paladin.Controls.Add(this.cb_purify);
 	 this.Paladin.Controls.Add(this.label19);
 	 this.Paladin.Controls.Add(this.tb_interrupt_at);
-	 this.Paladin.Controls.Add(this.label17);
 	 this.Paladin.Controls.Add(this.cb_hammer_range);
 	 this.Paladin.Controls.Add(this.cb_use_hammer);
 	 this.Paladin.Controls.Add(this.label16);
 	 this.Paladin.Controls.Add(this.tb_preheal);
-	 this.Paladin.Controls.Add(this.label13);
-	 this.Paladin.Controls.Add(this.label12);
-	 this.Paladin.Controls.Add(this.label11);
-	 this.Paladin.Controls.Add(this.label10);
 	 this.Paladin.Controls.Add(this.cb_judge_range);
 	 this.Paladin.Controls.Add(this.cb_judge);
 	 this.Paladin.Controls.Add(this.cb_BOM);
-	 this.Paladin.Controls.Add(this.cb_hasSOR);
-	 this.Paladin.Controls.Add(this.cb_useSOR);
+	 this.Paladin.Controls.Add(this.cb_SOR);
 	 this.Paladin.Location = new System.Drawing.Point(4, 22);
 	 this.Paladin.Name = "Paladin";
 	 this.Paladin.Padding = new System.Windows.Forms.Padding(3);
@@ -744,12 +776,177 @@ namespace Discord
 	 this.Paladin.TabIndex = 0;
 	 this.Paladin.Text = "Paladin";
 	 // 
+	 // tb_JOTC_lvl
+	 // 
+	 this.tb_JOTC_lvl.Location = new System.Drawing.Point(314, 319);
+	 this.tb_JOTC_lvl.Name = "tb_JOTC_lvl";
+	 this.tb_JOTC_lvl.Size = new System.Drawing.Size(18, 20);
+	 this.tb_JOTC_lvl.TabIndex = 82;
+	 this.tb_JOTC_lvl.Text = "-2";
+	 // 
+	 // cb_keep_JOTC
+	 // 
+	 this.cb_keep_JOTC.AutoSize = true;
+	 this.cb_keep_JOTC.Location = new System.Drawing.Point(212, 322);
+	 this.cb_keep_JOTC.Name = "cb_keep_JOTC";
+	 this.cb_keep_JOTC.Size = new System.Drawing.Size(110, 17);
+	 this.cb_keep_JOTC.TabIndex = 81;
+	 this.cb_keep_JOTC.Text = "Keep JOTC   Lvl: ";
+	 this.cb_keep_JOTC.UseVisualStyleBackColor = true;
+	 // 
+	 // label13
+	 // 
+	 this.label13.AutoSize = true;
+	 this.label13.Location = new System.Drawing.Point(269, 6);
+	 this.label13.Name = "label13";
+	 this.label13.Size = new System.Drawing.Size(25, 13);
+	 this.label13.TabIndex = 80;
+	 this.label13.Text = "ate ";
+	 // 
+	 // tb_disable_BOW
+	 // 
+	 this.tb_disable_BOW.Location = new System.Drawing.Point(297, 4);
+	 this.tb_disable_BOW.Name = "tb_disable_BOW";
+	 this.tb_disable_BOW.Size = new System.Drawing.Size(33, 20);
+	 this.tb_disable_BOW.TabIndex = 79;
+	 this.tb_disable_BOW.Text = "90";
+	 // 
+	 // cb_keep_JOL
+	 // 
+	 this.cb_keep_JOL.AutoSize = true;
+	 this.cb_keep_JOL.Checked = true;
+	 this.cb_keep_JOL.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_keep_JOL.Location = new System.Drawing.Point(214, 299);
+	 this.cb_keep_JOL.Name = "cb_keep_JOL";
+	 this.cb_keep_JOL.Size = new System.Drawing.Size(73, 17);
+	 this.cb_keep_JOL.TabIndex = 78;
+	 this.cb_keep_JOL.Text = "Keep JOL";
+	 this.cb_keep_JOL.UseVisualStyleBackColor = true;
+	 // 
+	 // label12
+	 // 
+	 this.label12.AutoSize = true;
+	 this.label12.Location = new System.Drawing.Point(230, 188);
+	 this.label12.Name = "label12";
+	 this.label12.Size = new System.Drawing.Size(66, 13);
+	 this.label12.TabIndex = 76;
+	 this.label12.Text = "Combat heal";
+	 // 
+	 // tb_combatheal
+	 // 
+	 this.tb_combatheal.Location = new System.Drawing.Point(299, 185);
+	 this.tb_combatheal.Name = "tb_combatheal";
+	 this.tb_combatheal.Size = new System.Drawing.Size(33, 20);
+	 this.tb_combatheal.TabIndex = 75;
+	 this.tb_combatheal.Text = "40";
+	 // 
+	 // label10
+	 // 
+	 this.label10.AutoSize = true;
+	 this.label10.Location = new System.Drawing.Point(230, 51);
+	 this.label10.Name = "label10";
+	 this.label10.Size = new System.Drawing.Size(53, 13);
+	 this.label10.TabIndex = 74;
+	 this.label10.Text = "Pull mana";
+	 // 
+	 // tb_pull_mana
+	 // 
+	 this.tb_pull_mana.Location = new System.Drawing.Point(312, 52);
+	 this.tb_pull_mana.Name = "tb_pull_mana";
+	 this.tb_pull_mana.Size = new System.Drawing.Size(33, 20);
+	 this.tb_pull_mana.TabIndex = 73;
+	 this.tb_pull_mana.Text = "40";
+	 // 
+	 // cb_retaura
+	 // 
+	 this.cb_retaura.AutoSize = true;
+	 this.cb_retaura.Checked = true;
+	 this.cb_retaura.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_retaura.Location = new System.Drawing.Point(7, 184);
+	 this.cb_retaura.Name = "cb_retaura";
+	 this.cb_retaura.Size = new System.Drawing.Size(68, 17);
+	 this.cb_retaura.TabIndex = 72;
+	 this.cb_retaura.Text = "Ret Aura";
+	 this.cb_retaura.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_devaura
+	 // 
+	 this.cb_devaura.AutoSize = true;
+	 this.cb_devaura.Checked = true;
+	 this.cb_devaura.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_devaura.Location = new System.Drawing.Point(243, 102);
+	 this.cb_devaura.Name = "cb_devaura";
+	 this.cb_devaura.Size = new System.Drawing.Size(94, 17);
+	 this.cb_devaura.TabIndex = 71;
+	 this.cb_devaura.Text = "Devotion Aura";
+	 this.cb_devaura.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_BOSA_limiar
+	 // 
+	 this.tb_BOSA_limiar.Location = new System.Drawing.Point(329, 120);
+	 this.tb_BOSA_limiar.Name = "tb_BOSA_limiar";
+	 this.tb_BOSA_limiar.Size = new System.Drawing.Size(28, 20);
+	 this.tb_BOSA_limiar.TabIndex = 70;
+	 this.tb_BOSA_limiar.Text = "70";
+	 // 
+	 // tb_SOL_limiar
+	 // 
+	 this.tb_SOL_limiar.Location = new System.Drawing.Point(297, 249);
+	 this.tb_SOL_limiar.Name = "tb_SOL_limiar";
+	 this.tb_SOL_limiar.Size = new System.Drawing.Size(40, 20);
+	 this.tb_SOL_limiar.TabIndex = 69;
+	 this.tb_SOL_limiar.Text = "50";
+	 // 
+	 // tb_mana_min
+	 // 
+	 this.tb_mana_min.Location = new System.Drawing.Point(315, 29);
+	 this.tb_mana_min.Name = "tb_mana_min";
+	 this.tb_mana_min.Size = new System.Drawing.Size(30, 20);
+	 this.tb_mana_min.TabIndex = 68;
+	 this.tb_mana_min.Text = "60";
+	 // 
+	 // cb_savemana
+	 // 
+	 this.cb_savemana.AutoSize = true;
+	 this.cb_savemana.Checked = true;
+	 this.cb_savemana.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_savemana.Location = new System.Drawing.Point(213, 29);
+	 this.cb_savemana.Name = "cb_savemana";
+	 this.cb_savemana.Size = new System.Drawing.Size(80, 17);
+	 this.cb_savemana.TabIndex = 67;
+	 this.cb_savemana.Text = "Save mana";
+	 this.cb_savemana.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_SOL
+	 // 
+	 this.cb_SOL.AutoSize = true;
+	 this.cb_SOL.Checked = true;
+	 this.cb_SOL.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_SOL.Location = new System.Drawing.Point(221, 252);
+	 this.cb_SOL.Name = "cb_SOL";
+	 this.cb_SOL.Size = new System.Drawing.Size(72, 17);
+	 this.cb_SOL.TabIndex = 66;
+	 this.cb_SOL.Text = "Usar SOL";
+	 this.cb_SOL.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_BOSA
+	 // 
+	 this.cb_BOSA.AutoSize = true;
+	 this.cb_BOSA.Checked = true;
+	 this.cb_BOSA.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_BOSA.Location = new System.Drawing.Point(204, 122);
+	 this.cb_BOSA.Name = "cb_BOSA";
+	 this.cb_BOSA.Size = new System.Drawing.Size(128, 17);
+	 this.cb_BOSA.TabIndex = 65;
+	 this.cb_BOSA.Text = "Blessing of Sanctuary";
+	 this.cb_BOSA.UseVisualStyleBackColor = true;
+	 // 
 	 // cb_concentration_aura
 	 // 
 	 this.cb_concentration_aura.AutoSize = true;
 	 this.cb_concentration_aura.Checked = true;
 	 this.cb_concentration_aura.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_concentration_aura.Location = new System.Drawing.Point(10, 100);
+	 this.cb_concentration_aura.Location = new System.Drawing.Point(9, 119);
 	 this.cb_concentration_aura.Name = "cb_concentration_aura";
 	 this.cb_concentration_aura.Size = new System.Drawing.Size(116, 17);
 	 this.cb_concentration_aura.TabIndex = 64;
@@ -761,7 +958,7 @@ namespace Discord
 	 this.cb_use_exorcism.AutoSize = true;
 	 this.cb_use_exorcism.Checked = true;
 	 this.cb_use_exorcism.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_use_exorcism.Location = new System.Drawing.Point(11, 83);
+	 this.cb_use_exorcism.Location = new System.Drawing.Point(10, 102);
 	 this.cb_use_exorcism.Name = "cb_use_exorcism";
 	 this.cb_use_exorcism.Size = new System.Drawing.Size(90, 17);
 	 this.cb_use_exorcism.TabIndex = 63;
@@ -773,7 +970,7 @@ namespace Discord
 	 this.cb_BOK.AutoSize = true;
 	 this.cb_BOK.Checked = true;
 	 this.cb_BOK.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_BOK.Location = new System.Drawing.Point(45, 52);
+	 this.cb_BOK.Location = new System.Drawing.Point(6, 29);
 	 this.cb_BOK.Name = "cb_BOK";
 	 this.cb_BOK.Size = new System.Drawing.Size(73, 17);
 	 this.cb_BOK.TabIndex = 62;
@@ -782,22 +979,22 @@ namespace Discord
 	 // 
 	 // tb_bow_trig
 	 // 
-	 this.tb_bow_trig.Location = new System.Drawing.Point(108, 27);
+	 this.tb_bow_trig.Location = new System.Drawing.Point(234, 3);
 	 this.tb_bow_trig.Name = "tb_bow_trig";
 	 this.tb_bow_trig.Size = new System.Drawing.Size(33, 20);
 	 this.tb_bow_trig.TabIndex = 61;
-	 this.tb_bow_trig.Text = "40";
+	 this.tb_bow_trig.Text = "60";
 	 // 
 	 // cb_BOW
 	 // 
 	 this.cb_BOW.AutoSize = true;
 	 this.cb_BOW.Checked = true;
 	 this.cb_BOW.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_BOW.Location = new System.Drawing.Point(6, 29);
+	 this.cb_BOW.Location = new System.Drawing.Point(159, 6);
 	 this.cb_BOW.Name = "cb_BOW";
-	 this.cb_BOW.Size = new System.Drawing.Size(100, 17);
+	 this.cb_BOW.Size = new System.Drawing.Size(80, 17);
 	 this.cb_BOW.TabIndex = 59;
-	 this.cb_BOW.Text = "Usar BOW (N4)";
+	 this.cb_BOW.Text = "Usar BOW ";
 	 this.cb_BOW.UseVisualStyleBackColor = true;
 	 // 
 	 // tb_stoneform_at
@@ -810,7 +1007,7 @@ namespace Discord
 	 // 
 	 // tb_loh_hp
 	 // 
-	 this.tb_loh_hp.Location = new System.Drawing.Point(108, 221);
+	 this.tb_loh_hp.Location = new System.Drawing.Point(302, 158);
 	 this.tb_loh_hp.Name = "tb_loh_hp";
 	 this.tb_loh_hp.Size = new System.Drawing.Size(33, 20);
 	 this.tb_loh_hp.TabIndex = 57;
@@ -821,7 +1018,7 @@ namespace Discord
 	 this.cb_loh.AutoSize = true;
 	 this.cb_loh.Checked = true;
 	 this.cb_loh.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_loh.Location = new System.Drawing.Point(10, 224);
+	 this.cb_loh.Location = new System.Drawing.Point(204, 161);
 	 this.cb_loh.Name = "cb_loh";
 	 this.cb_loh.Size = new System.Drawing.Size(92, 17);
 	 this.cb_loh.TabIndex = 56;
@@ -843,7 +1040,8 @@ namespace Discord
 	 this.cb_bubble.AutoSize = true;
 	 this.cb_bubble.Checked = true;
 	 this.cb_bubble.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_bubble.Location = new System.Drawing.Point(10, 205);
+	 this.cb_bubble.Enabled = false;
+	 this.cb_bubble.Location = new System.Drawing.Point(234, 209);
 	 this.cb_bubble.Name = "cb_bubble";
 	 this.cb_bubble.Size = new System.Drawing.Size(59, 17);
 	 this.cb_bubble.TabIndex = 55;
@@ -855,7 +1053,7 @@ namespace Discord
 	 this.cb_purify.AutoSize = true;
 	 this.cb_purify.Checked = true;
 	 this.cb_purify.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_purify.Location = new System.Drawing.Point(11, 184);
+	 this.cb_purify.Location = new System.Drawing.Point(6, 248);
 	 this.cb_purify.Name = "cb_purify";
 	 this.cb_purify.Size = new System.Drawing.Size(52, 17);
 	 this.cb_purify.TabIndex = 54;
@@ -878,15 +1076,6 @@ namespace Discord
 	 this.tb_interrupt_at.Size = new System.Drawing.Size(33, 20);
 	 this.tb_interrupt_at.TabIndex = 52;
 	 this.tb_interrupt_at.Text = "50";
-	 // 
-	 // label17
-	 // 
-	 this.label17.AutoSize = true;
-	 this.label17.Location = new System.Drawing.Point(307, 164);
-	 this.label17.Name = "label17";
-	 this.label17.Size = new System.Drawing.Size(13, 13);
-	 this.label17.TabIndex = 51;
-	 this.label17.Text = "4";
 	 // 
 	 // cb_hammer_range
 	 // 
@@ -915,7 +1104,7 @@ namespace Discord
 	 // label16
 	 // 
 	 this.label16.AutoSize = true;
-	 this.label16.Location = new System.Drawing.Point(10, 248);
+	 this.label16.Location = new System.Drawing.Point(205, 229);
 	 this.label16.Name = "label16";
 	 this.label16.Size = new System.Drawing.Size(88, 13);
 	 this.label16.TabIndex = 46;
@@ -923,47 +1112,11 @@ namespace Discord
 	 // 
 	 // tb_preheal
 	 // 
-	 this.tb_preheal.Location = new System.Drawing.Point(104, 245);
+	 this.tb_preheal.Location = new System.Drawing.Point(299, 226);
 	 this.tb_preheal.Name = "tb_preheal";
 	 this.tb_preheal.Size = new System.Drawing.Size(33, 20);
 	 this.tb_preheal.TabIndex = 45;
 	 this.tb_preheal.Text = "70";
-	 // 
-	 // label13
-	 // 
-	 this.label13.AutoSize = true;
-	 this.label13.Location = new System.Drawing.Point(307, 141);
-	 this.label13.Name = "label13";
-	 this.label13.Size = new System.Drawing.Size(13, 13);
-	 this.label13.TabIndex = 44;
-	 this.label13.Text = "5";
-	 // 
-	 // label12
-	 // 
-	 this.label12.AutoSize = true;
-	 this.label12.Location = new System.Drawing.Point(147, 72);
-	 this.label12.Name = "label12";
-	 this.label12.Size = new System.Drawing.Size(13, 13);
-	 this.label12.TabIndex = 43;
-	 this.label12.Text = "3";
-	 // 
-	 // label11
-	 // 
-	 this.label11.AutoSize = true;
-	 this.label11.Location = new System.Drawing.Point(12, 329);
-	 this.label11.Name = "label11";
-	 this.label11.Size = new System.Drawing.Size(301, 13);
-	 this.label11.TabIndex = 42;
-	 this.label11.Text = "Holy Light: 0   Macro /cleartarget: 7   Macro /targetlasttarget 8";
-	 // 
-	 // label10
-	 // 
-	 this.label10.AutoSize = true;
-	 this.label10.Location = new System.Drawing.Point(303, 11);
-	 this.label10.Name = "label10";
-	 this.label10.Size = new System.Drawing.Size(13, 13);
-	 this.label10.TabIndex = 41;
-	 this.label10.Text = "2";
 	 // 
 	 // cb_judge_range
 	 // 
@@ -994,34 +1147,25 @@ namespace Discord
 	 this.cb_BOM.AutoSize = true;
 	 this.cb_BOM.Checked = true;
 	 this.cb_BOM.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_BOM.Location = new System.Drawing.Point(66, 71);
+	 this.cb_BOM.Location = new System.Drawing.Point(6, 71);
 	 this.cb_BOM.Name = "cb_BOM";
 	 this.cb_BOM.Size = new System.Drawing.Size(75, 17);
 	 this.cb_BOM.TabIndex = 33;
 	 this.cb_BOM.Text = "Usar BOM";
 	 this.cb_BOM.UseVisualStyleBackColor = true;
+	 this.cb_BOM.CheckedChanged += new System.EventHandler(this.cb_BOM_CheckedChanged);
 	 // 
-	 // cb_hasSOR
+	 // cb_SOR
 	 // 
-	 this.cb_hasSOR.AutoSize = true;
-	 this.cb_hasSOR.Location = new System.Drawing.Point(93, 8);
-	 this.cb_hasSOR.Name = "cb_hasSOR";
-	 this.cb_hasSOR.Size = new System.Drawing.Size(71, 17);
-	 this.cb_hasSOR.TabIndex = 1;
-	 this.cb_hasSOR.Text = "Has SOR";
-	 this.cb_hasSOR.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_useSOR
-	 // 
-	 this.cb_useSOR.AutoSize = true;
-	 this.cb_useSOR.Checked = true;
-	 this.cb_useSOR.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_useSOR.Location = new System.Drawing.Point(7, 8);
-	 this.cb_useSOR.Name = "cb_useSOR";
-	 this.cb_useSOR.Size = new System.Drawing.Size(74, 17);
-	 this.cb_useSOR.TabIndex = 0;
-	 this.cb_useSOR.Text = "Usar SOR";
-	 this.cb_useSOR.UseVisualStyleBackColor = true;
+	 this.cb_SOR.AutoSize = true;
+	 this.cb_SOR.Checked = true;
+	 this.cb_SOR.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_SOR.Location = new System.Drawing.Point(7, 8);
+	 this.cb_SOR.Name = "cb_SOR";
+	 this.cb_SOR.Size = new System.Drawing.Size(74, 17);
+	 this.cb_SOR.TabIndex = 0;
+	 this.cb_SOR.Text = "Usar SOR";
+	 this.cb_SOR.UseVisualStyleBackColor = true;
 	 // 
 	 // tabPage4
 	 // 
@@ -1050,7 +1194,7 @@ namespace Discord
 	 this.pan_tar.Controls.Add(this.label1);
 	 this.pan_tar.Location = new System.Drawing.Point(157, 29);
 	 this.pan_tar.Name = "pan_tar";
-	 this.pan_tar.Size = new System.Drawing.Size(142, 134);
+	 this.pan_tar.Size = new System.Drawing.Size(142, 199);
 	 this.pan_tar.TabIndex = 24;
 	 // 
 	 // cb_killgray
@@ -1161,9 +1305,10 @@ namespace Discord
 	 // 
 	 // pan_me
 	 // 
-	 this.pan_me.Controls.Add(this.cb_wrongway);
+	 this.pan_me.Controls.Add(this.cb_pacifist);
 	 this.pan_me.Controls.Add(this.cbskin);
 	 this.pan_me.Controls.Add(this.cb_loot);
+	 this.pan_me.Controls.Add(this.cb_herbalism);
 	 this.pan_me.Controls.Add(this.cb_pull);
 	 this.pan_me.Controls.Add(this.cb_autoattack);
 	 this.pan_me.Controls.Add(this.tb_playercast);
@@ -1178,18 +1323,19 @@ namespace Discord
 	 this.pan_me.Controls.Add(this.tb_mana);
 	 this.pan_me.Location = new System.Drawing.Point(9, 6);
 	 this.pan_me.Name = "pan_me";
-	 this.pan_me.Size = new System.Drawing.Size(142, 157);
+	 this.pan_me.Size = new System.Drawing.Size(142, 222);
 	 this.pan_me.TabIndex = 23;
 	 // 
-	 // cb_wrongway
+	 // cb_pacifist
 	 // 
-	 this.cb_wrongway.AutoSize = true;
-	 this.cb_wrongway.Location = new System.Drawing.Point(74, 138);
-	 this.cb_wrongway.Name = "cb_wrongway";
-	 this.cb_wrongway.Size = new System.Drawing.Size(83, 17);
-	 this.cb_wrongway.TabIndex = 36;
-	 this.cb_wrongway.Text = "Wrong Way";
-	 this.cb_wrongway.UseVisualStyleBackColor = true;
+	 this.cb_pacifist.AutoSize = true;
+	 this.cb_pacifist.Location = new System.Drawing.Point(3, 185);
+	 this.cb_pacifist.Name = "cb_pacifist";
+	 this.cb_pacifist.Size = new System.Drawing.Size(66, 17);
+	 this.cb_pacifist.TabIndex = 48;
+	 this.cb_pacifist.Text = "Pacifista";
+	 this.cb_pacifist.UseVisualStyleBackColor = true;
+	 this.cb_pacifist.CheckedChanged += new System.EventHandler(this.cb_pacifist_CheckedChanged);
 	 // 
 	 // cbskin
 	 // 
@@ -1214,6 +1360,16 @@ namespace Discord
 	 this.cb_loot.TabIndex = 34;
 	 this.cb_loot.Text = "Loot mobs";
 	 this.cb_loot.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_herbalism
+	 // 
+	 this.cb_herbalism.AutoSize = true;
+	 this.cb_herbalism.Location = new System.Drawing.Point(3, 162);
+	 this.cb_herbalism.Name = "cb_herbalism";
+	 this.cb_herbalism.Size = new System.Drawing.Size(72, 17);
+	 this.cb_herbalism.TabIndex = 47;
+	 this.cb_herbalism.Text = "Herbalism";
+	 this.cb_herbalism.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_pull
 	 // 
@@ -1368,6 +1524,16 @@ namespace Discord
 	 this.tb_mapname.Size = new System.Drawing.Size(134, 20);
 	 this.tb_mapname.TabIndex = 28;
 	 this.tb_mapname.Text = "HSA";
+	 // 
+	 // bt_loadWP
+	 // 
+	 this.bt_loadWP.Location = new System.Drawing.Point(58, 38);
+	 this.bt_loadWP.Name = "bt_loadWP";
+	 this.bt_loadWP.Size = new System.Drawing.Size(75, 23);
+	 this.bt_loadWP.TabIndex = 26;
+	 this.bt_loadWP.Text = "Load List";
+	 this.bt_loadWP.UseVisualStyleBackColor = true;
+	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
 	 // bt_anda
 	 // 
@@ -1568,7 +1734,7 @@ namespace Discord
 	 // 
 	 // tb_loot_tries
 	 // 
-	 this.tb_loot_tries.Location = new System.Drawing.Point(41, 253);
+	 this.tb_loot_tries.Location = new System.Drawing.Point(49, 293);
 	 this.tb_loot_tries.Name = "tb_loot_tries";
 	 this.tb_loot_tries.Size = new System.Drawing.Size(45, 20);
 	 this.tb_loot_tries.TabIndex = 30;
@@ -1577,33 +1743,21 @@ namespace Discord
 	 // label22
 	 // 
 	 this.label22.AutoSize = true;
-	 this.label22.Location = new System.Drawing.Point(5, 256);
+	 this.label22.Location = new System.Drawing.Point(13, 296);
 	 this.label22.Name = "label22";
 	 this.label22.Size = new System.Drawing.Size(30, 13);
 	 this.label22.TabIndex = 31;
 	 this.label22.Text = "Tries";
 	 // 
-	 // cb_pacifist
+	 // button16
 	 // 
-	 this.cb_pacifist.AutoSize = true;
-	 this.cb_pacifist.Checked = true;
-	 this.cb_pacifist.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_pacifist.Location = new System.Drawing.Point(186, 102);
-	 this.cb_pacifist.Name = "cb_pacifist";
-	 this.cb_pacifist.Size = new System.Drawing.Size(66, 17);
-	 this.cb_pacifist.TabIndex = 48;
-	 this.cb_pacifist.Text = "Pacifista";
-	 this.cb_pacifist.UseVisualStyleBackColor = true;
-	 // 
-	 // button15
-	 // 
-	 this.button15.Location = new System.Drawing.Point(112, 256);
-	 this.button15.Name = "button15";
-	 this.button15.Size = new System.Drawing.Size(75, 23);
-	 this.button15.TabIndex = 49;
-	 this.button15.Text = "Andaplanta";
-	 this.button15.UseVisualStyleBackColor = true;
-	 this.button15.Click += new System.EventHandler(this.button15_Click);
+	 this.button16.Location = new System.Drawing.Point(3, 224);
+	 this.button16.Name = "button16";
+	 this.button16.Size = new System.Drawing.Size(93, 58);
+	 this.button16.TabIndex = 64;
+	 this.button16.Text = "TERMINATE";
+	 this.button16.UseVisualStyleBackColor = true;
+	 this.button16.Click += new System.EventHandler(this.button16_Click);
 	 // 
 	 // Form1
 	 // 
@@ -1611,6 +1765,7 @@ namespace Discord
 	 this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 	 this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 	 this.ClientSize = new System.Drawing.Size(819, 482);
+	 this.Controls.Add(this.button16);
 	 this.Controls.Add(this.label22);
 	 this.Controls.Add(this.tb_loot_tries);
 	 this.Controls.Add(this.button12);
@@ -1631,6 +1786,7 @@ namespace Discord
 	 this.Controls.Add(this.tb_debug2);
 	 this.Controls.Add(this.bt_debug1);
 	 this.Controls.Add(this.bt_getstats);
+	 this.Controls.Add(this.bt_loadWP);
 	 this.Controls.Add(this.tb_yaw);
 	 this.Controls.Add(this.tb_spd);
 	 this.Controls.Add(this.tb_y);
@@ -1718,8 +1874,7 @@ namespace Discord
 	private System.Windows.Forms.ProgressBar pb_tarcast;
 	private System.Windows.Forms.TabControl tab_buffs;
 	private System.Windows.Forms.TabPage Paladin;
-	private System.Windows.Forms.CheckBox cb_hasSOR;
-	private System.Windows.Forms.CheckBox cb_useSOR;
+	private System.Windows.Forms.CheckBox cb_SOR;
 	private System.Windows.Forms.TabPage tabPage4;
 	private System.Windows.Forms.TextBox textBox1;
 	private System.Windows.Forms.CheckBox cb_melee;
@@ -1731,10 +1886,6 @@ namespace Discord
 	private System.Windows.Forms.CheckBox cb_autoattack;
 	private System.Windows.Forms.CheckBox cb_pull;
 	private System.Windows.Forms.Button button8;
-	private System.Windows.Forms.Label label10;
-	private System.Windows.Forms.Label label11;
-	private System.Windows.Forms.Label label12;
-	private System.Windows.Forms.Label label13;
 		private System.Windows.Forms.Label label14;
 		private System.Windows.Forms.Label label15;
 		private System.Windows.Forms.PictureBox pb_map;
@@ -1745,7 +1896,6 @@ namespace Discord
 	private System.Windows.Forms.CheckBox cb_killgray;
 	private System.Windows.Forms.Label label16;
 	private System.Windows.Forms.TextBox tb_preheal;
-	private System.Windows.Forms.Label label17;
 	private System.Windows.Forms.CheckBox cb_hammer_range;
 	private System.Windows.Forms.CheckBox cb_use_hammer;
 	private System.Windows.Forms.Label label19;
@@ -1761,7 +1911,6 @@ namespace Discord
 		private System.Windows.Forms.CheckBox cb_dwarf;
 		private System.Windows.Forms.CheckBox cb_bubble;
 		private System.Windows.Forms.CheckBox cb_purify;
-		private System.Windows.Forms.CheckBox cb_wrongway;
 		private System.Windows.Forms.TextBox tb_loh_hp;
 		private System.Windows.Forms.CheckBox cb_loh;
 		private System.Windows.Forms.Label label21;
@@ -1801,6 +1950,26 @@ namespace Discord
 	private CheckBox cb_herbalism;
 	private CheckBox cb_pacifist;
 	private Button button15;
+	private CheckBox cb_BOSA;
+	private CheckBox cb_SOL;
+	private CheckBox cb_savemana;
+	private TextBox tb_mana_min;
+	private TextBox tb_SOL_limiar;
+	private TextBox tb_BOSA_limiar;
+	private CheckBox cb_devaura;
+	private CheckBox cb_retaura;
+	private Label label10;
+	private TextBox tb_pull_mana;
+	private Label label12;
+	private TextBox tb_combatheal;
+	private CheckBox cb_keep_JOL;
+	private Button button16;
+	private Label label13;
+	private TextBox tb_disable_BOW;
+	private CheckBox cb_furbolg;
+	private CheckBox cb_wrong_gira;
+	private CheckBox cb_keep_JOTC;
+	private TextBox tb_JOTC_lvl;
  }
 }
 

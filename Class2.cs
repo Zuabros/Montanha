@@ -73,7 +73,7 @@ namespace Discord
 	public  class DecayTracker
 	{
 	 private Queue<int> history = new Queue<int>();
-	 private const int max_count = 15;
+	 private const int max_count = 12;
 
 	 public int current { get; private set; } = 0;
 
@@ -105,49 +105,93 @@ namespace Discord
 
 
 
-	// CLASSE DECAYSESSION - CALCULA O DECAY DE VIDA DO PLAYER
+	// ----------------------------------------------
+	// CLASSE DECAYSESSION - SLIDING WINDOW 10 SEG
+	// ----------------------------------------------
 	public class DecaySession
 	{
-	 private int hp_ini;
-	 private int hp_ant;
-	 private long t_ini;
-	 private long t_ant;
-	 private int current;
-
-	 public void Start(int hp)
+	 // struct interna para guardar eventos de dano
+	 private struct evt
 	 {
-		hp_ini = hp;
-		hp_ant = hp;
-		t_ini = Environment.TickCount;
-		t_ant = t_ini;
-		current = 0;
+		public long t;    // timestamp em ms
+		public int dmg;   // valor do dano
 	 }
 
-	 public void Update(int hp)
+	 private Queue<evt> fila; // fila dos eventos recentes
+	 private int hp_ini;      // hp inicial da luta
+	 private int hp_ant;      // hp do último tick
+	 private long t_ini;      // timestamp do início
+	 private long t_ant;      // timestamp do último tick
+
+	 public DecaySession() // construtor
 	 {
-		long now = Environment.TickCount;
-		int dhp = hp_ant - hp;
-		int dms = (int)(now - t_ant);
-
-		if (dhp > 0 && dms > 0)
-		 current = (int)(dhp * 60000 / dms); // hp por minuto
-
-		hp_ant = hp;
-		t_ant = now;
+		fila = new Queue<evt>(); // inicia fila
 	 }
 
-	 public int Current => current;
+	 public void Start(int hp) // inicia nova sessão
+	 {
+		hp_ini = hp;                 // guarda HP inicial
+		hp_ant = hp;                 // define último HP
+		t_ini = Environment.TickCount; // timestamp inicial
+		t_ant = t_ini;               // último tick = início
+		fila.Clear();                // limpa eventos anteriores
+	 }
 
-	 public int End(int hp_final)
+	 public void Update(int hp) // chamada periódica
+	 {
+		long now = Environment.TickCount; // tempo atual
+		int dhp = hp_ant - hp;            // calcula perda de HP desde o último tick
+
+		if (dhp > 0) // só registra se houve dano
+		{
+		 evt e;
+		 e.t = now;  // tempo do evento
+		 e.dmg = dhp; // valor do dano
+		 fila.Enqueue(e); // adiciona à fila
+		}
+
+		hp_ant = hp; // atualiza o último HP
+		t_ant = now; // atualiza o último tempo
+	 }
+
+	 public int Current(int avg_decay) // decay atual (com média antes dos 10s)
+	 {
+		int segundos_decay = 11 * 1000; // 13 segundos em milissegundos
+		long agora = Environment.TickCount; // tempo atual
+
+		if (agora - t_ini < segundos_decay) // ainda nos primeiros 10s de luta
+		 return avg_decay; // retorna média anterior
+
+		// limpa eventos com mais de 10s
+		while (fila.Count > 0 && agora - fila.Peek().t >	segundos_decay)
+		 fila.Dequeue();
+
+		if (fila.Count == 0) return 0; // nenhum evento recente
+
+		int total = 0; // soma dos danos
+		long mais_velho = fila.Peek().t;
+		long mais_novo = fila.Last().t;
+		long dur = mais_novo - mais_velho;
+
+		foreach (var e in fila)
+		 total += e.dmg;
+
+		if (dur <= 0) dur = 1; // evita divisão por zero
+
+		return (int)(total * 60000 / dur); // hp por minuto
+	 }
+
+	 public int End(int hp_final) // decay médio da luta
 	 {
 		int total_loss = hp_ini - hp_final;
 		int total_time = (int)(Environment.TickCount - t_ini);
 
 		if (total_time <= 0 || total_loss <= 0) return 0;
 
-		return (int)(total_loss * 60000 / total_time); // hp por minuto -  decay médio da luta
+		return (int)(total_loss * 60000 / total_time); // hp por minuto
 	 }
 	}
+
 
 
 
