@@ -1161,21 +1161,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 // -----------------------------------
 		 else if (cb_hearth_bagfull.Checked) // SEM ESPAÇO NA BAG - HEARTHSTONE ?
 		 {
-			aperta(HEARTHSTONE); // Casta hearth 
-			int segundos = 0; // timer para hearthstone 
-			loc origin = me.pos; // de onde eu saí 
-			loga("Bags full. Usando Hearthstone. ");
-			while (!me.combat && segundos<20) // espera hearth 
-			{
-			 wait(1000);
-			 checkme();
-			 segundos++;
-			}
-			if (dist(me.pos,origin) > 200) // foi para bem longe 
-			{
-			 loga("Teleport confirmado, encerrando o bot");
-			 Environment.Exit(0);
-			}
+			HS(); // usa a pedra de lar se não tiver espaço na bag
 		 }
 
 		 //if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
@@ -1192,9 +1178,32 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 	 //aperta(WKEY, 2); // solta W ao chegar no destino
 	}
 	bool catando_planta = false;
+	//--------------------------------------------
+	/// MÉTODO HEARTHHOME - USADO PARA VOLTAR PARA A CIDADE COM HEARTHSTONE
+	//--------------------------------------------
+	void HS()
+	{
+	 aperta(HEARTHSTONE); // Casta hearth 
+	 int segundos = 0; // timer para hearthstone 
+	 loc origin = me.pos; // de onde eu saí 
+	 loga("Bags full. Usando Hearthstone. ");
+	 while (!me.combat && segundos < 20) // espera hearth 
+	 {
+		wait(1000);
+		checkme();
+		segundos++;
+	 }
+	 if (dist(me.pos, origin) > 200) // foi para bem longe 
+	 {
+		loga("Teleport confirmado, encerrando o bot");
+		Environment.Exit(0);
+	 }
+	}
 
 
-	void andaplanta(loc alvo)
+
+
+void andaplanta(loc alvo)
 	{
 	 solta(ANDA); // para de andar
 	 aperta(F2); // anda devagar ate a planta 
@@ -2495,6 +2504,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	// -------------------------------------------------------
 	private void button1_Click_1(object sender, EventArgs e)
 	{
+	 int hs_tick = 0; // guarda o último tick registrado (global ou da classe)
 	 on = true;                        // ativa o bot
 	 lwp.Clear();                      // limpa lista de waypoints
 
@@ -2513,6 +2523,24 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 
 	 while (on)
 	 {
+		//-----------------------------
+		// CONTROLE DE TIMER PARA HS 
+		//-----------------------------
+		if (cb_HS_timer.Checked) // só executa se o timer estiver ligado
+		{
+		 if (hs_tick == 0) hs_tick = Environment.TickCount; // inicia controle se for a primeira vez
+		 int agora = Environment.TickCount; // tempo atual em ms
+		 if (agora - hs_tick >= 60000) // passou 60 segundos?
+		 {
+			hs_tick = agora; // atualiza o marcador
+			int min = 0; // minutos restantes
+			int.TryParse(hs_min_left.Text, out min); // tenta converter o texto
+			if (min > 0) min--; // decrementa se positivo
+			hs_min_left.Text = min.ToString(); // atualiza o textbox
+			if (min == 0) HS(); // chama HS se chegou a zero
+		 }
+		}
+		//-----------------------------
 		lbwp.SelectedIndex = indexAtual;         // destaca na interface
 
 		if (dist(me.pos, lwp[indexAtual]) < 1) continue; // já está no ponto → ignora

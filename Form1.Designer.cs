@@ -182,6 +182,8 @@ namespace Discord
 	 this.tb_loot_tries = new System.Windows.Forms.TextBox();
 	 this.label22 = new System.Windows.Forms.Label();
 	 this.button16 = new System.Windows.Forms.Button();
+	 this.hs_min_left = new System.Windows.Forms.TextBox();
+	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -209,6 +211,8 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.cb_HS_timer);
+	 this.tabPage1.Controls.Add(this.hs_min_left);
 	 this.tabPage1.Controls.Add(this.button15);
 	 this.tabPage1.Controls.Add(this.find_dots);
 	 this.tabPage1.Controls.Add(this.button14);
@@ -1759,6 +1763,26 @@ namespace Discord
 	 this.button16.UseVisualStyleBackColor = true;
 	 this.button16.Click += new System.EventHandler(this.button16_Click);
 	 // 
+	 // hs_min_left
+	 // 
+	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
+	 this.hs_min_left.Name = "hs_min_left";
+	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
+	 this.hs_min_left.TabIndex = 50;
+	 this.hs_min_left.Text = "300";
+	 // 
+	 // cb_HS_timer
+	 // 
+	 this.cb_HS_timer.AutoSize = true;
+	 this.cb_HS_timer.Checked = true;
+	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
+	 this.cb_HS_timer.Name = "cb_HS_timer";
+	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
+	 this.cb_HS_timer.TabIndex = 51;
+	 this.cb_HS_timer.Text = "HS timer";
+	 this.cb_HS_timer.UseVisualStyleBackColor = true;
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1970,6 +1994,8 @@ namespace Discord
 	private CheckBox cb_wrong_gira;
 	private CheckBox cb_keep_JOTC;
 	private TextBox tb_JOTC_lvl;
+	private CheckBox cb_HS_timer;
+	private TextBox hs_min_left;
  }
 }
 
