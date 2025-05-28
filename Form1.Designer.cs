@@ -32,6 +32,8 @@ namespace Discord
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
+	 this.hs_min_left = new System.Windows.Forms.TextBox();
 	 this.button15 = new System.Windows.Forms.Button();
 	 this.find_dots = new System.Windows.Forms.Button();
 	 this.button14 = new System.Windows.Forms.Button();
@@ -182,8 +184,6 @@ namespace Discord
 	 this.tb_loot_tries = new System.Windows.Forms.TextBox();
 	 this.label22 = new System.Windows.Forms.Label();
 	 this.button16 = new System.Windows.Forms.Button();
-	 this.hs_min_left = new System.Windows.Forms.TextBox();
-	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -254,6 +254,26 @@ namespace Discord
 	 this.tabPage1.Size = new System.Drawing.Size(697, 440);
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
+	 // 
+	 // cb_HS_timer
+	 // 
+	 this.cb_HS_timer.AutoSize = true;
+	 this.cb_HS_timer.Checked = true;
+	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
+	 this.cb_HS_timer.Name = "cb_HS_timer";
+	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
+	 this.cb_HS_timer.TabIndex = 51;
+	 this.cb_HS_timer.Text = "HS timer";
+	 this.cb_HS_timer.UseVisualStyleBackColor = true;
+	 // 
+	 // hs_min_left
+	 // 
+	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
+	 this.hs_min_left.Name = "hs_min_left";
+	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
+	 this.hs_min_left.TabIndex = 50;
+	 this.hs_min_left.Text = "240";
 	 // 
 	 // button15
 	 // 
@@ -646,8 +666,6 @@ namespace Discord
 	 // cb_hearth_bagfull
 	 // 
 	 this.cb_hearth_bagfull.AutoSize = true;
-	 this.cb_hearth_bagfull.Checked = true;
-	 this.cb_hearth_bagfull.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cb_hearth_bagfull.Location = new System.Drawing.Point(162, 6);
 	 this.cb_hearth_bagfull.Name = "cb_hearth_bagfull";
 	 this.cb_hearth_bagfull.Size = new System.Drawing.Size(115, 17);
@@ -1762,26 +1780,6 @@ namespace Discord
 	 this.button16.Text = "TERMINATE";
 	 this.button16.UseVisualStyleBackColor = true;
 	 this.button16.Click += new System.EventHandler(this.button16_Click);
-	 // 
-	 // hs_min_left
-	 // 
-	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
-	 this.hs_min_left.Name = "hs_min_left";
-	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
-	 this.hs_min_left.TabIndex = 50;
-	 this.hs_min_left.Text = "300";
-	 // 
-	 // cb_HS_timer
-	 // 
-	 this.cb_HS_timer.AutoSize = true;
-	 this.cb_HS_timer.Checked = true;
-	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
-	 this.cb_HS_timer.Name = "cb_HS_timer";
-	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
-	 this.cb_HS_timer.TabIndex = 51;
-	 this.cb_HS_timer.Text = "HS timer";
-	 this.cb_HS_timer.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
