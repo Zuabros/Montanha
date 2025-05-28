@@ -32,6 +32,8 @@ namespace Discord
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
+	 this.hs_min_left = new System.Windows.Forms.TextBox();
 	 this.button15 = new System.Windows.Forms.Button();
 	 this.find_dots = new System.Windows.Forms.Button();
 	 this.button14 = new System.Windows.Forms.Button();
@@ -177,13 +179,11 @@ namespace Discord
 	 this.label15 = new System.Windows.Forms.Label();
 	 this.lb_delta = new System.Windows.Forms.Label();
 	 this.lb_yaw = new System.Windows.Forms.Label();
-	 this.button9 = new System.Windows.Forms.Button();
 	 this.button12 = new System.Windows.Forms.Button();
 	 this.tb_loot_tries = new System.Windows.Forms.TextBox();
 	 this.label22 = new System.Windows.Forms.Label();
 	 this.button16 = new System.Windows.Forms.Button();
-	 this.hs_min_left = new System.Windows.Forms.TextBox();
-	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
+	 this.button9 = new System.Windows.Forms.Button();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -254,6 +254,26 @@ namespace Discord
 	 this.tabPage1.Size = new System.Drawing.Size(697, 440);
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
+	 // 
+	 // cb_HS_timer
+	 // 
+	 this.cb_HS_timer.AutoSize = true;
+	 this.cb_HS_timer.Checked = true;
+	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
+	 this.cb_HS_timer.Name = "cb_HS_timer";
+	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
+	 this.cb_HS_timer.TabIndex = 51;
+	 this.cb_HS_timer.Text = "HS timer";
+	 this.cb_HS_timer.UseVisualStyleBackColor = true;
+	 // 
+	 // hs_min_left
+	 // 
+	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
+	 this.hs_min_left.Name = "hs_min_left";
+	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
+	 this.hs_min_left.TabIndex = 50;
+	 this.hs_min_left.Text = "300";
 	 // 
 	 // button15
 	 // 
@@ -1716,23 +1736,13 @@ namespace Discord
 	 this.lb_yaw.TabIndex = 27;
 	 this.lb_yaw.Text = "0";
 	 // 
-	 // button9
-	 // 
-	 this.button9.Location = new System.Drawing.Point(72, 66);
-	 this.button9.Name = "button9";
-	 this.button9.Size = new System.Drawing.Size(37, 23);
-	 this.button9.TabIndex = 28;
-	 this.button9.Text = "Stop";
-	 this.button9.UseVisualStyleBackColor = true;
-	 this.button9.Click += new System.EventHandler(this.button9_Click);
-	 // 
 	 // button12
 	 // 
-	 this.button12.Location = new System.Drawing.Point(2, 62);
+	 this.button12.Location = new System.Drawing.Point(3, 61);
 	 this.button12.Name = "button12";
-	 this.button12.Size = new System.Drawing.Size(61, 23);
+	 this.button12.Size = new System.Drawing.Size(60, 23);
 	 this.button12.TabIndex = 29;
-	 this.button12.Text = "Combat";
+	 this.button12.Text = "Rotation Bot";
 	 this.button12.UseVisualStyleBackColor = true;
 	 this.button12.Click += new System.EventHandler(this.button12_Click);
 	 // 
@@ -1763,25 +1773,15 @@ namespace Discord
 	 this.button16.UseVisualStyleBackColor = true;
 	 this.button16.Click += new System.EventHandler(this.button16_Click);
 	 // 
-	 // hs_min_left
+	 // button9
 	 // 
-	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
-	 this.hs_min_left.Name = "hs_min_left";
-	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
-	 this.hs_min_left.TabIndex = 50;
-	 this.hs_min_left.Text = "300";
-	 // 
-	 // cb_HS_timer
-	 // 
-	 this.cb_HS_timer.AutoSize = true;
-	 this.cb_HS_timer.Checked = true;
-	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
-	 this.cb_HS_timer.Name = "cb_HS_timer";
-	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
-	 this.cb_HS_timer.TabIndex = 51;
-	 this.cb_HS_timer.Text = "HS timer";
-	 this.cb_HS_timer.UseVisualStyleBackColor = true;
+	 this.button9.Location = new System.Drawing.Point(69, 61);
+	 this.button9.Name = "button9";
+	 this.button9.Size = new System.Drawing.Size(44, 23);
+	 this.button9.TabIndex = 65;
+	 this.button9.Text = "Stop";
+	 this.button9.UseVisualStyleBackColor = true;
+	 this.button9.Click += new System.EventHandler(this.button9_Click_1);
 	 // 
 	 // Form1
 	 // 
@@ -1789,11 +1789,11 @@ namespace Discord
 	 this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 	 this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 	 this.ClientSize = new System.Drawing.Size(819, 482);
+	 this.Controls.Add(this.button9);
 	 this.Controls.Add(this.button16);
 	 this.Controls.Add(this.label22);
 	 this.Controls.Add(this.tb_loot_tries);
 	 this.Controls.Add(this.button12);
-	 this.Controls.Add(this.button9);
 	 this.Controls.Add(this.lb_yaw);
 	 this.Controls.Add(this.lb_delta);
 	 this.Controls.Add(this.label15);
@@ -1927,7 +1927,6 @@ namespace Discord
 	private System.Windows.Forms.Button bt_loadWP;
 	private System.Windows.Forms.TextBox tb_filename;
 	private System.Windows.Forms.Button bt_saveWPas;
-		private System.Windows.Forms.Button button9;
 		private System.Windows.Forms.Button button11;
 		private System.Windows.Forms.CheckBox cb_loot;
 		private System.Windows.Forms.TextBox rtbcursor;
@@ -1996,6 +1995,7 @@ namespace Discord
 	private TextBox tb_JOTC_lvl;
 	private CheckBox cb_HS_timer;
 	private TextBox hs_min_left;
+	private Button button9;
  }
 }
 
