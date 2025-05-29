@@ -1536,7 +1536,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// --------------------------------
 		// NAO DEIXA AFOGAR 
 		//------------------------------
-		nao_afoga(); // nada para cima se estiver afogando
+		if (!dungeon) nao_afoga(); // nada para cima se estiver afogando; permite nadar em dungeons
 
 		//----- HEALTH POTION --------
 		if (me.hp < 30 && me.mana < 40) // Tá no bico do corvo 
@@ -1547,7 +1547,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// -----------------------------------------
 		// recuo tático se estiver apanhando demais
 		// -----------------------------------------
-		if (!ja_deu_backpedal && me.hp < 85)
+		if (!dungeon && !ja_deu_backpedal && me.hp < 85)
 		{
 		 
 		 int limiar = int.Parse(tb_back_limiar.Text); // Lê o valor do limiar 
@@ -1571,7 +1571,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// -----------------------------------------
 		// GIRA PARA O ALVO SE ESTIVER APANHANDO DE COSTAS
 		// -----------------------------------------
-		if (me.wrongway && cb_wrong_gira.Checked)
+		if (!dungeon && me.wrongway && cb_wrong_gira.Checked)
 		{
 		 roda(25); // gira pra manter face no inimigo
 		 loga("De costas para o alvo! Ativando correção.");
@@ -1584,7 +1584,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// --------------------------------
 		wait(100);
 		checkme();
-		if (!tar.aggroed) // target morto ou aparentemente inválido
+		if (!dungeon && !tar.aggroed) // target morto ou aparentemente inválido
 		{
 		 wait(100); // dá tempo do jogo atualizar
 		 checkme(); // atualiza dados após espera
@@ -1601,7 +1601,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		else // Mob vivo e com agro em mim
 
 		{
-		 if (me.casting && me.spell.StartsWith("S")) // se está castando skinning no meio do combate 
+		 if (!dungeon && me.casting && me.spell.StartsWith("S")) // se está castando skinning no meio do combate 
 		 {
 			aperta(PULA);
 			roda(150);                // gira pra manter face no inimigo
@@ -1643,11 +1643,11 @@ nao_afoga(); // nada para cima se estiver afogando
 		 //---------------AURAS------------------
 
 		 // hp < 50% e quer Devotion Aura, mas não está ativa
-		 if (me.hp < 50 && cb_devaura.Checked && !pala.devotion)
+		 if (!dungeon && me.hp < 50 && cb_devaura.Checked && !pala.devotion)
 			aperta(DEVAURA,1500); // ativa Devotion para defesa
 
 		 // hp > 50% e quer Retribution Aura, mas não está ativa
-		 else if (me.hp > 50 && cb_retaura.Checked && !pala.retribution)
+		 else if (!dungeon && me.hp > 50 && cb_retaura.Checked && !pala.retribution)
 			aperta(RETAURA,1500); // ativa Retribution para dano
 		 //--------------------------------------
 
@@ -3181,21 +3181,26 @@ else
 	 lb_log.Text = ""; // limpa
 	}
 	// BOTAO COMBAT ONLY
-	
+	bool dungeon = false; // variável para dungeon mode'
 	private void button12_Click(object sender, EventArgs e)
 	{
-	 loga("Modo combate estático ativado.");
+	 loga("Modo combate estático / dungeon ativado.");
 	 on = true;
+	 dungeon = true; // ativa modo dungeon
 	 cb_anda.Checked = false;
 	 on = true;
 	 while (on)
 	 {
 		checkme();
-		moveto(me.pos);
+		if (me.combat)
+		 combatloop(); // chama o loop de combate
 		wait(200);
 	 }
+	 loga("Modo combate desativado.");
+	 dungeon = false; // desativa modo dungeon
+	 cb_anda.Checked = true; // reativa andar normal
+	 on = true; // reativa o bot
 
-	 
 	}
 
 	// --------------------------------
@@ -3839,6 +3844,12 @@ else
 	private void cb_pacifist_CheckedChanged(object sender, EventArgs e)
 	{
 
+	}
+
+	private void button9_Click_1(object sender, EventArgs e)
+	{
+		on = false; // para o bot
+	 dungeon = false; // desativa modo dungeon 
 	}
 
 
