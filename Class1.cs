@@ -96,10 +96,12 @@ namespace Discord
 	// COOLDOWNS (0–255s ou flags)
 	public bool hoj_ready;       // Hammer of Justice pronto?
 	public int judge_cd;         // Judgement
-	public int lay_cd;           // Lay on Hands
+	public bool cancast_LOH;           // Lay on Hands
 	public bool bubble_cd;       // Divine Shield (bolha)
 	public int dp_cd;            // Divine Protection
 	public bool exorcism_up;     // Exorcism disponível?
+	public bool BOP_up;     // BOP disponível?
+	public bool forbearance;            // debuff up
 
 	// TARGET DEBUFFS (true se ativo)
 	public bool joj;             // Judgement of Justice

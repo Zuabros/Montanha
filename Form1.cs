@@ -167,6 +167,7 @@ namespace Discord
 	public const int MANAPOTION = N0;     // Poção de mana
 	public const int ANDA = WKEY;   // comando de andar
 	public const int SLOW = F2;     // debuff de lentidão (genérico)
+	public const int ASSIST = F6;     // debuff de lentidão (genérico)
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO PALADINO
@@ -191,6 +192,7 @@ namespace Discord
 
 	public const int DEVAURA = F3;     // Devotion Aura
 	public const int RETAURA = F4;     // Retribution Aura
+	public const int BOP = F7;     // Retribution Aura
 
 
 	// --------------------------------------------
@@ -395,13 +397,15 @@ namespace Discord
 	 //   B: ASCII da primeira letra da magia
 
 	 // -------------------------------------
-	 // PIXEL 12 – SEALS + JUDGEMENTS + LAY
+	 // PIXEL 12 – SEALS + JUDGEMENTS + CASTS
 	 // -------------------------------------
 	 // R: Bitflags dos seals ativos em você
 	 //      128 = SOR | 64 = SOTC | 32 = SOJ | 16 = SOL | 8 = SOW | 4 = SOC
 	 // G: Bitflags dos judgements no target (apenas os que aplicam debuff)
-	 //      64 = JOTC | 32 = JOJ | 16 = JOL | 8 = JOW
-	 // B: Cooldown restante de Lay on Hands (cap 255)
+	 //      128 = Forbearance em mim; 64 = JOTC | 32 = JOJ | 16 = JOL | 8 = JOW
+	 // B: Bitflags de cast disponível
+	 //      128 = pode castar Lay on Hands
+	 //       64 = pode castar Blessing of Protection
 
 	 // -------------------------------------
 	 // PIXEL 13 – BLESSINGS + HOJ STATUS
@@ -746,31 +750,33 @@ readpixels(pixels);
 	 }
 
 	 // -------------------------------------
-	 // Pixel 12: Seals ativos (R) + Judgements no target (G) + CD do Lay on Hands (B)
+	 // Pixel 12: Seals ativos (R) + Judgements no target (G) + flags de cast e debuff (B)
 	 // -------------------------------------
 	 if (pixels.Count > 12)
 	 {
 		int ar = pixels[12].r; // R = bitmask dos seals ativos
 		int ag = pixels[12].g; // G = bitmask dos judgements no target
-		int ab = pixels[12].b; // B = cooldown do Lay on Hands (cap 255)
+		int ab = pixels[12].b; // B = bitflags de cast e debuff
 
 		// SEALS ATIVOS (true se bit correspondente estiver ligado)
 		pala.sor = (ar & 128) != 0; // Seal of Righteousness
 		pala.sotc = (ar & 64) != 0; // Seal of the Crusader
-		pala.soc = (ar & 4) != 0;   // Seal of Command
-		pala.sol = (ar & 16) != 0;  // Seal of Light
-		pala.sow = (ar & 8) != 0;   // Seal of Wisdom
+		pala.soc = (ar & 4) != 0; // Seal of Command
+		pala.sol = (ar & 16) != 0; // Seal of Light
+		pala.sow = (ar & 8) != 0; // Seal of Wisdom
 
 		// JUDGEMENTS NO TARGET
 		pala.jotc = (ag & 64) != 0; // Judgement of the Crusader
-		pala.joj = (ag & 32) != 0; // Judgement of Justicew
+		pala.joj = (ag & 32) != 0; // Judgement of Justice
 		pala.jol = (ag & 16) != 0; // Judgement of Light
 		pala.jow = (ag & 8) != 0; // Judgement of Wisdom
 
-		// COOLDOWN
-		pala.lay_cd = ab; // cooldown do Lay on Hands (0 a 255)
-		
+		// FLAGS (CANCAST / DEBUFF)
+		pala.cancast_LOH = (ab & 128) != 0; // pode castar Lay on Hands
+		pala.BOP_up = (ab & 64) != 0; // pode castar Blessing of Protection
+		pala.forbearance = (ag & 128) != 0; // tem debuff Forbearance
 	 }
+
 
 	 // -------------------------------------
 	 // Pixel 13: Blessings ativos (R) + HoJ ready (G bit 7) + HoJ range (B)
@@ -1543,7 +1549,13 @@ nao_afoga(); // nada para cima se estiver afogando
 		 aperta(HEALTHPOTION);
 		else if (me.hp > 80 && me.mana < 15) // lay on hands ou drain mana
 		 aperta(MANAPOTION);
-
+		//-----------------------------------
+		// ASSIST NO TANK EM DUNGEON 
+		//-----------------------------------
+		if (dungeon && cb_assist_tank.Checked && !me.hastarget || tar.morreu)
+		{
+		 aperta(F6); // limpa o target e assiste o tank
+		}
 		// -----------------------------------------
 		// recuo tático se estiver apanhando demais
 		// -----------------------------------------
@@ -1706,53 +1718,113 @@ nao_afoga(); // nada para cima se estiver afogando
 
 	}
 
-
 	// --------------------------------
 	// MÉTODO DE CURA GERAL DO PALADINO
 	// --------------------------------
 	void tenta_curar()
 	{
-	 int limiar_loh = 30; // valor padrão para o limiar de Lay on Hands
+	 int limiar_loh = 30; // valor padrão do textbox
 	 int.TryParse(tb_loh_hp.Text, out limiar_loh);
 
-	 if (me.mana < 40 && cb_loh.Checked && me.hp < limiar_loh && pala.lay_cd == 0)
-
+	 // CURA DIRETA COM LOH (em emergência de mana e vida)
+	 if (cb_loh.Checked && me.hp < limiar_loh && pala.cancast_LOH)
 	 {
 		aperta(LOH);
-		loga("Usando Lay on Hands!"); // loga o uso de Lay on Hands
-		loga(pala.lay_cd.CompareTo(0) == 0 ? "Lay on Hands pronto!" : "Lay on Hands em cooldown: " + pala.lay_cd.ToString() + " segundos.");
+		loga("Curando com lay on hands.");
 		return;
 	 }
 
-	 int limiar_hp = atoi(tb_combatheal);
-	 if (pala.sol) limiar_hp -= 7; // se tiver seal of light, diminui o limiar de cura
-	 if (me.hp < limiar_hp && me.mana > 20) // vida baixa, mana boa
+	 int limiar_hp = atoi(tb_combatheal); // limiar de cura configurado
+	 if (pala.sol) limiar_hp -= 7; // bônus do Seal of Light
+
+	 if (me.hp < limiar_hp && me.mana > 20) // hp crítico, mana aceitável
 	 {
 		bool usou_bolha = false;
 
-		if (pala.bubble_cd && me.level >= 6 && cb_bubble.Checked && me.mana > 35) // bolha up 
+		// PROTEÇÕES DEFENSIVAS, se não tiver Forbearance
+		if (!pala.forbearance)
 		{
-		 aperta(DPROT, 1501); // casta bolha 
-		 usou_bolha = true;
+		 if (pala.bubble_cd && me.level >= 6 && cb_bubble.Checked && me.mana > 35)
+		 {
+			aperta(DPROT, 1501);
+			loga("Curando com divine protection.");
+			usou_bolha = true;
+		 }
+		 if (!usou_bolha && pala.BOP_up && me.level >= 10 && cb_BOP.Checked && me.mana > 30)
+		 {
+			loga("Divine protection no cooldown. Usando BOP pra proteger o cast.");
+			aperta(BOP, 1501);
+			loga("Curando com blessing of protection.");
+			usou_bolha = true;
+		 }
 		}
 
-		if (!usou_bolha) // nao castou bolha 
+		// SE NÃO USOU BOLHA
+		if (!usou_bolha)
 		{
-		 if (pala.hoj_ready && pala.hoj_range) // tenta hammer
+		 if (pala.forbearance)
+		 {
+			loga("Forbearance ativo. Usando HOJ para proteger o cast.");
+		 }
 
-			aperta(HOJ, 1500);  // casta 
+		 if (pala.hoj_ready && pala.hoj_range)
+		 {
+			string bop_status = pala.BOP_up ? "BOP estava disponível, mas não foi usada." : "BOP estava indisponível.";
+			loga("Usando hammer of justice para proteger o cast. " + bop_status);
+			aperta(HOJ, 1500);
+			loga("Curando com hammer of justice.");
+		 }
+		 else if (pala.cancast_LOH && cb_loh.Checked)
+		 {
+			aperta(LOH);
+			loga("Sem bolhas ou HOJ disponiveis. Curando com lay on hands.");
+			return;
+		 }
+		 else
+		 {
+			aperta(HEALTHPOTION);
+			loga("Sem spells disponíveis. Curando com potion.");
+			wait(300);    // dá tempo da potion aplicar
+			checkme();    // atualiza estado
+			if (me.hp < limiar_hp && me.mana > 20)
+			{
+			 loga("Ultima chance: Cura no seco.");
+			 aperta(HLIGHT, 1000);
+			 wait_cast();
+			}
+			return;
+		 }
 		}
-		aperta(HLIGHT, 1000); // cura 
-		wait_cast(); // espera curar 
-		checkme(); // castar 
 
+		// CURA COM HOLY LIGHT APÓS PROTEÇÃO
+		aperta(HLIGHT, 1000);
+		wait_cast();
+		checkme();
+
+		// Se ainda estiver em risco, cura novamente
 		if (usou_bolha && me.hp < 80)
 		{
 		 aperta(HLIGHT, 1000);
 		 wait_cast();
 		}
 	 }
+	 else if (me.hp < limiar_hp && me.mana <= 20) // hp baixo + sem mana
+	 {
+		aperta(HEALTHPOTION);
+		loga("Curando com potion.");
+		// tenta curar no seco se potion for insuficiente
+		wait(300);
+		checkme();
+		if (me.hp < limiar_hp && me.mana > 20)
+		{
+		 loga("Morrendo como um paladino de verdade.");
+		 aperta(HLIGHT, 1000);
+		 wait_cast();
+		}
+	 }
 	}
+
+
 
 	int atoi(TextBox t) => int.Parse(t.Text); // retorna valor inteiro da textbox
 
@@ -3850,6 +3922,11 @@ else
 	{
 		on = false; // para o bot
 	 dungeon = false; // desativa modo dungeon 
+	}
+
+	private void button9_Click_2(object sender, EventArgs e)
+	{
+
 	}
 
 

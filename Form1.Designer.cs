@@ -184,6 +184,8 @@ namespace Discord
 	 this.label22 = new System.Windows.Forms.Label();
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
+	 this.cb_assist_tank = new System.Windows.Forms.CheckBox();
+	 this.cb_BOP = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -211,6 +213,7 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.cb_assist_tank);
 	 this.tabPage1.Controls.Add(this.cb_HS_timer);
 	 this.tabPage1.Controls.Add(this.hs_min_left);
 	 this.tabPage1.Controls.Add(this.button15);
@@ -753,6 +756,7 @@ namespace Discord
 	 // 
 	 this.Paladin.AllowDrop = true;
 	 this.Paladin.BackColor = System.Drawing.Color.Gray;
+	 this.Paladin.Controls.Add(this.cb_BOP);
 	 this.Paladin.Controls.Add(this.tb_JOTC_lvl);
 	 this.Paladin.Controls.Add(this.cb_keep_JOTC);
 	 this.Paladin.Controls.Add(this.label13);
@@ -1771,25 +1775,35 @@ namespace Discord
 	 this.button16.UseVisualStyleBackColor = true;
 	 this.button16.Click += new System.EventHandler(this.button16_Click);
 	 // 
-	 // hs_min_left
+	 // button9
 	 // 
-	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
-	 this.hs_min_left.Name = "hs_min_left";
-	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
-	 this.hs_min_left.TabIndex = 50;
-	 this.hs_min_left.Text = "300";
+	 this.button9.Location = new System.Drawing.Point(69, 62);
+	 this.button9.Name = "button9";
+	 this.button9.Size = new System.Drawing.Size(40, 23);
+	 this.button9.TabIndex = 0;
+	 this.button9.Click += new System.EventHandler(this.button9_Click_2);
 	 // 
-	 // cb_HS_timer
+	 // cb_assist_tank
 	 // 
-	 this.cb_HS_timer.AutoSize = true;
-	 this.cb_HS_timer.Checked = true;
-	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
-	 this.cb_HS_timer.Name = "cb_HS_timer";
-	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
-	 this.cb_HS_timer.TabIndex = 51;
-	 this.cb_HS_timer.Text = "HS timer";
-	 this.cb_HS_timer.UseVisualStyleBackColor = true;
+	 this.cb_assist_tank.AutoSize = true;
+	 this.cb_assist_tank.Location = new System.Drawing.Point(113, 91);
+	 this.cb_assist_tank.Name = "cb_assist_tank";
+	 this.cb_assist_tank.Size = new System.Drawing.Size(77, 17);
+	 this.cb_assist_tank.TabIndex = 52;
+	 this.cb_assist_tank.Text = "Asisst tank";
+	 this.cb_assist_tank.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_BOP
+	 // 
+	 this.cb_BOP.AutoSize = true;
+	 this.cb_BOP.Checked = true;
+	 this.cb_BOP.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_BOP.Location = new System.Drawing.Point(221, 268);
+	 this.cb_BOP.Name = "cb_BOP";
+	 this.cb_BOP.Size = new System.Drawing.Size(48, 17);
+	 this.cb_BOP.TabIndex = 83;
+	 this.cb_BOP.Text = "BOP";
+	 this.cb_BOP.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -2004,6 +2018,8 @@ namespace Discord
 	private CheckBox cb_HS_timer;
 	private TextBox hs_min_left;
 	private Button button9;
+	private CheckBox cb_assist_tank;
+	private CheckBox cb_BOP;
  }
 }
 
