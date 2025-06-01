@@ -156,7 +156,7 @@ namespace Discord
 
 	 public int Current(int avg_decay) // decay atual (com média antes dos 10s)
 	 {
-		int segundos_decay = 11 * 1000; // 13 segundos em milissegundos
+		int segundos_decay = 8 * 1000; // 8 segundos em milissegundos
 		long agora = Environment.TickCount; // tempo atual
 
 		if (agora - t_ini < segundos_decay) // ainda nos primeiros 10s de luta

@@ -325,10 +325,16 @@ namespace Discord
 
 	 // CODIFICAÇÃO NO ADDON
 
-	 //0 Player HP / Autoattack / Target morto:
-	 //   R: 255 se atacando automaticamente, senão 0
-	 //   G: HP atual / HP máx × 255
-	 //   B: 255 se o alvo estiver morto, senão 0
+	 // ----------------------------------------
+	 // PIXEL 0 – STATUS DO PLAYER E TARGET
+	 // ----------------------------------------
+	 // R: Bitflags de status do player e do alvo
+	 //     128 = autoattack ativo
+	 //      64 = healing potion pronta (no inventário e cooldown zerado)
+	 //      32 = target morto
+	 //      0–31 = (livres para uso futuro)
+	 // G: Proporção do HP do player (HP atual / HP máx × 255)
+	 // B: (vazio – reservado para uso futuro)
 
 	 //1 Player Mana:
 	 //   R: Slots livres nas bags (255-free slots)
@@ -550,13 +556,26 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 public void getstats(ref element e)
 {
 readpixels(pixels);
-	 // HP (green) e MORREU (blue=255)
-	 int v_hp = (pixels[0].g * 100) / 255;          // G do pixel[0] convertido para % (vida do player)
-	 e.hp = v_hp;                                   // atualiza hp do player
-	 e.morreu = (pixels[0].b > 200);                // morreu se canal azul indica (target está morto)
-	 tb_hp.Text = v_hp.ToString();                  // se debug ativo, mostra no textbox
-	 e.autoattack = (pixels[0].r > 250);            // autoattack está ativado se R > 250
-	 cb_autoattack.Checked = e.autoattack;          // atualiza checkbox de debug
+	 // ----------------------------------------
+	 // PIXEL 0 – HP, Autoattack, Potion, Target morto
+	 // ----------------------------------------
+
+	 // converte G em % de vida do player
+	 int v_hp = (pixels[0].g * 100) / 255;
+	 e.hp = v_hp;
+
+	 // target morto agora vem no bit 32 de R, não mais no B
+	 e.morreu = (pixels[0].r & 32) != 0;
+
+	 // autoattack = bit 128
+	 e.autoattack = (pixels[0].r & 128) != 0;
+
+	 // nova flag: healing potion pronta = bit 64
+	 e.hp_potion_rdy = (pixels[0].r & 64) != 0;
+
+	 // debug opcional: mostra HP no textbox
+	 tb_hp.Text = v_hp.ToString();
+
 
 
 	 // ------------------------------------------
@@ -1115,6 +1134,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 // LOOT 
 		 // -----------------------------------
 		 checkme();
+		 if (cb_apagacinza.Checked) clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
 		 if (has(me.freeslots) || cb_loot_cloth.Checked) // só loota se estiver ativado, e se tiver espaço ou for loot de pano
 
 		 {
@@ -1176,7 +1196,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 
 
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 80)); // enquanto ativo e longe (20 se catando)
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 110)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Alvo atingido. Partindo para proximo alvo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
@@ -1511,6 +1531,10 @@ nao_afoga(); // nada para cima se estiver afogando
 	// --------------------------------
 	// MÉTODO COMBATLOOP - ROTINAS DE COMBATE
 	// --------------------------------
+	// Variáveis de controle
+	long last_purify = 0; // armazena o último uso do purify em ms
+	// --------------------------------
+
 	public void combatloop()
 	{
 	 solta(ANDA); // PARA DE ANDAR
@@ -1661,7 +1685,11 @@ nao_afoga(); // nada para cima se estiver afogando
 		 // hp > 50% e quer Retribution Aura, mas não está ativa
 		 else if (!dungeon && me.hp > 50 && cb_retaura.Checked && !pala.retribution)
 			aperta(RETAURA,1500); // ativa Retribution para dano
-		 //--------------------------------------
+														//--------------------------------------
+
+		 // verifica se pode usar purify
+		 int delay = atoi(tb_purify_delay); // lê delay desejado da toolbox (em segundos)
+		 bool podepurify = Environment.TickCount - last_purify > delay * 1000; // verifica se passou tempo suficiente
 
 		 if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
 		 {
@@ -1669,8 +1697,15 @@ nao_afoga(); // nada para cima se estiver afogando
 			if (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease)
 			 aperta(STONEFORM);                                // ativa Stoneform se atender condições
 		 }
-		 else if (me.level >= 8 && cb_purify.Checked && (me.haspoison || me.hasdisease) && mana(20))
-			aperta(PURIFY);                                         // se não for anão, usa Purify se puder
+		 else if (me.level >= 8 // checa level
+			 && cb_purify.Checked // checkbox ativo
+			 && (me.haspoison || me.hasdisease) // tem debuff
+			 && mana(20) // tem mana
+			 && podepurify) // respeita o tempo mínimo entre usos
+		 {
+			aperta(PURIFY); // ativa o purify
+			last_purify = Environment.TickCount; // atualiza o tempo do último uso
+		 }
 
 		 if (should_judge())                                         // se condições pro Judgement estão ok
 		 {
@@ -1710,117 +1745,115 @@ nao_afoga(); // nada para cima se estiver afogando
 	 if (!lbdecay.Items.Contains(txt))
 		lbdecay.Items.Add(txt);
 
-	 while (lbdecay.Items.Count > 15)
+	 while (lbdecay.Items.Count > 10)
 		lbdecay.Items.RemoveAt(0);
 
 	 emCombate = false;
 
 
 	}
-
 	// --------------------------------
 	// MÉTODO DE CURA GERAL DO PALADINO
 	// --------------------------------
 	void tenta_curar()
 	{
-	 int limiar_loh = 30; // valor padrão do textbox
-	 int.TryParse(tb_loh_hp.Text, out limiar_loh);
+	 int limiar_loh = 30; // hp abaixo desse valor pode disparar LOH
+	 int.TryParse(tb_loh_hp.Text, out limiar_loh); // pega valor da caixa de texto
 
-	 // CURA DIRETA COM LOH (em emergência de mana e vida)
-	 if (cb_loh.Checked && me.hp < limiar_loh && pala.cancast_LOH)
+	 int limiar_hp = atoi(tb_combatheal); // pega valor de hp considerado critico
+	 if (pala.sol) limiar_hp -= 7; // se tem Seal of Light, permite segurar mais
+
+	 string dbg = "";
+
+	 dbg += "Forbearance..........: " + (pala.forbearance ? "ativo" : "inativo") + "\r\n";
+	 dbg += "Lay on Hands pronto..: " + (pala.cancast_LOH ? "sim" : "não") + "\r\n";
+	 dbg += "BoP pronto...........: " + (pala.BOP_up ? "sim" : "não") + "\r\n";
+	 dbg += "BoP ativo em você....: " + (pala.bop ? "sim" : "não") + "\r\n";
+	 dbg += "Potion pronta........: " + (me.hp_potion_rdy ? "sim" : "não") + "\r\n";
+	 dbg += "Decay estimado.......: " + tbdecay.Text + " hp/m" + "\r\n";
+
+	 if (me.hp < limiar_hp) loga(dbg); // loga debug se hp estiver abaixo do limiar crítico
+
+
+	 // ----------------------------------------
+	 // CURA COMUM – HLIGHT COM PROTEÇÃO
+	 // ----------------------------------------
+	 if (me.hp < limiar_hp && me.mana > 20 && !pala.forbearance)
 	 {
-		aperta(LOH);
-		loga("Curando com lay on hands.");
+		bool usou_protecao = false;
+
+		if (pala.bubble_cd && me.level >= 6 && cb_bubble.Checked && me.mana > 25)
+		{
+		 aperta(DPROT, 1501); // usa divine protection
+		 loga("Curando com divine protection.");
+		 usou_protecao = true;
+		}
+		else if (pala.BOP_up && cb_BOP.Checked && me.mana > 25)
+		{
+		 aperta(BOP, 1501); // usa blessing of protection
+		 loga("Curando com blessing of protection.");
+		 usou_protecao = true;
+		}
+
+		if (usou_protecao)
+		{
+		 aperta(HLIGHT, 1000); // casta HLIGHT
+		 wait_cast();
+		 checkme();
+		 if (me.hp >= limiar_hp) return; // cura resolveu
+		}
+	 }
+
+	 // ----------------------------------------
+	 // CURA CRÍTICA – POTION OU HLIGHT COM STUN
+	 // ----------------------------------------
+	 if (me.hp < limiar_hp)
+	 {
+		if (me.hp_potion_rdy)
+		{
+		 aperta(HEALTHPOTION); // usa poção se tiver pronta
+		 loga("Curando com potion.");
+		 wait(300);
+		 checkme();
+		 if (me.hp >= limiar_hp) return; // cura resolveu
+		}
+		else if (pala.hoj_ready && pala.hoj_range)
+		{
+		 aperta(HOJ, 1500); // stuna o alvo com HOJ
+		 loga("Curando com hammer of justice.");
+		 aperta(HLIGHT, 1000); // casta HLIGHT durante o stun
+		 wait_cast();
+		 checkme();
+		 if (me.hp >= limiar_hp) return; // cura resolveu
+		}
+	 }
+
+	 // ----------------------------------------
+	 // CURA DE EMERGÊNCIA – LOH OU CAST SECO
+	 // ----------------------------------------
+	 bool pode_usar_loh =
+		 me.hp < limiar_loh &&
+		 !me.hp_potion_rdy && // não tem potion
+		 !pala.BOP_up &&       // não tem BOP
+		 !pala.bubble_cd &&    // não tem bubble
+		 !pala.hoj_ready &&    // não tem stun
+		 pala.cancast_LOH &&   // LOH disponível
+		 cb_loh.Checked;
+
+	 if (pode_usar_loh)
+	 {
+		aperta(LOH); // cura total com LOH
+		loga("Emergência. Curando com lay on hands.");
 		return;
 	 }
 
-	 int limiar_hp = atoi(tb_combatheal); // limiar de cura configurado
-	 if (pala.sol) limiar_hp -= 7; // bônus do Seal of Light
-
-	 if (me.hp < limiar_hp && me.mana > 20) // hp crítico, mana aceitável
+	 // última tentativa: cura sem proteção
+	 if (me.hp < limiar_hp && me.mana > 20)
 	 {
-		bool usou_bolha = false;
-
-		// PROTEÇÕES DEFENSIVAS, se não tiver Forbearance
-		if (!pala.forbearance)
-		{
-		 if (pala.bubble_cd && me.level >= 6 && cb_bubble.Checked && me.mana > 35)
-		 {
-			aperta(DPROT, 1501);
-			loga("Curando com divine protection.");
-			usou_bolha = true;
-		 }
-		 if (!usou_bolha && pala.BOP_up && me.level >= 10 && cb_BOP.Checked && me.mana > 30)
-		 {
-			loga("Divine protection no cooldown. Usando BOP pra proteger o cast.");
-			aperta(BOP, 1501);
-			loga("Curando com blessing of protection.");
-			usou_bolha = true;
-		 }
-		}
-
-		// SE NÃO USOU BOLHA
-		if (!usou_bolha)
-		{
-		 if (pala.forbearance)
-		 {
-			loga("Forbearance ativo. Usando HOJ para proteger o cast.");
-		 }
-
-		 if (pala.hoj_ready && pala.hoj_range)
-		 {
-			string bop_status = pala.BOP_up ? "BOP estava disponível, mas não foi usada." : "BOP estava indisponível.";
-			loga("Usando hammer of justice para proteger o cast. " + bop_status);
-			aperta(HOJ, 1500);
-			loga("Curando com hammer of justice.");
-		 }
-		 else if (pala.cancast_LOH && cb_loh.Checked)
-		 {
-			aperta(LOH);
-			loga("Sem bolhas ou HOJ disponiveis. Curando com lay on hands.");
-			return;
-		 }
-		 else
-		 {
-			aperta(HEALTHPOTION);
-			loga("Sem spells disponíveis. Curando com potion.");
-			wait(300);    // dá tempo da potion aplicar
-			checkme();    // atualiza estado
-			if (me.hp < limiar_hp && me.mana > 20)
-			{
-			 loga("Ultima chance: Cura no seco.");
-			 aperta(HLIGHT, 1000);
-			 wait_cast();
-			}
-			return;
-		 }
-		}
-
-		// CURA COM HOLY LIGHT APÓS PROTEÇÃO
+		loga("For the light!"); // tentativa heroica
 		aperta(HLIGHT, 1000);
 		wait_cast();
 		checkme();
-
-		// Se ainda estiver em risco, cura novamente
-		if (usou_bolha && me.hp < 80)
-		{
-		 aperta(HLIGHT, 1000);
-		 wait_cast();
-		}
-	 }
-	 else if (me.hp < limiar_hp && me.mana <= 20) // hp baixo + sem mana
-	 {
-		aperta(HEALTHPOTION);
-		loga("Curando com potion.");
-		// tenta curar no seco se potion for insuficiente
-		wait(300);
-		checkme();
-		if (me.hp < limiar_hp && me.mana > 20)
-		{
-		 loga("Morrendo como um paladino de verdade.");
-		 aperta(HLIGHT, 1000);
-		 wait_cast();
-		}
 	 }
 	}
 
@@ -2028,7 +2061,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 const byte BYTE_AKEY = 0x41;
 	 const byte BYTE_DKEY = 0x44;
 	 byte tecla = direita ? BYTE_DKEY : BYTE_AKEY;    // usa valor literal: DKEY (0x44) ou AKEY (0x41)
-	 if (d < 200 && tempo > 200) // alvo muito perto e curva abrupta 
+	 if ((d < 200 && tempo > 350) || (d< 120 && tempo > 150)) // alvo muito perto e curva abrupta ORIGINAL ERA 200. TESTE DIMINUI TEMPO PARA 150
 	 {
 		solta(WKEY); // melhor parar de correr senao vai passar reto 
 		if (cb_log.Checked) loga($"Giro parado: Dist {d}m {tempo * 0.18} graus");
@@ -3927,6 +3960,26 @@ else
 	private void button9_Click_2(object sender, EventArgs e)
 	{
 
+	}
+	// ----------------------------------------
+	// BOTAO DEBUG - TESTA FLAGS DO PIXEL 12
+	// ----------------------------------------
+	private void button17_Click(object sender, EventArgs e)
+	{
+	 checkme(); // atualiza leitura dos pixels
+
+	 // monta string com as flags de interesse
+	 string dbg = "";
+
+	 dbg += "Forbearance..........: " + (pala.forbearance ? "ativo" : "inativo") + "\r\n";
+	 dbg += "Lay on Hands pronto..: " + (pala.cancast_LOH ? "sim" : "não") + "\r\n";
+	 dbg += "BoP pronto...........: " + (pala.BOP_up ? "sim" : "não") + "\r\n";
+	 dbg += "BoP ativo em você....: " + (pala.bop ? "sim" : "não") + "\r\n";
+	 dbg += "Potion pronta........: " + (me.hp_potion_rdy ? "sim" : "não") + "\r\n";
+	 dbg += "Decay estimado.......: " + tbdecay.Text + " hp/m" + "\r\n";
+
+
+	 loga(dbg); // envia mensagem pro campo de log
 	}
 
 

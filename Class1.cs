@@ -40,7 +40,7 @@ namespace Discord
 	public bool aggroed; // aggro em mim
 	public bool skinnable; // da pra skinar (pixel 7)
 	public bool furbolg_form; // Dartol's Rod of Transformation buff
-
+	public bool hp_potion_rdy; // health potion na bag ready (pixel 0)
 
 	// --- casting ---
 	public bool iscaster;   // É uma criatura do tipo caster      // uso futuro
