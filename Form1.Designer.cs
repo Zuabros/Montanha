@@ -189,6 +189,7 @@ namespace Discord
 	 this.button17 = new System.Windows.Forms.Button();
 	 this.tb_purify_delay = new System.Windows.Forms.TextBox();
 	 this.cb_apagacinza = new System.Windows.Forms.CheckBox();
+	 this.button18 = new System.Windows.Forms.Button();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -216,6 +217,7 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.button18);
 	 this.tabPage1.Controls.Add(this.button17);
 	 this.tabPage1.Controls.Add(this.cb_assist_tank);
 	 this.tabPage1.Controls.Add(this.cb_HS_timer);
@@ -1842,6 +1844,16 @@ namespace Discord
 	 this.cb_apagacinza.Text = "Destrói item cinza";
 	 this.cb_apagacinza.UseVisualStyleBackColor = true;
 	 // 
+	 // button18
+	 // 
+	 this.button18.Location = new System.Drawing.Point(514, 233);
+	 this.button18.Name = "button18";
+	 this.button18.Size = new System.Drawing.Size(75, 23);
+	 this.button18.TabIndex = 54;
+	 this.button18.Text = "Debug B";
+	 this.button18.UseVisualStyleBackColor = true;
+	 this.button18.Click += new System.EventHandler(this.button18_Click);
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2060,6 +2072,7 @@ namespace Discord
 	private Button button17;
 	private TextBox tb_purify_delay;
 	private CheckBox cb_apagacinza;
+	private Button button18;
  }
 }
 

@@ -168,6 +168,7 @@ namespace Discord
 	public const int ANDA = WKEY;   // comando de andar
 	public const int SLOW = F2;     // debuff de lentidão (genérico)
 	public const int ASSIST = F6;     // debuff de lentidão (genérico)
+	public const int GCD = 1501;  // Global Cooldown (tempo de recarga global em milissegundos)
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO PALADINO
@@ -192,6 +193,7 @@ namespace Discord
 
 	public const int DEVAURA = F3;     // Devotion Aura
 	public const int RETAURA = F4;     // Retribution Aura
+	public const int CONAURA = F8;     // Concentration Aura
 	public const int BOP = F7;     // Retribution Aura
 
 
@@ -332,7 +334,8 @@ namespace Discord
 	 //     128 = autoattack ativo
 	 //      64 = healing potion pronta (no inventário e cooldown zerado)
 	 //      32 = target morto
-	 //      0–31 = (livres para uso futuro)
+	 //      16 = player está com debuff Dazed
+	 //      0–15 = (livres para uso futuro)
 	 // G: Proporção do HP do player (HP atual / HP máx × 255)
 	 // B: (vazio – reservado para uso futuro)
 
@@ -563,6 +566,9 @@ readpixels(pixels);
 	 // converte G em % de vida do player
 	 int v_hp = (pixels[0].g * 100) / 255;
 	 e.hp = v_hp;
+
+	 // Tenho debuff dazed = bit 16
+	 me.dazed = (pixels[0].r & 16) != 0;
 
 	 // target morto agora vem no bit 32 de R, não mais no B
 	 e.morreu = (pixels[0].r & 32) != 0;
@@ -1112,13 +1118,24 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 // -----------------------------------
 		 // CHECK PÓS COMBATE 
 		 // -----------------------------------
-		 if (me.hp < Convert.ToInt32(tb_preheal.Text) && mana(20))
+		 // SE PALADINO
+		 //------------
+		 // if paladino.... 
+
+			if (me.hp < Convert.ToInt32(tb_preheal.Text) && mana(20))
 		 {
 			aperta(HLIGHT); wait(2500);
 			bless(me);
 		 }
 		 checkme();
-
+		 //----------------LIMPA POISONS-------------
+		 if (me.level >= 8 // checa level
+			 && cb_purify.Checked // checkbox ativo
+			 && (me.haspoison || me.hasdisease) // tem debuff
+			 && mana(30) // tem mana
+			 )
+			aperta(PURIFY, GCD); // ativa o purify
+		//----------------------------------------------
 		 if (me.mana < 60) loga($"Esperando recuperação da mana: {me.mana}");
 
 		 while (me.mana < atoi(tb_pull_mana) && !me.combat) // espera recuperar mana
@@ -1583,6 +1600,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// -----------------------------------------
 		// recuo tático se estiver apanhando demais
 		// -----------------------------------------
+		
 		if (!dungeon && !ja_deu_backpedal && me.hp < 85)
 		{
 		 
@@ -1590,10 +1608,14 @@ nao_afoga(); // nada para cima se estiver afogando
 		 int decay = int.Parse(tbdecay.Text);// Obtém os valores de decay e avg_decay 
 		 int avg_decay = int.Parse(tbavdecay.Text);
 		 if (decay > 2000) decay = int.Parse(tbavdecay.Text); // se o decay estiver irreal
-																													 // Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
-		 if (tar.type!=DRAGONKIN && !tar.casting && decay > limiar && tar.hp > 20)
+																													// Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
+
+		 bool precisa_backpedal = me.dazed || (tar.type != DRAGONKIN && !tar.casting && decay > limiar && tar.hp > 20);
+// Fica dazed ou toma muito dano se sem segundo mob batendo nas costas. Então dá um passinho para trás. 
+
+		 if (precisa_backpedal)
 		 {
-			ja_deu_backpedal = true; // só uma vez por combate
+			if (!me.dazed) ja_deu_backpedal = true; // só uma vez por combate
 			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
 			aperta(SKEY, 2000);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
@@ -1765,7 +1787,7 @@ nao_afoga(); // nada para cima se estiver afogando
 
 	 string dbg = "";
 
-	 dbg += "Forbearance..........: " + (pala.forbearance ? "ativo" : "inativo") + "\r\n";
+	 dbg += "Forbearance..........: " + (pala.forbearance ? "tem" : "não tem") + "\r\n";
 	 dbg += "Lay on Hands pronto..: " + (pala.cancast_LOH ? "sim" : "não") + "\r\n";
 	 dbg += "BoP pronto...........: " + (pala.BOP_up ? "sim" : "não") + "\r\n";
 	 dbg += "BoP ativo em você....: " + (pala.bop ? "sim" : "não") + "\r\n";
@@ -1782,15 +1804,15 @@ nao_afoga(); // nada para cima se estiver afogando
 	 {
 		bool usou_protecao = false;
 
-		if (pala.bubble_cd && me.level >= 6 && cb_bubble.Checked && me.mana > 25)
+		if (pala.bubble_cd && me.mana > 25)
 		{
-		 aperta(DPROT, 1501); // usa divine protection
+		 aperta(DPROT, GCD); // usa divine protection
 		 loga("Curando com divine protection.");
 		 usou_protecao = true;
 		}
 		else if (pala.BOP_up && cb_BOP.Checked && me.mana > 25)
 		{
-		 aperta(BOP, 1501); // usa blessing of protection
+		 aperta(BOP, GCD); // usa blessing of protection
 		 loga("Curando com blessing of protection.");
 		 usou_protecao = true;
 		}
@@ -1803,7 +1825,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		 if (me.hp >= limiar_hp) return; // cura resolveu
 		}
 	 }
-
+	 // NAO USOU PROTEÇÃO OU A CURA FOI POUCA.
 	 // ----------------------------------------
 	 // CURA CRÍTICA – POTION OU HLIGHT COM STUN
 	 // ----------------------------------------
@@ -1813,13 +1835,13 @@ nao_afoga(); // nada para cima se estiver afogando
 		{
 		 aperta(HEALTHPOTION); // usa poção se tiver pronta
 		 loga("Curando com potion.");
-		 wait(300);
+		 wait(GCD);
 		 checkme();
 		 if (me.hp >= limiar_hp) return; // cura resolveu
 		}
 		else if (pala.hoj_ready && pala.hoj_range)
 		{
-		 aperta(HOJ, 1500); // stuna o alvo com HOJ
+		 aperta(HOJ, GCD); // stuna o alvo com HOJ
 		 loga("Curando com hammer of justice.");
 		 aperta(HLIGHT, 1000); // casta HLIGHT durante o stun
 		 wait_cast();
@@ -1847,14 +1869,51 @@ nao_afoga(); // nada para cima se estiver afogando
 		return;
 	 }
 
-	 // última tentativa: cura sem proteção
-	 if (me.hp < limiar_hp && me.mana > 20)
+	 // ---------------------------------------------
+	 // ÚLTIMA TENTATIVA: CURA SEM PROTEÇÃO
+	 // ---------------------------------------------
+	 if (me.hp < limiar_hp && me.mana > 20) // vida baixa e mana viável
 	 {
-		loga("For the light!"); // tentativa heroica
-		aperta(HLIGHT, 1000);
-		wait_cast();
-		checkme();
+		bool trocou_aura = false;       // flag pra saber se trocou aura
+		byte aura_antiga = 0;            // salva a aura anterior pra restaurar depois
+
+		// verifica se deve usar concentration aura temporariamente
+		if (cb_concentration_aura.Checked && !pala.concentration)
+		{
+		 // salva e loga aura atual
+		 if (pala.devotion)
+		 {
+			aura_antiga = DEVAURA;
+			loga("Aura ativa: Devotion -> trocando para: Concentration");
+		 }
+		 else if (pala.retribution)
+		 {
+			aura_antiga = RETAURA;
+			loga("Aura ativa: Retribution -> trocando para: Concentration");
+		 }
+		 else
+		 {
+			loga("Sem aura rastreável ativa -> trocando para: Concentration");
+		 }
+
+		 aperta(CONAURA, GCD);  // troca pra concentration aura
+		 trocou_aura = true;    // marca que houve troca
+		}
+
+		loga("For the light!");     // tentativa heroica
+		aperta(HLIGHT, 1000);       // casta holy light
+		wait_cast();                // espera o cast
+		checkme();                  // atualiza status
+
+		// restaura aura antiga se tiver trocado
+		if (trocou_aura && aura_antiga != 0)
+		{
+		 string nome_antiga = (aura_antiga == DEVAURA) ? "Devotion" : "Retribution";
+		 loga("Cura finalizada -> restaurando aura: " + nome_antiga);
+		 aperta(aura_antiga, GCD);
+		}
 	 }
+
 	}
 
 
@@ -3966,20 +4025,63 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 checkme(); // atualiza leitura dos pixels
+	 checkme();
+	 wait(GCD); // espera o GCD
+	 bool trocou_aura = false;       // flag pra saber se trocou aura
+	 byte aura_antiga = 0;            // salva a aura anterior pra restaurar depois
 
-	 // monta string com as flags de interesse
-	 string dbg = "";
+	 // verifica se deve usar concentration aura temporariamente
+	 if (cb_concentration_aura.Checked && !pala.concentration)
+	 {
+		// salva e loga aura atual
+		if (pala.devotion)
+		{
+		 aura_antiga = DEVAURA;
+		 loga("Aura ativa: Devotion -> trocando para: Concentration");
+		}
+		else if (pala.retribution)
+		{
+		 aura_antiga = RETAURA;
+		 loga("Aura ativa: Retribution -> trocando para: Concentration");
+		}
+		else
+		{
+		 loga("Sem aura rastreável ativa -> trocando para: Concentration");
+		}
 
-	 dbg += "Forbearance..........: " + (pala.forbearance ? "ativo" : "inativo") + "\r\n";
-	 dbg += "Lay on Hands pronto..: " + (pala.cancast_LOH ? "sim" : "não") + "\r\n";
-	 dbg += "BoP pronto...........: " + (pala.BOP_up ? "sim" : "não") + "\r\n";
-	 dbg += "BoP ativo em você....: " + (pala.bop ? "sim" : "não") + "\r\n";
-	 dbg += "Potion pronta........: " + (me.hp_potion_rdy ? "sim" : "não") + "\r\n";
-	 dbg += "Decay estimado.......: " + tbdecay.Text + " hp/m" + "\r\n";
+		aperta(CONAURA, GCD);  // troca pra concentration aura
+		trocou_aura = true;    // marca que houve troca
+	 }
 
+	 loga("For the light!");     // tentativa heroica
+	 aperta(HLIGHT, 1000);       // casta holy light
+	 wait_cast();                // espera o cast
+	 checkme();                  // atualiza status
 
-	 loga(dbg); // envia mensagem pro campo de log
+	 // restaura aura antiga se tiver trocado
+	 if (trocou_aura && aura_antiga != 0)
+	 {
+		string nome_antiga = (aura_antiga == DEVAURA) ? "Devotion" : "Retribution";
+		loga("Cura finalizada -> restaurando aura: " + nome_antiga);
+		aperta(aura_antiga, GCD);
+	 }
+	}
+
+	private void button18_Click(object sender, EventArgs e)
+	{
+	 checkme();
+	 wait(GCD); // espera o GCD
+	 checkme(); // atualiza status do player
+	 string aura_log = "[AURAS] "
+ + "crus=" + pala.crusader + "  "
+ + "devo=" + pala.devotion + "  "
+ + "frost=" + pala.frost + "  "
+ + "shadow=" + pala.shadow + "  "
+ + "fire=" + pala.fire + "  "
+ + "conc=" + pala.concentration + "  "
+ + "retri=" + pala.retribution;
+
+	 loga(aura_log); // ou tb_debug1.Text = aura_log;
 	}
 
 
