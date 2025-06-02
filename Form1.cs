@@ -1601,7 +1601,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// recuo tático se estiver apanhando demais
 		// -----------------------------------------
 		
-		if (!dungeon && !ja_deu_backpedal && me.hp < 85)
+		if (me.dazed || (!dungeon && !ja_deu_backpedal && me.hp < 85))
 		{
 		 
 		 int limiar = int.Parse(tb_back_limiar.Text); // Lê o valor do limiar 
@@ -1616,9 +1616,12 @@ nao_afoga(); // nada para cima se estiver afogando
 		 if (precisa_backpedal)
 		 {
 			if (!me.dazed) ja_deu_backpedal = true; // só uma vez por combate
-			loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
-			aperta(SKEY, 2000);     // anda pra trás mantendo o facing
+			if (me.dazed) loga("Dazed! Backpedal para evitar mob batendo atrás."); // loga se estiver atordoado
+			else loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
+			if (!me.dazed) aperta(SKEY, 1500);     // anda pra trás mantendo o facing
+			if (me.dazed) aperta(SKEY, 1500);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
+			
 		 }
 		 else if (!jalogou)
 		 {
