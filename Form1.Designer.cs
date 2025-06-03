@@ -190,6 +190,7 @@ namespace Discord
 	 this.tb_purify_delay = new System.Windows.Forms.TextBox();
 	 this.cb_apagacinza = new System.Windows.Forms.CheckBox();
 	 this.button18 = new System.Windows.Forms.Button();
+	 this.tb_timer_hours = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -217,6 +218,7 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.tb_timer_hours);
 	 this.tabPage1.Controls.Add(this.button18);
 	 this.tabPage1.Controls.Add(this.button17);
 	 this.tabPage1.Controls.Add(this.cb_assist_tank);
@@ -279,18 +281,18 @@ namespace Discord
 	 this.cb_HS_timer.AutoSize = true;
 	 this.cb_HS_timer.Checked = true;
 	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_HS_timer.Location = new System.Drawing.Point(4, 413);
+	 this.cb_HS_timer.Location = new System.Drawing.Point(8, 380);
 	 this.cb_HS_timer.Name = "cb_HS_timer";
-	 this.cb_HS_timer.Size = new System.Drawing.Size(66, 17);
+	 this.cb_HS_timer.Size = new System.Drawing.Size(87, 17);
 	 this.cb_HS_timer.TabIndex = 51;
-	 this.cb_HS_timer.Text = "HS timer";
+	 this.cb_HS_timer.Text = "Timer (hours)";
 	 this.cb_HS_timer.UseVisualStyleBackColor = true;
 	 // 
 	 // hs_min_left
 	 // 
-	 this.hs_min_left.Location = new System.Drawing.Point(77, 411);
+	 this.hs_min_left.Location = new System.Drawing.Point(37, 405);
 	 this.hs_min_left.Name = "hs_min_left";
-	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
+	 this.hs_min_left.Size = new System.Drawing.Size(87, 20);
 	 this.hs_min_left.TabIndex = 50;
 	 this.hs_min_left.Text = "300";
 	 // 
@@ -613,7 +615,7 @@ namespace Discord
 	 this.lbwp.FormattingEnabled = true;
 	 this.lbwp.Location = new System.Drawing.Point(8, 40);
 	 this.lbwp.Name = "lbwp";
-	 this.lbwp.Size = new System.Drawing.Size(98, 355);
+	 this.lbwp.Size = new System.Drawing.Size(98, 316);
 	 this.lbwp.TabIndex = 1;
 	 // 
 	 // bt_onoff
@@ -1854,6 +1856,14 @@ namespace Discord
 	 this.button18.UseVisualStyleBackColor = true;
 	 this.button18.Click += new System.EventHandler(this.button18_Click);
 	 // 
+	 // tb_timer_hours
+	 // 
+	 this.tb_timer_hours.Location = new System.Drawing.Point(8, 405);
+	 this.tb_timer_hours.Name = "tb_timer_hours";
+	 this.tb_timer_hours.Size = new System.Drawing.Size(23, 20);
+	 this.tb_timer_hours.TabIndex = 55;
+	 this.tb_timer_hours.Text = "6";
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2073,6 +2083,7 @@ namespace Discord
 	private TextBox tb_purify_delay;
 	private CheckBox cb_apagacinza;
 	private Button button18;
+	private TextBox tb_timer_hours;
  }
 }
 

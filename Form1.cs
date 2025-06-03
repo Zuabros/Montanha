@@ -20,6 +20,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using System.Xml;
 using static Discord.Form1;
@@ -2671,7 +2672,22 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	// -------------------------------------------------------
 	private void button1_Click_1(object sender, EventArgs e)
 	{
+	// TIMERS 
+
 	 int hs_tick = 0; // guarda o último tick registrado (global ou da classe)
+
+	 if (cb_HS_timer.Checked && hs_tick == 0) // só na primeira vez
+	 {
+		hs_tick = Environment.TickCount; // marca início do controle
+
+		int horas = 0;
+		int.TryParse(tb_timer_hours.Text, out horas); // lê quantas horas rodar
+
+		DateTime fim = DateTime.Now.AddHours(horas); // calcula horário final
+		hs_min_left.Text = fim.ToString("dd/MM/yy HH:mm"); // salva no textbox
+	 }
+
+
 	 on = true;                        // ativa o bot
 	 lwp.Clear();                      // limpa lista de waypoints
 
@@ -2693,18 +2709,21 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		//-----------------------------
 		// CONTROLE DE TIMER PARA HS 
 		//-----------------------------
-		if (cb_HS_timer.Checked) // só executa se o timer estiver ligado
+		if (cb_HS_timer.Checked)
 		{
-		 if (hs_tick == 0) hs_tick = Environment.TickCount; // inicia controle se for a primeira vez
-		 int agora = Environment.TickCount; // tempo atual em ms
-		 if (agora - hs_tick >= 60000) // passou 60 segundos?
+		 int agora = Environment.TickCount;
+		 if (agora - hs_tick >= 60000) // passou 1 minuto
 		 {
-			hs_tick = agora; // atualiza o marcador
-			int min = 0; // minutos restantes
-			int.TryParse(hs_min_left.Text, out min); // tenta converter o texto
-			if (min > 0) min--; // decrementa se positivo
-			hs_min_left.Text = min.ToString(); // atualiza o textbox
-			if (min == 0) HS(); // chama HS se chegou a zero
+			hs_tick = agora;
+
+			DateTime fim;
+			if (DateTime.TryParse(hs_min_left.Text, out fim))
+			{
+			 if (DateTime.Now >= fim)
+			 {
+				HS(); // executa a finalização
+			 }
+			}
 		 }
 		}
 		//-----------------------------
