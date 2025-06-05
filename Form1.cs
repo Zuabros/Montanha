@@ -1619,8 +1619,8 @@ nao_afoga(); // nada para cima se estiver afogando
 			if (!me.dazed) ja_deu_backpedal = true; // só uma vez por combate
 			if (me.dazed) loga("Dazed! Backpedal para evitar mob batendo atrás."); // loga se estiver atordoado
 			else loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
-			if (!me.dazed) aperta(SKEY, 1500);     // anda pra trás mantendo o facing
-			if (me.dazed) aperta(SKEY, 1500);     // anda pra trás mantendo o facing
+			if (!me.dazed) aperta(SKEY, 1200);     // anda pra trás mantendo o facing
+			if (me.dazed) aperta(SKEY, 1300);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
 			
 		 }
@@ -2710,22 +2710,16 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		// CONTROLE DE TIMER PARA HS 
 		//-----------------------------
 		if (cb_HS_timer.Checked)
-		{
-		 int agora = Environment.TickCount;
-		 if (agora - hs_tick >= 60000) // passou 1 minuto
+		 if (Environment.TickCount - hs_tick >= 60000) // passou 1 minuto
 		 {
-			hs_tick = agora;
+			hs_tick = Environment.TickCount;
 
 			DateTime fim;
 			if (DateTime.TryParse(hs_min_left.Text, out fim))
-			{
 			 if (DateTime.Now >= fim)
-			 {
 				HS(); // executa a finalização
-			 }
-			}
 		 }
-		}
+
 		//-----------------------------
 		lbwp.SelectedIndex = indexAtual;         // destaca na interface
 
