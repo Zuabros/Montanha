@@ -95,14 +95,17 @@ namespace Discord
 	public bool sotc;            // Seal of the Crusader
 
 	// COOLDOWNS (0–255s ou flags)
-	public bool hoj_ready;       // Hammer of Justice pronto?
 	public int judge_cd;         // Judgement
-	public bool cancast_LOH;           // Lay on Hands
-	public bool bubble_cd;       // Divine Shield (bolha)
 	public int dp_cd;            // Divine Protection
+	
+	// CAST READY 
 	public bool exorcism_up;     // Exorcism disponível?
 	public bool BOP_up;     // BOP disponível?
 	public bool forbearance;            // debuff up
+	public bool cancast_LOH;           // Lay on Hands
+	public bool bubble_cd;       // Divine Protection pronto?
+	public bool hoj_ready;       // Hammer of Justice pronto?
+	public bool divine_shield_up; // Divine Shield pronto?
 
 	// TARGET DEBUFFS (true se ativo)
 	public bool joj;             // Judgement of Justice

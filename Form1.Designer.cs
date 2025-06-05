@@ -32,6 +32,9 @@ namespace Discord
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.tb_timer_hours = new System.Windows.Forms.TextBox();
+	 this.button18 = new System.Windows.Forms.Button();
+	 this.button17 = new System.Windows.Forms.Button();
 	 this.cb_assist_tank = new System.Windows.Forms.CheckBox();
 	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
 	 this.hs_min_left = new System.Windows.Forms.TextBox();
@@ -84,6 +87,7 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.Paladin = new System.Windows.Forms.TabPage();
+	 this.tb_purify_delay = new System.Windows.Forms.TextBox();
 	 this.cb_BOP = new System.Windows.Forms.CheckBox();
 	 this.tb_JOTC_lvl = new System.Windows.Forms.TextBox();
 	 this.cb_keep_JOTC = new System.Windows.Forms.CheckBox();
@@ -139,6 +143,7 @@ namespace Discord
 	 this.tb_tarhp = new System.Windows.Forms.TextBox();
 	 this.label1 = new System.Windows.Forms.Label();
 	 this.pan_me = new System.Windows.Forms.Panel();
+	 this.cb_apagacinza = new System.Windows.Forms.CheckBox();
 	 this.cb_pacifist = new System.Windows.Forms.CheckBox();
 	 this.cbskin = new System.Windows.Forms.CheckBox();
 	 this.cb_loot = new System.Windows.Forms.CheckBox();
@@ -186,11 +191,6 @@ namespace Discord
 	 this.label22 = new System.Windows.Forms.Label();
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
-	 this.button17 = new System.Windows.Forms.Button();
-	 this.tb_purify_delay = new System.Windows.Forms.TextBox();
-	 this.cb_apagacinza = new System.Windows.Forms.CheckBox();
-	 this.button18 = new System.Windows.Forms.Button();
-	 this.tb_timer_hours = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -265,6 +265,34 @@ namespace Discord
 	 this.tabPage1.Size = new System.Drawing.Size(697, 440);
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
+	 // 
+	 // tb_timer_hours
+	 // 
+	 this.tb_timer_hours.Location = new System.Drawing.Point(8, 405);
+	 this.tb_timer_hours.Name = "tb_timer_hours";
+	 this.tb_timer_hours.Size = new System.Drawing.Size(23, 20);
+	 this.tb_timer_hours.TabIndex = 55;
+	 this.tb_timer_hours.Text = "6";
+	 // 
+	 // button18
+	 // 
+	 this.button18.Location = new System.Drawing.Point(514, 233);
+	 this.button18.Name = "button18";
+	 this.button18.Size = new System.Drawing.Size(75, 23);
+	 this.button18.TabIndex = 54;
+	 this.button18.Text = "Debug B";
+	 this.button18.UseVisualStyleBackColor = true;
+	 this.button18.Click += new System.EventHandler(this.button18_Click);
+	 // 
+	 // button17
+	 // 
+	 this.button17.Location = new System.Drawing.Point(514, 192);
+	 this.button17.Name = "button17";
+	 this.button17.Size = new System.Drawing.Size(90, 39);
+	 this.button17.TabIndex = 53;
+	 this.button17.Text = "Debug";
+	 this.button17.UseVisualStyleBackColor = true;
+	 this.button17.Click += new System.EventHandler(this.button17_Click);
 	 // 
 	 // cb_assist_tank
 	 // 
@@ -821,6 +849,14 @@ namespace Discord
 	 this.Paladin.TabIndex = 0;
 	 this.Paladin.Text = "Paladin";
 	 // 
+	 // tb_purify_delay
+	 // 
+	 this.tb_purify_delay.Location = new System.Drawing.Point(64, 245);
+	 this.tb_purify_delay.Name = "tb_purify_delay";
+	 this.tb_purify_delay.Size = new System.Drawing.Size(24, 20);
+	 this.tb_purify_delay.TabIndex = 84;
+	 this.tb_purify_delay.Text = "6";
+	 // 
 	 // cb_BOP
 	 // 
 	 this.cb_BOP.AutoSize = true;
@@ -913,7 +949,7 @@ namespace Discord
 	 this.tb_pull_mana.Name = "tb_pull_mana";
 	 this.tb_pull_mana.Size = new System.Drawing.Size(33, 20);
 	 this.tb_pull_mana.TabIndex = 73;
-	 this.tb_pull_mana.Text = "40";
+	 this.tb_pull_mana.Text = "45";
 	 // 
 	 // cb_retaura
 	 // 
@@ -961,7 +997,7 @@ namespace Discord
 	 this.tb_mana_min.Name = "tb_mana_min";
 	 this.tb_mana_min.Size = new System.Drawing.Size(30, 20);
 	 this.tb_mana_min.TabIndex = 68;
-	 this.tb_mana_min.Text = "60";
+	 this.tb_mana_min.Text = "50";
 	 // 
 	 // cb_savemana
 	 // 
@@ -990,8 +1026,6 @@ namespace Discord
 	 // cb_BOSA
 	 // 
 	 this.cb_BOSA.AutoSize = true;
-	 this.cb_BOSA.Checked = true;
-	 this.cb_BOSA.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cb_BOSA.Location = new System.Drawing.Point(204, 122);
 	 this.cb_BOSA.Name = "cb_BOSA";
 	 this.cb_BOSA.Size = new System.Drawing.Size(128, 17);
@@ -1041,7 +1075,7 @@ namespace Discord
 	 this.tb_bow_trig.Name = "tb_bow_trig";
 	 this.tb_bow_trig.Size = new System.Drawing.Size(33, 20);
 	 this.tb_bow_trig.TabIndex = 61;
-	 this.tb_bow_trig.Text = "60";
+	 this.tb_bow_trig.Text = "40";
 	 // 
 	 // cb_BOW
 	 // 
@@ -1384,6 +1418,18 @@ namespace Discord
 	 this.pan_me.Name = "pan_me";
 	 this.pan_me.Size = new System.Drawing.Size(142, 222);
 	 this.pan_me.TabIndex = 23;
+	 // 
+	 // cb_apagacinza
+	 // 
+	 this.cb_apagacinza.AutoSize = true;
+	 this.cb_apagacinza.Checked = true;
+	 this.cb_apagacinza.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_apagacinza.Location = new System.Drawing.Point(3, 202);
+	 this.cb_apagacinza.Name = "cb_apagacinza";
+	 this.cb_apagacinza.Size = new System.Drawing.Size(109, 17);
+	 this.cb_apagacinza.TabIndex = 41;
+	 this.cb_apagacinza.Text = "Destrói item cinza";
+	 this.cb_apagacinza.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_pacifist
 	 // 
@@ -1815,54 +1861,6 @@ namespace Discord
 	 this.button9.Size = new System.Drawing.Size(40, 23);
 	 this.button9.TabIndex = 0;
 	 this.button9.Click += new System.EventHandler(this.button9_Click_2);
-	 // 
-	 // button17
-	 // 
-	 this.button17.Location = new System.Drawing.Point(514, 192);
-	 this.button17.Name = "button17";
-	 this.button17.Size = new System.Drawing.Size(90, 39);
-	 this.button17.TabIndex = 53;
-	 this.button17.Text = "Debug";
-	 this.button17.UseVisualStyleBackColor = true;
-	 this.button17.Click += new System.EventHandler(this.button17_Click);
-	 // 
-	 // tb_purify_delay
-	 // 
-	 this.tb_purify_delay.Location = new System.Drawing.Point(64, 245);
-	 this.tb_purify_delay.Name = "tb_purify_delay";
-	 this.tb_purify_delay.Size = new System.Drawing.Size(24, 20);
-	 this.tb_purify_delay.TabIndex = 84;
-	 this.tb_purify_delay.Text = "6";
-	 // 
-	 // cb_apagacinza
-	 // 
-	 this.cb_apagacinza.AutoSize = true;
-	 this.cb_apagacinza.Checked = true;
-	 this.cb_apagacinza.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_apagacinza.Location = new System.Drawing.Point(3, 202);
-	 this.cb_apagacinza.Name = "cb_apagacinza";
-	 this.cb_apagacinza.Size = new System.Drawing.Size(109, 17);
-	 this.cb_apagacinza.TabIndex = 41;
-	 this.cb_apagacinza.Text = "Destrói item cinza";
-	 this.cb_apagacinza.UseVisualStyleBackColor = true;
-	 // 
-	 // button18
-	 // 
-	 this.button18.Location = new System.Drawing.Point(514, 233);
-	 this.button18.Name = "button18";
-	 this.button18.Size = new System.Drawing.Size(75, 23);
-	 this.button18.TabIndex = 54;
-	 this.button18.Text = "Debug B";
-	 this.button18.UseVisualStyleBackColor = true;
-	 this.button18.Click += new System.EventHandler(this.button18_Click);
-	 // 
-	 // tb_timer_hours
-	 // 
-	 this.tb_timer_hours.Location = new System.Drawing.Point(8, 405);
-	 this.tb_timer_hours.Name = "tb_timer_hours";
-	 this.tb_timer_hours.Size = new System.Drawing.Size(23, 20);
-	 this.tb_timer_hours.TabIndex = 55;
-	 this.tb_timer_hours.Text = "6";
 	 // 
 	 // Form1
 	 // 

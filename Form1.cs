@@ -194,8 +194,10 @@ namespace Discord
 
 	public const int DEVAURA = F3;     // Devotion Aura
 	public const int RETAURA = F4;     // Retribution Aura
-	public const int CONAURA = F8;     // Concentration Aura
 	public const int BOP = F7;     // Retribution Aura
+	public const int CONAURA = F8;     // Concentration Aura
+	public const int DSHIELD = F9;     // Divine Shield (Bubble)
+	public const int FLASHHEAL = F10;     // Divine Shield (Bubble)
 
 
 	// --------------------------------------------
@@ -218,7 +220,7 @@ namespace Discord
 	// --------------------------------------------
 	public const int PULA = SPACEBAR;  // pula
 	public const int INTERACT = IKEY;      // interage com o alvo
-	
+
 
 
 	// --------------------------------------------
@@ -232,6 +234,10 @@ namespace Discord
 	public const int F6 = 0x75; // tecla F6 
 	public const int F7 = 0x76; // tecla F7 
 	public const int F8 = 0x77; // tecla F8 
+	public const int F9 = 0x78; // tecla F9
+	public const int F10 = 0x79; // tecla F10
+	public const int F11 = 0x7A; // tecla F11
+	public const int F12 = 0x7B; // tecla F12
 
 	// --------------------------------------------
 	// CLASSES 
@@ -410,12 +416,24 @@ namespace Discord
 	 // PIXEL 12 – SEALS + JUDGEMENTS + CASTS
 	 // -------------------------------------
 	 // R: Bitflags dos seals ativos em você
-	 //      128 = SOR | 64 = SOTC | 32 = SOJ | 16 = SOL | 8 = SOW | 4 = SOC
+	 //      128 = SOR       | Seal of Righteousness
+	 //      64  = SOTC      | Seal of the Crusader
+	 //      32  = SOJ       | Seal of Justice
+	 //      16  = SOL       | Seal of Light
+	 //      8   = SOW       | Seal of Wisdom
+	 //      4   = SOC       | Seal of Command
+	 //
 	 // G: Bitflags dos judgements no target (apenas os que aplicam debuff)
-	 //      128 = Forbearance em mim; 64 = JOTC | 32 = JOJ | 16 = JOL | 8 = JOW
+	 //      128 = Forbearance em mim
+	 //      64  = JOTC      | Judgement of the Crusader
+	 //      32  = JOJ       | Judgement of Justice
+	 //      16  = JOL       | Judgement of Light
+	 //      8   = JOW       | Judgement of Wisdom
+	 //
 	 // B: Bitflags de cast disponível
 	 //      128 = pode castar Lay on Hands
-	 //       64 = pode castar Blessing of Protection
+	 //      64  = pode castar Blessing of Protection
+	 //      32  = pode castar Divine Shield (bubble)
 
 	 // -------------------------------------
 	 // PIXEL 13 – BLESSINGS + HOJ STATUS
@@ -800,6 +818,7 @@ readpixels(pixels);
 		// FLAGS (CANCAST / DEBUFF)
 		pala.cancast_LOH = (ab & 128) != 0; // pode castar Lay on Hands
 		pala.BOP_up = (ab & 64) != 0; // pode castar Blessing of Protection
+		pala.divine_shield_up = (ab & 32) != 0; // pode castar Divine Shield (bubble)
 		pala.forbearance = (ag & 128) != 0; // tem debuff Forbearance
 	 }
 
@@ -1767,12 +1786,7 @@ nao_afoga(); // nada para cima se estiver afogando
 	 tbavdecay.Text = tracker.Average.ToString();
 	 tbdecay.Text = final.ToString(); // opcional: mostrar o valor final após a luta
 
-	 string txt = final.ToString();
-	 if (!lbdecay.Items.Contains(txt))
-		lbdecay.Items.Add(txt);
 
-	 while (lbdecay.Items.Count > 10)
-		lbdecay.Items.RemoveAt(0);
 
 	 emCombate = false;
 
@@ -1808,27 +1822,35 @@ nao_afoga(); // nada para cima se estiver afogando
 	 {
 		bool usou_protecao = false;
 
-		if (pala.bubble_cd && me.mana > 25)
+		if (pala.divine_shield_up && me.mana > 25)
 		{
-		 aperta(DPROT, GCD); // usa divine protection
+		 casta(DSHIELD); // usa Divine Shield
+		 loga("Curando com divine shield.");
+		 usou_protecao = true;
+		}
+		else if (pala.bubble_cd && me.mana > 25)
+		{
+		 casta(DPROT); // usa Divine Protection
 		 loga("Curando com divine protection.");
 		 usou_protecao = true;
 		}
 		else if (pala.BOP_up && cb_BOP.Checked && me.mana > 25)
 		{
-		 aperta(BOP, GCD); // usa blessing of protection
+		 casta(BOP); // usa Blessing of Protection
 		 loga("Curando com blessing of protection.");
 		 usou_protecao = true;
 		}
 
 		if (usou_protecao)
 		{
-		 aperta(HLIGHT, 1000); // casta HLIGHT
+		 casta(HLIGHT); // casta HLIGHT
 		 wait_cast();
 		 checkme();
+		 if (me.level >= 20 && me.hp < 90) casta(FLASHHEAL); // se ainda estiver baixo, usa FLASHHEAL
 		 if (me.hp >= limiar_hp) return; // cura resolveu
 		}
 	 }
+
 	 // NAO USOU PROTEÇÃO OU A CURA FOI POUCA.
 	 // ----------------------------------------
 	 // CURA CRÍTICA – POTION OU HLIGHT COM STUN
@@ -2339,6 +2361,14 @@ tb_debug3.Text = me.facing.ToString();
 
 	 return "0"; // valor padrão
 	}
+	// ----------------------------------------------------------
+	// MÉTODO CASTA: aperta e espera o GCD 
+	//-----------------------------------------------------------
+	void casta(byte key)
+	{
+	 aperta(key, GCD); // aperta a tecla e espera o GCD
+	}
+
 	// ----------------------------------------------------------
 	// MÉTODO RECURSIVO - Adiciona CheckBox e TextBox na lista (pra salvar o cfg)
 	// ----------------------------------------------------------
