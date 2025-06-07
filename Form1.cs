@@ -380,10 +380,15 @@ namespace Discord
 	 //   G: 255 se classe for Paladino
 	 //   B: Bubble ready (B == 0)
 
-	 //7 Target HP:
-	 //   R: HP atual do alvo × 255 / HP máx
-	 //   G: bits do target → 128 se existe, 64 se skinável
-	 //   B: Level do alvo × 4 (cap em 255)
+//-- -------------------------------------------
+//-- pixel 7 - Target HP (R), flags (G), Level (B)
+//-- -------------------------------------------
+//--   R: HP atual do alvo × 255 / HP máx
+//--   G: bits de status do target:
+//--      128 = target existe
+//--       64 = target é raro
+//--       32 = target é elite / rareelite / worldboss
+//--   B: Level do alvo × 4 (cap implícito em 63)
 
 	 //8 vazio 
 	 //   R: 0 
@@ -588,6 +593,7 @@ readpixels(pixels);
 
 	 // Tenho debuff dazed = bit 16
 	 me.dazed = (pixels[0].r & 16) != 0;
+	 //me.dazed = false;
 
 	 // target morto agora vem no bit 32 de R, não mais no B
 	 e.morreu = (pixels[0].r & 32) != 0;
@@ -697,7 +703,7 @@ readpixels(pixels);
 		int val = pixels[6].b; // canal B codifica flags
 
 		// FLAGS DO PALADINO (bitfield)
-		pala.bubble_cd = (val & 128) > 0;            // bolha disponível
+		pala.divine_protection_up = (val & 128) > 0;            // bolha disponível
 		pala.exorcism_up = (val & 64) > 0; // true se exorcism está disponível
 		pala.joj = (val & 32) > 0;             // mob com debuff JoJ
 		pala.exorcism_range = (val & 16) > 0;             // exorcism em alcance
@@ -719,16 +725,17 @@ readpixels(pixels);
 	 if (pixels.Count > 7)
 	 {
 		tar.hp = (pixels[7].r * 100) / 255;                // R: HP do alvo (%)
-		tar.morreu = tar.hp == 0;                 // morreu se HP = 0
-		tb_tarhp.Text = tar.hp.ToString();                 // mostra na textbox
+		tar.morreu = tar.hp == 0;                          // morreu se HP = 0
+		tb_tarhp.Text = tar.hp.ToString();                // mostra na textbox
 
 		e.hastarget = (pixels[7].g & 128) > 0;             // G: bit 7 → existe target
-		//tar.skinnable = (pixels[7].g & 64) > 0;            // G: bit 6 → skinável
-		//if (tar.morreu && me.hastarget) loga($"Target skinnable: {tar.skinnable}"); // debug 
+																											 //tar.skinnable = (pixels[7].g & 64) > 0;          
+
+		tar.israre = (pixels[7].g & 64) > 0;              // G: bit 6 → raro
+		tar.ieslite = (pixels[7].g & 32) > 0;              // G: bit 5 → elite
 
 		tar.level = (int)Math.Round(pixels[7].b / 4.0);    // B: level do target (×4)
-		//loga($"Level do target: {e.level}"); // debug
-		tb_tarlevel.Text = tar.level.ToString();           // mostra na textbox
+		tb_tarlevel.Text = tar.level.ToString();          // mostra na textbox
 	 }
 
 	 // -------------------------------------
@@ -818,8 +825,11 @@ readpixels(pixels);
 		// FLAGS (CANCAST / DEBUFF)
 		pala.cancast_LOH = (ab & 128) != 0; // pode castar Lay on Hands
 		pala.BOP_up = (ab & 64) != 0; // pode castar Blessing of Protection
-		pala.divine_shield_up = (ab & 32) != 0; // pode castar Divine Shield (bubble)
+		pala.divine_shield_up = (ab & 32) != 0 && !pala.forbearance; // divine shield 
 		pala.forbearance = (ag & 128) != 0; // tem debuff Forbearance
+
+		// LA DO PIXEL 6 
+		pala.divine_protection_up &= !pala.forbearance; // bolha disponível
 	 }
 
 
@@ -1142,10 +1152,16 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 //------------
 		 // if paladino.... 
 
-			if (me.hp < Convert.ToInt32(tb_preheal.Text) && mana(20))
+		 if (me.hp < atoi(tb_preheal))
 		 {
-			aperta(HLIGHT); wait(2500);
-			bless(me);
+			if (mana(20) && (me.hp < 60 || !cb_flashheal.Checked))
+			{
+			 aperta(HLIGHT); wait(2500);
+			}
+			else
+			 casta(FLASHHEAL);
+
+			 bless(me);
 		 }
 		 checkme();
 		 //----------------LIMPA POISONS-------------
@@ -1170,7 +1186,9 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 // -----------------------------------
 		 // LOOT 
 		 // -----------------------------------
-		 checkme();
+		 
+		 scan_elites(); // verifica se tem elite no mapa antes de clicar na tela 
+
 		 if (cb_apagacinza.Checked) clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
 		 if (has(me.freeslots) || cb_loot_cloth.Checked) // só loota se estiver ativado, e se tiver espaço ou for loot de pano
 
@@ -1448,6 +1466,35 @@ void andaplanta(loc alvo)
 
 
 
+	// ----------------------------------------
+	// MÉTODO scan_elites
+	// Verifica se o target é elite, raro ou patrulha e aguarda se necessário
+	// ----------------------------------------
+	void scan_elites()
+	{
+	 aperta(TAB);       // seleciona o alvo mais próximo
+	 checkme();         // atualiza status do alvo
+
+	 string tipo = "";  // tipo textual do alvo
+
+	 if (tar.type == 50 && cb_humanoid_patrol.Checked)
+		tipo = "humanoide";
+	 else if (tar.type == 240 && cb_giant_patrol.Checked)
+		tipo = "gigante";
+	 else if (tar.israre && cb_rare_patrol.Checked)
+		tipo = "raro";
+	 else if (tar.ieslite && cb_elite_patrol.Checked)
+		tipo = "elite";
+
+	 if (me.hastarget && tipo != "")
+	 {
+		int seg = atoi(tb_wait_patrol); // segundos a esperar
+		loga($"Detectado patrulha do tipo {tipo}. Esperando {seg} segundos.");
+		espera(seg); // aguarda o tempo configurado
+	 }
+	 else
+		loga("Nenhum elite ou patrulha detectado.");
+	}
 
 
 
@@ -1465,6 +1512,8 @@ void andaplanta(loc alvo)
 	 // NAO DEIXA AFOGAR 
 	 //------------------------------
 nao_afoga(); // nada para cima se estiver afogando
+
+	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 
 
 	 // --------------------------------------------
@@ -1793,6 +1842,25 @@ nao_afoga(); // nada para cima se estiver afogando
 
 	}
 	// --------------------------------
+	// MÉTODO DE ESPERA VIGILANTE
+	// --------------------------------
+	void espera(int seconds)
+	{
+	 solta(ANDA); // para de andar antes de esperar
+	 for (int i = seconds; i > 0; i--)
+	 {
+		if (me.combat)
+		{
+		 combatloop(); // entra na rotina de combate se estiver em combate
+		 return;
+		}
+		wait(1000); // espera 1 segundo
+		checkme(); // atualiza status do jogador
+	 }
+	}
+
+
+	// --------------------------------
 	// MÉTODO DE CURA GERAL DO PALADINO
 	// --------------------------------
 	void tenta_curar()
@@ -1828,7 +1896,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		 loga("Curando com divine shield.");
 		 usou_protecao = true;
 		}
-		else if (pala.bubble_cd && me.mana > 25)
+		else if (pala.divine_protection_up && me.mana > 25)
 		{
 		 casta(DPROT); // usa Divine Protection
 		 loga("Curando com divine protection.");
@@ -1883,7 +1951,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		 me.hp < limiar_loh &&
 		 !me.hp_potion_rdy && // não tem potion
 		 !pala.BOP_up &&       // não tem BOP
-		 !pala.bubble_cd &&    // não tem bubble
+		 !pala.divine_protection_up &&    // não tem bubble
 		 !pala.hoj_ready &&    // não tem stun
 		 pala.cancast_LOH &&   // LOH disponível
 		 cb_loh.Checked;
@@ -2925,7 +2993,7 @@ lbwp.Items.Clear();
 	// MÉTODO SCANLOOT: VERSÃO COM DESCARTE PARCIAL
 	// ---------------------------------------------
 	// Tenta pontos com maior frequência primeiro,
-	// mas se lootfreq == 0, 70% de chance de ignorar.
+	// mas se lootfreq == 0, 80% de chance de ignorar.
 	// Atualiza lootfreq com janela FIFO adaptativa.
 	// ---------------------------------------------
 	public loc scanloot()
@@ -2957,8 +3025,8 @@ lbwp.Items.Clear();
 
 	 foreach (int idx in ordem)
 	 {
-		// regra nova: se frequência zero, 70% de chance de pular o ponto
-		if (!catando_planta && lootfreq[idx] == 0 && rnd.NextDouble() < 0.70)
+		// regra nova: se frequência zero, 85% de chance de pular o ponto
+		if (!catando_planta && lootfreq[idx] == 0 && rnd.NextDouble() < 0.85)
 		 continue;
 
 		loc p;

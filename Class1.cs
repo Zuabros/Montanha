@@ -9,55 +9,60 @@ namespace Discord
 {
 
  // --------------------------------
- // MÓDULO 12 - STRUCT ELEMENT - REPRESENTA QUALQUER ENTIDADE (PLAYER, MOB, NPC) NO MAPA.
+ // MÓDULO 12 - STRUCT ELEMENT
+ // Representa qualquer entidade (player, mob, NPC) no mapa.
  // --------------------------------
  public struct element
  {
-	public loc pos;         // Posição atual
-	public int hp;          // Vida (0–100%)
-	public int mana;        // Mana (0–100%)
-	public int spd;         // Velocidade atual
-	public int facing;   // Direção que está olhando
-	public int level;       // Nível
-	public int type;        // Tipo (1 = player, 2 = mob, etc.)
-	public bool combat;     // Está em combate
-	public bool morreu;     // Está morto
-	public int mood;        // -1 = hostil, 0 = neutro, 1 = amigável
-	public bool humanoid;   // É humanóide
-	public int classe;
-	public bool hastarget;
-	public bool autoattack; // on
-	public int freeslots; // slots livres na bag 
-	public bool haspoison;
-	public bool hasmagic;
-	public bool hascurse;
-	public bool hasdisease;
-	public bool hasother; //(bleed?)
-	public bool racialready;  // racial up? 
-	public bool wrongway; // facing 
-	public bool outofrange; // da spell ou corporeo
-	public bool swim; // nadando 
-	public bool aggroed; // aggro em mim
-	public bool skinnable; // da pra skinar (pixel 7)
-	public bool furbolg_form; // Dartol's Rod of Transformation buff
-	public bool hp_potion_rdy; // health potion na bag ready (pixel 0)
-	public bool dazed; // está atordoado (dazed) (pixel 0R16)
+	// ----------- comuns ------------
+	public loc pos;           // posição atual
+	public int hp;            // vida (0–100%)
+	public int mana;          // mana (0–100%)
+	public int spd;           // velocidade atual (invertida no canal 1B)
+	public int facing;        // direção que está olhando
+	public int level;         // nível
+	public int type;          // tipo (1 = player, 2 = mob, etc.)
+	public bool combat;       // está em combate
+	public bool morreu;       // está morto
+	public int mood;          // -1 = hostil, 0 = neutro, 1 = amigável
+	public bool humanoid;     // é humanóide
+	public int classe;        // classe (1 = warrior, etc.)
+	public bool hastarget;    // possui target
+	public bool autoattack;   // autoattack ativo
+	public bool wrongway;     // está de costas para o alvo
+	public bool outofrange;   // alvo fora de alcance (melee ou spell)
+	public bool swim;         // está nadando
 
-	// --- casting ---
-	public bool iscaster;   // É uma criatura do tipo caster      // uso futuro
-	public bool casting;    // Está castando
-	public string spell;    // Letra inicial ou nome parcial da spell
-	public int castbar;     // Progresso da castbar (0–100)
-	public int spellid;     // ID real da spell (futuro)
+	// ----------- específicos de mim (me) -----------
+	public int freeslots;        // slots livres na bag
+	public bool racialready;     // racial pronta
+	public bool hp_potion_rdy;   // healing potion pronta
+	public bool haspoison;       // envenenado
+	public bool hasmagic;        // afetado por magia
+	public bool hascurse;        // amaldiçoado
+	public bool hasdisease;      // doente
+	public bool hasother;        // outros debuffs (ex: bleed)
+	public bool furbolg_form;    // está transformado com Dartol's Rod
+	public bool dazed;           // está atordoado (dazed)
 
-	// --- uso futuro ---
-	public bool meleerange;   // Está em alcance melee           // uso futuro
-	public bool rangedrange;  // Está em alcance à distância     // uso futuro
-	public bool trivial;      // Mob trivial (baixo nível)       // uso futuro
-	public bool lifeless;     // É um cadáver ou morto-vivo      // uso futuro
-	public int mobcount;      // Número de mobs ao redor         // uso futuro
+	// ----------- específicos do target (tar) -----------
+	public bool aggroed;         // tem aggro em mim
+	public bool israre;          // criatura rara (bit 64 no 7G)
+	public bool ieslite;         // criatura elite (bit 32 no 7G)
+															 
 
+	// ----------- casting -----------
+	public bool iscaster;        // é uma criatura do tipo caster (futuro)
+	public bool casting;         // está castando
+	public string spell;         // letra inicial ou nome parcial da spell
+	public int castbar;          // progresso da castbar (0–100)
+	public int spellid;          // ID real da spell (uso futuro)
+
+	// ----------- uso futuro -----------
+	public bool meleerange;      // está em alcance melee (futuro)
+	public bool rangedrange;     // está em alcance à distância (futuro)
  }
+
 
 
  // --------------------------------
@@ -103,7 +108,7 @@ namespace Discord
 	public bool BOP_up;     // BOP disponível?
 	public bool forbearance;            // debuff up
 	public bool cancast_LOH;           // Lay on Hands
-	public bool bubble_cd;       // Divine Protection pronto?
+	public bool divine_protection_up;       // Divine Protection pronto?
 	public bool hoj_ready;       // Hammer of Justice pronto?
 	public bool divine_shield_up; // Divine Shield pronto?
 
