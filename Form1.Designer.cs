@@ -73,6 +73,11 @@ namespace Discord
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.bt_onoff = new System.Windows.Forms.Button();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_elite_patrol = new System.Windows.Forms.CheckBox();
+	 this.cb_rare_patrol = new System.Windows.Forms.CheckBox();
+	 this.tb_wait_patrol = new System.Windows.Forms.TextBox();
+	 this.cb_humanoid_patrol = new System.Windows.Forms.CheckBox();
+	 this.cb_giant_patrol = new System.Windows.Forms.CheckBox();
 	 this.cb_wrong_gira = new System.Windows.Forms.CheckBox();
 	 this.cb_furbolg = new System.Windows.Forms.CheckBox();
 	 this.cb_loot_cloth = new System.Windows.Forms.CheckBox();
@@ -86,6 +91,7 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.Paladin = new System.Windows.Forms.TabPage();
+	 this.cb_flashheal = new System.Windows.Forms.CheckBox();
 	 this.tb_purify_delay = new System.Windows.Forms.TextBox();
 	 this.cb_BOP = new System.Windows.Forms.CheckBox();
 	 this.tb_JOTC_lvl = new System.Windows.Forms.TextBox();
@@ -144,7 +150,7 @@ namespace Discord
 	 this.pan_me = new System.Windows.Forms.Panel();
 	 this.cb_apagacinza = new System.Windows.Forms.CheckBox();
 	 this.cb_pacifist = new System.Windows.Forms.CheckBox();
-	 this.cbskin = new System.Windows.Forms.CheckBox();
+	 this.cb_skinning = new System.Windows.Forms.CheckBox();
 	 this.cb_loot = new System.Windows.Forms.CheckBox();
 	 this.cb_herbalism = new System.Windows.Forms.CheckBox();
 	 this.cb_pull = new System.Windows.Forms.CheckBox();
@@ -190,12 +196,7 @@ namespace Discord
 	 this.label22 = new System.Windows.Forms.Label();
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
-	 this.cb_flashheal = new System.Windows.Forms.CheckBox();
-	 this.cb_giant_patrol = new System.Windows.Forms.CheckBox();
-	 this.cb_humanoid_patrol = new System.Windows.Forms.CheckBox();
-	 this.tb_wait_patrol = new System.Windows.Forms.TextBox();
-	 this.cb_rare_patrol = new System.Windows.Forms.CheckBox();
-	 this.cb_elite_patrol = new System.Windows.Forms.CheckBox();
+	 this.button19 = new System.Windows.Forms.Button();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -681,6 +682,60 @@ namespace Discord
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
 	 // 
+	 // cb_elite_patrol
+	 // 
+	 this.cb_elite_patrol.AutoSize = true;
+	 this.cb_elite_patrol.Checked = true;
+	 this.cb_elite_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_elite_patrol.Location = new System.Drawing.Point(6, 321);
+	 this.cb_elite_patrol.Name = "cb_elite_patrol";
+	 this.cb_elite_patrol.Size = new System.Drawing.Size(51, 17);
+	 this.cb_elite_patrol.TabIndex = 70;
+	 this.cb_elite_patrol.Text = "Elites";
+	 this.cb_elite_patrol.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_rare_patrol
+	 // 
+	 this.cb_rare_patrol.AutoSize = true;
+	 this.cb_rare_patrol.Checked = true;
+	 this.cb_rare_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_rare_patrol.Location = new System.Drawing.Point(6, 300);
+	 this.cb_rare_patrol.Name = "cb_rare_patrol";
+	 this.cb_rare_patrol.Size = new System.Drawing.Size(54, 17);
+	 this.cb_rare_patrol.TabIndex = 69;
+	 this.cb_rare_patrol.Text = "Raros";
+	 this.cb_rare_patrol.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_wait_patrol
+	 // 
+	 this.tb_wait_patrol.Location = new System.Drawing.Point(71, 240);
+	 this.tb_wait_patrol.Name = "tb_wait_patrol";
+	 this.tb_wait_patrol.Size = new System.Drawing.Size(20, 20);
+	 this.tb_wait_patrol.TabIndex = 68;
+	 this.tb_wait_patrol.Text = "60";
+	 // 
+	 // cb_humanoid_patrol
+	 // 
+	 this.cb_humanoid_patrol.AutoSize = true;
+	 this.cb_humanoid_patrol.Location = new System.Drawing.Point(6, 283);
+	 this.cb_humanoid_patrol.Name = "cb_humanoid_patrol";
+	 this.cb_humanoid_patrol.Size = new System.Drawing.Size(74, 17);
+	 this.cb_humanoid_patrol.TabIndex = 67;
+	 this.cb_humanoid_patrol.Text = "Humanoid";
+	 this.cb_humanoid_patrol.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_giant_patrol
+	 // 
+	 this.cb_giant_patrol.AutoSize = true;
+	 this.cb_giant_patrol.Checked = true;
+	 this.cb_giant_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_giant_patrol.Location = new System.Drawing.Point(6, 269);
+	 this.cb_giant_patrol.Name = "cb_giant_patrol";
+	 this.cb_giant_patrol.Size = new System.Drawing.Size(51, 17);
+	 this.cb_giant_patrol.TabIndex = 66;
+	 this.cb_giant_patrol.Text = "Giant";
+	 this.cb_giant_patrol.UseVisualStyleBackColor = true;
+	 // 
 	 // cb_wrong_gira
 	 // 
 	 this.cb_wrong_gira.AutoSize = true;
@@ -850,6 +905,18 @@ namespace Discord
 	 this.Paladin.Size = new System.Drawing.Size(351, 347);
 	 this.Paladin.TabIndex = 0;
 	 this.Paladin.Text = "Paladin";
+	 // 
+	 // cb_flashheal
+	 // 
+	 this.cb_flashheal.AutoSize = true;
+	 this.cb_flashheal.Checked = true;
+	 this.cb_flashheal.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_flashheal.Location = new System.Drawing.Point(221, 280);
+	 this.cb_flashheal.Name = "cb_flashheal";
+	 this.cb_flashheal.Size = new System.Drawing.Size(89, 17);
+	 this.cb_flashheal.TabIndex = 85;
+	 this.cb_flashheal.Text = "Flash of Light";
+	 this.cb_flashheal.UseVisualStyleBackColor = true;
 	 // 
 	 // tb_purify_delay
 	 // 
@@ -1401,7 +1468,7 @@ namespace Discord
 	 // 
 	 this.pan_me.Controls.Add(this.cb_apagacinza);
 	 this.pan_me.Controls.Add(this.cb_pacifist);
-	 this.pan_me.Controls.Add(this.cbskin);
+	 this.pan_me.Controls.Add(this.cb_skinning);
 	 this.pan_me.Controls.Add(this.cb_loot);
 	 this.pan_me.Controls.Add(this.cb_herbalism);
 	 this.pan_me.Controls.Add(this.cb_pull);
@@ -1444,17 +1511,17 @@ namespace Discord
 	 this.cb_pacifist.UseVisualStyleBackColor = true;
 	 this.cb_pacifist.CheckedChanged += new System.EventHandler(this.cb_pacifist_CheckedChanged);
 	 // 
-	 // cbskin
+	 // cb_skinning
 	 // 
-	 this.cbskin.AutoSize = true;
-	 this.cbskin.Checked = true;
-	 this.cbskin.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cbskin.Location = new System.Drawing.Point(3, 139);
-	 this.cbskin.Name = "cbskin";
-	 this.cbskin.Size = new System.Drawing.Size(67, 17);
-	 this.cbskin.TabIndex = 35;
-	 this.cbskin.Text = "Skinning";
-	 this.cbskin.UseVisualStyleBackColor = true;
+	 this.cb_skinning.AutoSize = true;
+	 this.cb_skinning.Checked = true;
+	 this.cb_skinning.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_skinning.Location = new System.Drawing.Point(3, 139);
+	 this.cb_skinning.Name = "cb_skinning";
+	 this.cb_skinning.Size = new System.Drawing.Size(67, 17);
+	 this.cb_skinning.TabIndex = 35;
+	 this.cb_skinning.Text = "Skinning";
+	 this.cb_skinning.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_loot
 	 // 
@@ -1770,7 +1837,7 @@ namespace Discord
 	 // 
 	 this.bt_save_cfg.Location = new System.Drawing.Point(2, 195);
 	 this.bt_save_cfg.Name = "bt_save_cfg";
-	 this.bt_save_cfg.Size = new System.Drawing.Size(75, 23);
+	 this.bt_save_cfg.Size = new System.Drawing.Size(79, 23);
 	 this.bt_save_cfg.TabIndex = 22;
 	 this.bt_save_cfg.Text = "Save Config";
 	 this.bt_save_cfg.UseVisualStyleBackColor = true;
@@ -1848,9 +1915,9 @@ namespace Discord
 	 // 
 	 // button16
 	 // 
-	 this.button16.Location = new System.Drawing.Point(3, 224);
+	 this.button16.Location = new System.Drawing.Point(3, 238);
 	 this.button16.Name = "button16";
-	 this.button16.Size = new System.Drawing.Size(93, 58);
+	 this.button16.Size = new System.Drawing.Size(93, 44);
 	 this.button16.TabIndex = 64;
 	 this.button16.Text = "TERMINATE";
 	 this.button16.UseVisualStyleBackColor = true;
@@ -1864,71 +1931,15 @@ namespace Discord
 	 this.button9.TabIndex = 0;
 	 this.button9.Click += new System.EventHandler(this.button9_Click_2);
 	 // 
-	 // cb_flashheal
+	 // button19
 	 // 
-	 this.cb_flashheal.AutoSize = true;
-	 this.cb_flashheal.Checked = true;
-	 this.cb_flashheal.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_flashheal.Location = new System.Drawing.Point(221, 280);
-	 this.cb_flashheal.Name = "cb_flashheal";
-	 this.cb_flashheal.Size = new System.Drawing.Size(89, 17);
-	 this.cb_flashheal.TabIndex = 85;
-	 this.cb_flashheal.Text = "Flash of Light";
-	 this.cb_flashheal.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_giant_patrol
-	 // 
-	 this.cb_giant_patrol.AutoSize = true;
-	 this.cb_giant_patrol.Checked = true;
-	 this.cb_giant_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_giant_patrol.Location = new System.Drawing.Point(6, 269);
-	 this.cb_giant_patrol.Name = "cb_giant_patrol";
-	 this.cb_giant_patrol.Size = new System.Drawing.Size(51, 17);
-	 this.cb_giant_patrol.TabIndex = 66;
-	 this.cb_giant_patrol.Text = "Giant";
-	 this.cb_giant_patrol.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_humanoid_patrol
-	 // 
-	 this.cb_humanoid_patrol.AutoSize = true;
-	 this.cb_humanoid_patrol.Location = new System.Drawing.Point(6, 283);
-	 this.cb_humanoid_patrol.Name = "cb_humanoid_patrol";
-	 this.cb_humanoid_patrol.Size = new System.Drawing.Size(74, 17);
-	 this.cb_humanoid_patrol.TabIndex = 67;
-	 this.cb_humanoid_patrol.Text = "Humanoid";
-	 this.cb_humanoid_patrol.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_wait_patrol
-	 // 
-	 this.tb_wait_patrol.Location = new System.Drawing.Point(71, 240);
-	 this.tb_wait_patrol.Name = "tb_wait_patrol";
-	 this.tb_wait_patrol.Size = new System.Drawing.Size(20, 20);
-	 this.tb_wait_patrol.TabIndex = 68;
-	 this.tb_wait_patrol.Text = "60";
-	 // 
-	 // cb_rare_patrol
-	 // 
-	 this.cb_rare_patrol.AutoSize = true;
-	 this.cb_rare_patrol.Checked = true;
-	 this.cb_rare_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_rare_patrol.Location = new System.Drawing.Point(6, 300);
-	 this.cb_rare_patrol.Name = "cb_rare_patrol";
-	 this.cb_rare_patrol.Size = new System.Drawing.Size(54, 17);
-	 this.cb_rare_patrol.TabIndex = 69;
-	 this.cb_rare_patrol.Text = "Raros";
-	 this.cb_rare_patrol.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_elite_patrol
-	 // 
-	 this.cb_elite_patrol.AutoSize = true;
-	 this.cb_elite_patrol.Checked = true;
-	 this.cb_elite_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_elite_patrol.Location = new System.Drawing.Point(6, 321);
-	 this.cb_elite_patrol.Name = "cb_elite_patrol";
-	 this.cb_elite_patrol.Size = new System.Drawing.Size(51, 17);
-	 this.cb_elite_patrol.TabIndex = 70;
-	 this.cb_elite_patrol.Text = "Elites";
-	 this.cb_elite_patrol.UseVisualStyleBackColor = true;
+	 this.button19.Location = new System.Drawing.Point(3, 218);
+	 this.button19.Name = "button19";
+	 this.button19.Size = new System.Drawing.Size(78, 23);
+	 this.button19.TabIndex = 65;
+	 this.button19.Text = "Reset Loot";
+	 this.button19.UseVisualStyleBackColor = true;
+	 this.button19.Click += new System.EventHandler(this.button19_Click);
 	 // 
 	 // Form1
 	 // 
@@ -1936,6 +1947,7 @@ namespace Discord
 	 this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 	 this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 	 this.ClientSize = new System.Drawing.Size(819, 482);
+	 this.Controls.Add(this.button19);
 	 this.Controls.Add(this.button9);
 	 this.Controls.Add(this.button16);
 	 this.Controls.Add(this.label22);
@@ -2077,7 +2089,7 @@ namespace Discord
 		private System.Windows.Forms.Button button11;
 		private System.Windows.Forms.CheckBox cb_loot;
 		private System.Windows.Forms.TextBox rtbcursor;
-		private System.Windows.Forms.CheckBox cbskin;
+		private System.Windows.Forms.CheckBox cb_skinning;
 		private System.Windows.Forms.CheckBox cb_dwarf;
 		private System.Windows.Forms.CheckBox cb_bubble;
 		private System.Windows.Forms.CheckBox cb_purify;
@@ -2155,6 +2167,7 @@ namespace Discord
 	private TextBox tb_wait_patrol;
 	private CheckBox cb_elite_patrol;
 	private CheckBox cb_rare_patrol;
+	private Button button19;
  }
 }
 

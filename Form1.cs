@@ -47,13 +47,60 @@ namespace Discord
 
 	// M20 - Variaveis de estado de jogo e personagem
 	int res_y = Screen.PrimaryScreen.Bounds.Height;
-	bool on = true; // bot on
+	public bool on = true; // bot on
 	public bool stopscan = false;
 	int indexAtual = 0;
 
 
-
+	//---------------------------------
 	// DLL Imports
+	//----------------------------------
+
+	// IMPORT PARA CURSOR (CAPTURAR E DESENHAR CURSOR) 
+	[DllImport("gdi32.dll", SetLastError = true)]
+	public static extern int GetDIBits(IntPtr hdc, IntPtr hbmp, uint uStartScan, uint cScanLines, [Out] byte[] lpvBits, ref BITMAPINFOHEADER lpbi, uint uUsage);
+
+
+	// IMPORTS PARA CURSOR E DESENHO DE ÍCONES
+	[DllImport("user32.dll")] public static extern IntPtr GetDC(IntPtr hWnd);
+	[DllImport("user32.dll")] public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+	[DllImport("gdi32.dll")] public static extern IntPtr CreateCompatibleDC(IntPtr hDC);
+	[DllImport("gdi32.dll")] public static extern bool DeleteDC(IntPtr hdc);
+	[DllImport("gdi32.dll")] public static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int nWidth, int nHeight);
+	[DllImport("gdi32.dll")] public static extern IntPtr SelectObject(IntPtr hdc, IntPtr h);
+	[DllImport("user32.dll")] public static extern bool DrawIconEx(IntPtr hDC, int xLeft, int yTop, IntPtr hIcon, int cxWidth, int cyWidth, int istep, IntPtr hbrFlickerFreeDraw, int diFlags);
+
+
+	[DllImport("gdi32.dll")]
+	public static extern int GetObject(IntPtr hgdiobj, int cbBuffer, out BITMAP lpvObject); // para ler desenho do cursor
+
+
+	[StructLayout(LayoutKind.Sequential)] // para ler desenho do cursor 
+	public struct BITMAP // usado para ler o desenho do cursor 
+	{
+	 public int bmType;       // tipo (geralmente 0)
+	 public int bmWidth;      // largura em pixels
+	 public int bmHeight;     // altura em pixels
+	 public int bmWidthBytes; // bytes por linha
+	 public ushort bmPlanes;  // geralmente 1
+	 public ushort bmBitsPixel; // profundidade (ex: 32 = RGBA)
+	 public IntPtr bmBits;    // ponteiro pros bits da imagem (opcional)
+	}
+
+	[DllImport("user32.dll", SetLastError = true)]
+	public static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct ICONINFO
+	{
+	 public bool fIcon;         // true se for ícone, false se for cursor
+	 public int xHotspot;       // posição x do ponto clicável
+	 public int yHotspot;       // posição y do ponto clicável
+	 public IntPtr hbmMask;     // bitmap da máscara
+	 public IntPtr hbmColor;    // bitmap da cor
+	}
+
+
 	[System.Runtime.InteropServices.DllImport("user32.dll")]
 	static extern short GetAsyncKeyState(int vKey);
 
@@ -158,6 +205,38 @@ namespace Discord
 	public const int N9 = 0x69; // NumPad 9 
 
 	// --------------------------------------------
+	// ALIAS DE CURSORES (identificação visual)
+	// --------------------------------------------
+	// os valores abaixo são gerados com checksum(img) = soma de todos os bytes do cursor % 256
+	// o cursor é renderizado via DrawIconEx em um bitmap 32x32 invisível (32bpp BGRA)
+	// -------------------------------------------------
+	// EM HOMENAGEM AO ALEMÃO (paladino level 41)
+	// Caiu ao clicar em um elite achando que era loot
+	// Este método foi criado para que isso jamais se repita
+	// -------------------------------------------------
+
+	public const byte LOOT = 64;    // cursor de loot (saquinho)
+	public const byte SKIN = 63;    // cursor de skinning (courinho)
+	public const byte SKIN_GRAY = 44;    // skinning fora de alcance
+	public const byte HAND = 79;    // cursor de interação (mãozinha)
+	public const byte SWORD = 33;    // cursor de ataque (espadinha)
+	public const byte SWORD_GRAY = 201;   // espadinha fora de alcance
+	public const byte TRAIN = 50;    // cursor de trainer / livro
+	public const byte TRAIN_GRAY = 62;    // trainer / livro fora de alcance
+	public const byte HERB_GRAY = 254;   // herborismo fora de alcance
+	public const byte BALLOON = 209;   // cursor de diálogo (balão de fala)
+	public const byte BALLOON_GRAY = 239;   // balão de fala cinza
+	public const byte TRADE = 233;   // cursor de troca
+	public const byte TRADE_GRAY = 206;   // troca fora de alcance
+	public const byte MAIL = 158;   // cursor de caixa de correio
+	public const byte MAIL_GRAY = 223;   // caixa de correio fora de alcance
+	public const byte GEAR = 26;    // engrenagem (banco, forja, etc.)
+	public const byte GEAR_GRAY = 224;   // engrenagem fora de alcance
+	public const byte HIDDEN = 0;     // cursor invisível (oculto pelo jogo)
+	public const int HERB = 69;           // planta coletável (herbalismo)
+	public const int MINE_GRAY = 201;     // veia de mineração cinza ou espadinha fora do alcance
+
+	// --------------------------------------------
 	// SKILLS GERAIS (comuns ou reutilizáveis)
 	// --------------------------------------------
 	public const int AUTOATTACK = UM;     // ataque automático
@@ -170,6 +249,7 @@ namespace Discord
 	public const int SLOW = F2;     // debuff de lentidão (genérico)
 	public const int ASSIST = F6;     // debuff de lentidão (genérico)
 	public const int GCD = 1501;  // Global Cooldown (tempo de recarga global em milissegundos)
+
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO PALADINO
@@ -240,7 +320,7 @@ namespace Discord
 	public const int F12 = 0x7B; // tecla F12
 
 	// --------------------------------------------
-	// CLASSES 
+	// CLASSES  E STRUCTS 
 	// --------------------------------------------
 	public const int PALADIN = 1; // Paladin
 
@@ -257,7 +337,21 @@ namespace Discord
 	 }
 	}
 
-
+	[StructLayout(LayoutKind.Sequential)]
+	public struct BITMAPINFOHEADER // usada pa ler o bitmap do cursor
+	{
+	 public uint biSize;          // tamanho da struct (40)
+	 public int biWidth;          // largura (32)
+	 public int biHeight;         // altura (32)
+	 public short biPlanes;       // planos (1)
+	 public short biBitCount;     // bits por pixel (32)
+	 public uint biCompression;   // compressão (0 = BI_RGB)
+	 public uint biSizeImage;     // tamanho em bytes (pode ser 0 com BI_RGB)
+	 public int biXPelsPerMeter;  // resolução horizontal
+	 public int biYPelsPerMeter;  // resolução vertical
+	 public uint biClrUsed;       // paleta (0)
+	 public uint biClrImportant;  // cores importantes (0)
+	}
 
 	// --------------------------------
 	// MÓDULO 12 - STRUCT ELEMENT - REPRESENTA QUALQUER ENTIDADE (PLAYER, MOB, NPC) NO MAPA.
@@ -340,9 +434,9 @@ namespace Discord
 	 // R: Bitflags de status do player e do alvo
 	 //     128 = autoattack ativo
 	 //      64 = healing potion pronta (no inventário e cooldown zerado)
-	 //      32 = target morto
-	 //      16 = player está com debuff Dazed
-	 //      0–15 = (livres para uso futuro)
+	 //      32 = player está com debuff Dazed
+	 //      16 = (livre para uso futuro)
+	 //       0–15 = (livres para uso futuro)
 	 // G: Proporção do HP do player (HP atual / HP máx × 255)
 	 // B: (vazio – reservado para uso futuro)
 
@@ -380,15 +474,15 @@ namespace Discord
 	 //   G: 255 se classe for Paladino
 	 //   B: Bubble ready (B == 0)
 
-//-- -------------------------------------------
-//-- pixel 7 - Target HP (R), flags (G), Level (B)
-//-- -------------------------------------------
-//--   R: HP atual do alvo × 255 / HP máx
-//--   G: bits de status do target:
-//--      128 = target existe
-//--       64 = target é raro
-//--       32 = target é elite / rareelite / worldboss
-//--   B: Level do alvo × 4 (cap implícito em 63)
+	 //-- -------------------------------------------
+	 //-- pixel 7 - Target HP (R), flags (G), Level (B)
+	 //-- -------------------------------------------
+	 //--   R: HP atual do alvo × 255 / HP máx
+	 //--   G: bits de status do target:
+	 //--      128 = target existe
+	 //--       64 = target é raro
+	 //--       32 = target é elite / rareelite / worldboss
+	 //--   B: Level do alvo × 4 (cap implícito em 63)
 
 	 //8 vazio 
 	 //   R: 0 
@@ -584,29 +678,27 @@ public void getstats(ref element e)
 {
 readpixels(pixels);
 	 // ----------------------------------------
-	 // PIXEL 0 – HP, Autoattack, Potion, Target morto
+	 // PIXEL 0 – HP, Autoattack, Potion, Dazed
 	 // ----------------------------------------
 
 	 // converte G em % de vida do player
 	 int v_hp = (pixels[0].g * 100) / 255;
 	 e.hp = v_hp;
 
-	 // Tenho debuff dazed = bit 16
-	 me.dazed = (pixels[0].r & 16) != 0;
-	 //me.dazed = false;
+	 // morreu: se HP chegou a 0
+	 e.morreu = (e.hp == 0);
 
-	 // target morto agora vem no bit 32 de R, não mais no B
-	 e.morreu = (pixels[0].r & 32) != 0;
+	 // player está com debuff Dazed = bit 32
+	 me.dazed = (pixels[0].r & 32) != 0;
 
 	 // autoattack = bit 128
 	 e.autoattack = (pixels[0].r & 128) != 0;
 
-	 // nova flag: healing potion pronta = bit 64
+	 // healing potion pronta = bit 64
 	 e.hp_potion_rdy = (pixels[0].r & 64) != 0;
 
 	 // debug opcional: mostra HP no textbox
 	 tb_hp.Text = v_hp.ToString();
-
 
 
 	 // ------------------------------------------
@@ -1087,7 +1179,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 if (cb_anda.Checked && !me.combat && dist(me.pos, oldloc) <= 10)
 		 {
 			stuckcount++;
-			if (cb_log.Checked) loga("enrosco lvl " + stuckcount);
+			//if (cb_log.Checked) loga("enrosco lvl " + stuckcount);
 			if (stuckcount > 0)
 			{
 			 unstuck();       // executa pulo + giro se necessário
@@ -1195,48 +1287,47 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 {
 			if (!me.combat)
 			{
-
-
 			 if (cb_loot.Checked)
 			 {
-				int loopcount = 0; // contador de tentativas de loot
+				int loopcount = 0;
 
 				while (true)
 				{
-				 checkme();                  // atualiza dados antes de cada busca
-				 if (me.combat) break;      // entrou em combate → sai do loop
+				 checkme();                  // atualiza dados
+				 if (me.combat) break;      // se entrou em combate, para tudo
 
-				 if (loopcount++ >= 6)      // passou do limite → força saída
+				 if (loopcount++ >= 6)      // tentou 6 vezes, desiste
 				 {
 					loga("Loop de loot interrompido após 6 tentativas.");
 					break;
 				 }
 
 				 loc p = scanloot();        // tenta encontrar algo clicável
-				 if (p.x < 0) break;        // nada encontrado → encerra
+				 if (p.x < 0) break;        // nada encontrado
 
-				 clica(p);                  // clica com botão direito
+				 clica(p);                  // clica diretamente — cursor já é validado no scanloot
 				 wait(100);
 				 checkme();
 
-				 if (me.spd == 0 && !me.combat) // se continuou parado e sem combate
+				 if (me.spd == 0 && !me.combat)
 				 {
-					wait(1200);                 // espera pelo loot ou skin
-					if (cbskin.Checked) wait_cast(); // espera skin só se tiver ticado 
+					wait(1000);            // espera loot ou skin
+					if (cb_skinning.Checked) wait_cast(); // só se for skinnando
 				 }
 				 else
 				 {
 					loga("Clicou errado ao tentar loot.");
-					break; // se clicou no mundo e saiu andando 
+					break;
 				 }
-
-
 				}
 			 }
+			 //-----------------------------------FIM SCANLOOT-----------------------------------
 
 			}
 			checkme();
 		 }
+		 //-----FIM LOOT-----------------------------------
+
 		 // -----------------------------------
 		 // HEARTHSTONE SE BAGS FULL
 		 // -----------------------------------
@@ -2217,7 +2308,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 if ((d < 200 && tempo > 350) || (d< 120 && tempo > 150)) // alvo muito perto e curva abrupta ORIGINAL ERA 200. TESTE DIMINUI TEMPO PARA 150
 	 {
 		solta(WKEY); // melhor parar de correr senao vai passar reto 
-		if (cb_log.Checked) loga($"Giro parado: Dist {d}m {tempo * 0.18} graus");
+		//if (cb_log.Checked) loga($"Giro parado: Dist {d}m {tempo * 0.18} graus");
 		logar = false;
 	 }
 
@@ -2738,7 +2829,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	 int andou = dist(me.pos, old);
 	 if (andou>2)         // se começou a andar, pulo funcionou
 	 {
-		loga($"andou {andou}m, pulo resolveu, movimento retomado");
+		//loga($"andou {andou}m, pulo resolveu, movimento retomado");
 		stuckcount = 0;
 		return;              // sai do método, nada mais a fazer
 	 }
@@ -2750,9 +2841,9 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	 //aperta(WKEY, 0);         // garante que siga andando
 	 loga("executando manobra: giro reverso e avanço");
 	 roda(-170);   // gira 170° pra esquerda (volta quase para tras)
-	 anda(6);      // anda 6 metros em nova direção
+	 anda(7);      // anda 6 metros em nova direção
 	 roda(80); // ou seja resultado final é virar para a esquerda 
-	 anda(6); // anda 6 metros para a esquerda 
+	 anda(7); // anda 6 metros para a esquerda 
 	 if (andou > 7)         // se começou a andar, pulo funcionou
 	 {
 		loga($"andou {andou}m, andada resolveu, movimento retomado");
@@ -2978,30 +3069,58 @@ lbwp.Items.Clear();
 	double exp_otimo = 1.0;   // idem
 	DateTime prox_salva = DateTime.Now.AddMinutes(10); // inicial
 
-	// ---------------------------------------
-	// METODO TESTEPONTO: MOVE E VERIFICA CURSOR
-	// ---------------------------------------
-	private bool testeponto(loc p, IntPtr refcur)
+	// ----------------------------------------
+	// FUNÇÃO tipocur
+	// Retorna o tipo do cursor atual (como byte)
+	// Renderiza e calcula checksum da imagem do cursor
+	// ----------------------------------------
+	public byte tipocur()
 	{
-	 mousemove(p.x, p.y);   // move o mouse até o ponto
-	 wait(pausa);           // aguarda tempo global
-	 IntPtr atual = getcursor(); // lê o cursor
-	 return atual != refcur;     // compara
+	 IntPtr cur = getcursor();       // obtém o cursor atual
+	 IntPtr bmp = rendercursor(cur); // renderiza imagem do cursor
+	 byte[] img = getpixels(bmp);    // extrai os pixels da imagem
+	 return checksum(img);           // retorna o byte identificador do cursor
 	}
+
+
+
 
 	// ---------------------------------------------
 	// MÉTODO SCANLOOT: VERSÃO COM DESCARTE PARCIAL
 	// ---------------------------------------------
-	// Tenta pontos com maior frequência primeiro,
-	// mas se lootfreq == 0, 80% de chance de ignorar.
-	// Atualiza lootfreq com janela FIFO adaptativa.
+	// VARIAVEIS DE USO PARA O METODO IDENTIFICAR OS CURSORES
+	// handle mais comum (saquinho)
+	public IntPtr lootCursor = IntPtr.Zero;
+		// handle secundário (skinning)
+	public IntPtr skinCursor = IntPtr.Zero;
+		// trava o aprendizado depois de 5 combates
+	public bool cursors_travados = false;
+		// contador de combates com loot analisado
+	public int lootCombates = 0;
+	// uso de Dictionary<IntPtr, int> para contar frequência (rápido e eficiente)
+	Dictionary<IntPtr, int> cursor_freq = new Dictionary<IntPtr, int>();
+	// uso de Dictionary<IntPtr, loc> para lembrar a última posição observada de cada cursor
+	Dictionary<IntPtr, loc> cursor_pos = new Dictionary<IntPtr, loc>();
+
+
+
+
+
+
+	// ---------------------------------------------
+	// MÉTODO scanloot
+	// Varre 25 pontos ao redor do personagem para detectar loot
+	// Começa pelo centro (fixo), depois tenta 24 posições circulares
+	// Posições são ordenadas por frequência, com chance de pular as de freq 0
+	// Frequência da posição 0 (centro) nunca é salva nem usada na ordenação
 	// ---------------------------------------------
 	public loc scanloot()
 	{
-	 Random rnd = new Random(); // colocar no início da classe
+	 const double CHANCE_PULAR_ZERO_FREQ = 0.85; // chance de ignorar ponto com freq 0
+
 	 if (DateTime.Now >= prox_salva)
 	 {
-		salva_loot(); // salva stats e aplica trim se necessário
+		salva_loot(); // salva vetor e aplica trim se necessário
 		prox_salva = DateTime.Now.AddMinutes(10);
 	 }
 
@@ -3011,68 +3130,85 @@ lbwp.Items.Clear();
 	 int h = Screen.PrimaryScreen.Bounds.Height;
 
 	 int cx = w / 2;
-	 int cy = (int)(h / 2 + h * 0.05);
+	 int cy = (int)(h / 2 + h * 0.05); // centro levemente abaixo da linha horizontal
 
-	 mousemove(20, 20); wait(pausa);
-	 mousemove(25, 25); wait(pausa);
+	 // -------------------------
+	 // TENTA PONTO CENTRAL
+	 // -------------------------
+	 loc centro = new loc { x = cx, y = cy };
+	 mousemove(centro.x, centro.y); wait(pausa);
+	 byte tipo = tipocur(); // obtém tipo do cursor atual
 
-	 IntPtr refcur = getcursor(); // forma original do cursor
+	 if (tipo == LOOT || (tipo == SKIN && cb_skinning.Checked) || (tipo == HERB && catando_planta))
+	 {
+		last_success = centro; total_loots++;
+		logastats(); lootCombates++;
 
-	 List<int> ordem = Enumerable.Range(0, 25)
+		if (tipo == 64) loga("Localizou loot.");
+		else if (tipo == 63) loga("Localizou couro.");
+		else if (tipo == 69) loga("Localizou planta.");
+
+		return centro;
+	 }
+
+	 // -------------------------
+	 // ORDENA POSIÇÕES 1 a 24 POR FREQUÊNCIA
+	 // -------------------------
+	 List<int> ordem = Enumerable.Range(1, 24)
 		 .OrderByDescending(i => lootfreq[i])
 		 .ThenBy(i => i)
 		 .ToList();
 
+	 Random rnd = new Random();
+
 	 foreach (int idx in ordem)
 	 {
-		// regra nova: se frequência zero, 85% de chance de pular o ponto
-		if (!catando_planta && lootfreq[idx] == 0 && rnd.NextDouble() < 0.85)
+		// chance de pular ponto com freq 0
+		if (lootfreq[idx] == 0 && !catando_planta && rnd.NextDouble() < CHANCE_PULAR_ZERO_FREQ)
 		 continue;
 
-		loc p;
+		// calcula ângulo em radianos
+		double ang = Math.PI * (idx - 1) / (idx <= 16 ? 8.0 : 4.0);
 
-		if (idx == 0)
-		{
-		 p = new loc { x = cx, y = cy };
-		}
-		else if (idx >= 1 && idx <= 16)
-		{
-		 int r = (int)(h * 0.20);
-		 double ang = Math.PI * (idx - 1) / 8.0;
-		 int x = cx + (int)(Math.Cos(ang) * r);
-		 int y = cy - (int)(Math.Sin(ang) * r);
-		 p = new loc { x = x, y = y };
-		}
-		else
-		{
-		 int r = (int)(h * 0.10);
-		 double ang = Math.PI * (idx - 17) / 4.0;
-		 int x = cx + (int)(Math.Cos(ang) * r);
-		 int y = cy - (int)(Math.Sin(ang) * r);
-		 p = new loc { x = x, y = y };
-		}
+		// define raio conforme idx
+		int r = (int)(h * (idx <= 16 ? 0.20 : 0.10));
 
-		if (testeponto(p, refcur))
+		// calcula posição
+		loc p = new loc
 		{
-		 atualiza_lootfreq(idx);
-		 last_success = p;
-		 total_loots++;
-		 logastats();
+		 x = cx + (int)(Math.Cos(ang) * r),
+		 y = cy - (int)(Math.Sin(ang) * r)
+		};
+
+		mousemove(p.x, p.y); wait(pausa);
+		tipo = tipocur(); // lê tipo do cursor nesse ponto
+
+		if (tipo == LOOT || (tipo == SKIN && cb_skinning.Checked) || (tipo == HERB && catando_planta))
+		{
+		 atualiza_lootfreq(idx); // atualiza frequência (exceto centro)
+		 last_success = p; total_loots++;
+		 logastats(); lootCombates++;
+
+		 if (tipo == 64) loga("Localizou loot.");
+		 else if (tipo == 63) loga("Localizou couro.");
+		 else if (tipo == 69) loga("Localizou planta.");
+
 		 return p;
 		}
 	 }
 
-	 return new loc { x = -1, y = -1 };
+	 return new loc { x = -1, y = -1 }; // loot não encontrado
 	}
+
 
 	Queue<int> fila_fifo = new Queue<int>(); // fora do método, persistente
 
 
 	// ----------------------------------------  
 	// FUNÇÃO carrega_loot  
-	// ----------------------------------------  
 	// Lê loot.txt, inicializa lootfreq[] e fila_fifo  
-	// Se não existir, cria arquivo com dados padrão  
+	// Ignora valores negativos e posição 0 da fila  
+	// Zera lootfreq[0] por segurança e oculta no log  
 	// ----------------------------------------
 	void carrega_loot()
 	{
@@ -3093,36 +3229,46 @@ lbwp.Items.Clear();
 	 // carrega lootfreq[25] da primeira linha
 	 string[] partes1 = dados[0].Split(',');
 	 for (int i = 0; i < partes1.Length && i < 25; i++)
-		lootfreq[i] = int.Parse(partes1[i].Trim());
+	 {
+		if (int.TryParse(partes1[i].Trim(), out int val))
+		 lootfreq[i] = Math.Max(0, val); // evita negativos
+		else
+		 lootfreq[i] = 0; // fallback
+	 }
 
-	 // reconstrói fila_fifo com os índices da segunda linha
+	 lootfreq[0] = 0; // zera posição 0 por segurança
+
+	 // reconstrói fila_fifo com os índices da segunda linha (ignora pos 0)
 	 fila_fifo.Clear();
 	 string[] partes2 = dados[1].Split(',');
 	 foreach (string s in partes2)
 	 {
-		if (int.TryParse(s.Trim(), out int idx) && idx >= 0 && idx < 25)
+		if (int.TryParse(s.Trim(), out int idx) && idx > 0 && idx < 25)
 		 fila_fifo.Enqueue(idx);
 	 }
 
-	 // atualiza total_loots como soma da fila (opcional, mas mantido)
+	 // atualiza total_loots como soma da fila
 	 total_loots = fila_fifo.Count;
-	 loga($"lootfreq carregada: {string.Join(",", lootfreq)}");
+	 loga($"lootfreq carregada: {string.Join(",", lootfreq.Skip(1))}"); // ignora posição 0
 	 loga($"total_loots atualizado: {total_loots}");
 	}
 
 
+
+
 	// ----------------------------------------
 	// FUNÇÃO ATUALIZA LOOTFREQ (janela FIFO adaptativa)
+	// Ignora posição 0 (fixa); mantém apenas índice 1 a 24
 	// ----------------------------------------
 	void atualiza_lootfreq(int pos)
 	{
-	 if (pos < 0 || pos >= 25) return; // ignora índices inválidos
+	 if (pos <= 0 || pos >= 25) return; // ignora índice 0 e inválidos
 
 	 if (fila_fifo.Count >= 500)
 	 {
 		int velho = fila_fifo.Dequeue();
-		if (velho >= 0 && velho < 25) // segurança extra
-		 lootfreq[velho]--;
+		if (velho > 0 && velho < 25)
+		 lootfreq[velho] = Math.Max(0, lootfreq[velho] - 1); // evita negativo
 	 }
 
 	 fila_fifo.Enqueue(pos);
@@ -3131,25 +3277,28 @@ lbwp.Items.Clear();
 
 	// ----------------------------------------
 	// FUNÇÃO salva_loot
-	// ----------------------------------------
-	// Salva vetor lootfreq[25] e a fila_fifo no loot.txt
-	// Aplica trim leve se algum valor (exceto posição 0) passar de 400
+	// Salva vetor lootfreq[1 a 24] e a fila_fifo no loot.txt
+	// Aplica trim leve se algum valor passar de 400
 	// ----------------------------------------
 	void salva_loot()
 	{
 	 string arq = "loot.txt";
 
-	 // aplica trim leve se necessário (ignora pos 0 no cálculo)
+	 // aplica trim leve se necessário (apenas índices 1 a 24)
 	 int max = lootfreq.Skip(1).Take(24).Max();
 	 if (max > 400)
 	 {
 		double fator = 400.0 / max;
 		for (int i = 1; i < 25; i++)
-		 lootfreq[i] = (int)(lootfreq[i] * fator);
+		 lootfreq[i] = Math.Max(0, (int)(lootfreq[i] * fator)); // trim e clipe
 	 }
 
-	 // monta linha 1: lootfreq[25]
-	 string linha1 = string.Join(",", lootfreq);
+	 // clipe final de segurança
+	 for (int i = 1; i < 25; i++)
+		lootfreq[i] = Math.Max(0, lootfreq[i]);
+
+	 // monta linha 1: lootfreq[1..24] apenas
+	 string linha1 = string.Join(",", lootfreq.Skip(1).Take(24));
 
 	 // monta linha 2: fila_fifo
 	 string linha2 = string.Join(",", fila_fifo);
@@ -3160,6 +3309,7 @@ lbwp.Items.Clear();
 	 // loga salvamento
 	 loga($"loot salvo: total_loots={fila_fifo.Count}, max_freq={max}");
 	}
+
 
 
 	// --------------------------------------------
@@ -3332,6 +3482,22 @@ lbwp.Items.Clear();
 		if (cb_log.Checked) loga("Nenhum waypoint para salvar");
 	 }
 	}
+
+	// ----------------------------------------
+	// MÉTODO checksum
+	// Gera uma assinatura leve de 1 byte (0–255)
+	// Soma todos os bytes da imagem e aplica mod 256
+	// ----------------------------------------
+	public byte checksum(byte[] data)
+	{
+	 int soma = 0;
+
+	 for (int i = 0; i < data.Length; i++)
+		soma += data[i]; // soma simples
+
+	 return (byte)(soma % 256); // resultado final reduzido para 1 byte
+	}
+
 
 
 
@@ -3879,6 +4045,39 @@ else
 	 }
 	}
 
+
+	// ----------------------------------------
+	// MÉTODO getpixels
+	// Extrai os bytes do HBITMAP renderizado
+	// Retorna um array de 32*32*4 = 4096 bytes (BGRA)
+	// ----------------------------------------
+	public byte[] getpixels(IntPtr hBitmap)
+	{
+	 const int width = 32;
+	 const int height = 32;
+	 const int bytesPerPixel = 4;
+	 const int totalBytes = width * height * bytesPerPixel;
+
+	 byte[] pixels = new byte[totalBytes]; // buffer de destino
+
+	 BITMAPINFOHEADER bih = new BITMAPINFOHEADER();
+	 bih.biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER));
+	 bih.biWidth = width;
+	 bih.biHeight = -height; // negativo para top-down
+	 bih.biPlanes = 1;
+	 bih.biBitCount = 32;
+	 bih.biCompression = 0; // BI_RGB
+
+	 IntPtr hdc = GetDC(IntPtr.Zero); // DC da tela
+
+	 GetDIBits(hdc, hBitmap, 0, (uint)height, pixels, ref bih, 0);
+
+	 ReleaseDC(IntPtr.Zero, hdc); // libera DC
+	 return pixels;
+	}
+
+
+
 	// --------------------------------------------
 	// MÉTODO FIND_PLANTS: LOCALIZA PLANTAS NO MINIMAPA
 	// --------------------------------------------
@@ -4135,51 +4334,63 @@ else
 
 	}
 	// ----------------------------------------
-	// BOTAO DEBUG - TESTA FLAGS DO PIXEL 12
+	// BOTAO DEBUG - DUMP COMPLETO DO CURSOR
+	// Mostra o checksum + nome conhecido do cursor (se aplicável)
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 checkme();
-	 wait(GCD); // espera o GCD
-	 bool trocou_aura = false;       // flag pra saber se trocou aura
-	 byte aura_antiga = 0;            // salva a aura anterior pra restaurar depois
+	 on = true;
 
-	 // verifica se deve usar concentration aura temporariamente
-	 if (cb_concentration_aura.Checked && !pala.concentration)
+	 while (on)
 	 {
-		// salva e loga aura atual
-		if (pala.devotion)
+		wait(1000); // coleta a cada segundo
+
+		IntPtr h = getcursor();       // pega o cursor atual
+		IntPtr bmp = rendercursor(h); // desenha em memória
+		byte[] img = getpixels(bmp);  // extrai pixels da imagem
+		byte sig = checksum(img);     // gera assinatura (0–255)
+		string nome;
+		switch (sig)
 		{
-		 aura_antiga = DEVAURA;
-		 loga("Aura ativa: Devotion -> trocando para: Concentration");
-		}
-		else if (pala.retribution)
-		{
-		 aura_antiga = RETAURA;
-		 loga("Aura ativa: Retribution -> trocando para: Concentration");
-		}
-		else
-		{
-		 loga("Sem aura rastreável ativa -> trocando para: Concentration");
+		 case 0: nome = "INVISÍVEL"; break;
+		 case 64: nome = "LOOT"; break;
+		 case 63: nome = "SKINNING"; break;
+		 case 44: nome = "SKINNING (OOR)"; break;
+		 case 79: nome = "MAOZINHA"; break;
+		 case 33: nome = "ESPADA"; break;
+		 case 201: nome = "ESPADA (OOR)"; break;
+		 case 50: nome = "TRAIN / BOOK"; break;
+		 case 62: nome = "TRAIN / BOOK (OOR)"; break;
+		 case 254: nome = "HERBALISM (OOR)"; break;
+		 case 209: nome = "BALLOON"; break;
+		 case 239: nome = "BALLOON (OOR)"; break;
+		 case 233: nome = "TRADE"; break;
+		 case 206: nome = "TRADE (OOR)"; break;
+		 default: nome = "DESCONHECIDO"; break;
 		}
 
-		aperta(CONAURA, GCD);  // troca pra concentration aura
-		trocou_aura = true;    // marca que houve troca
-	 }
-
-	 loga("For the light!");     // tentativa heroica
-	 aperta(HLIGHT, 1000);       // casta holy light
-	 wait_cast();                // espera o cast
-	 checkme();                  // atualiza status
-
-	 // restaura aura antiga se tiver trocado
-	 if (trocou_aura && aura_antiga != 0)
-	 {
-		string nome_antiga = (aura_antiga == DEVAURA) ? "Devotion" : "Retribution";
-		loga("Cura finalizada -> restaurando aura: " + nome_antiga);
-		aperta(aura_antiga, GCD);
+		loga($"Cursor ID: {sig}  →  {nome}"); // mostra ID + descrição
 	 }
 	}
+
+	// ----------------------------------------
+	// MÉTODO rendercursor
+	// Desenha o cursor em um HBITMAP em memória (32x32)
+	// Retorna o handle do HBITMAP para leitura posterior
+	// ----------------------------------------
+	public IntPtr rendercursor(IntPtr hCursor)
+	{
+	 IntPtr screenDC = GetDC(IntPtr.Zero);                     // pega o DC da tela
+	 IntPtr memDC = CreateCompatibleDC(screenDC);              // cria DC em memória
+	 IntPtr bmp = CreateCompatibleBitmap(screenDC, 32, 32);    // cria bitmap 32x32
+	 SelectObject(memDC, bmp);                                 // vincula o bitmap ao DC
+	 DrawIconEx(memDC, 0, 0, hCursor, 32, 32, 0, IntPtr.Zero, 0x0003); // desenha o cursor
+	 ReleaseDC(IntPtr.Zero, screenDC);                         // libera DC da tela
+	 DeleteDC(memDC);                                          // limpa o DC de memória
+	 return bmp;                                               // retorna o handle do bitmap
+	}
+
+
 
 	private void button18_Click(object sender, EventArgs e)
 	{
@@ -4198,7 +4409,24 @@ else
 	 loga(aura_log); // ou tb_debug1.Text = aura_log;
 	}
 
+	// ----------------------------------------
+	// BOTÃO RESET LOOT
+	// Zera vetor lootfreq[25] e limpa a fila_fifo
+	// Salva imediatamente no loot.txt
+	// ----------------------------------------
+	private void button19_Click(object sender, EventArgs e)
+	{
+	 for (int i = 0; i < 25; i++) lootfreq[i] = 0;     // zera todas as posições
+	 fila_fifo.Clear();                                // limpa fila
+	 total_loots = 0;                                  // zera contador
 
+	 List<string> linhas = new List<string>();
+	 linhas.Add("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"); // lootfreq zerada
+	 linhas.Add("");                                                  // fila vazia
+	 File.WriteAllLines("loot.txt", linhas);                          // salva imediatamente
+
+	 loga("Loot resetado. Arquivo loot.txt zerado.");
+	}
 
 
 	// ----------------------------------------------

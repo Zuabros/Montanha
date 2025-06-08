@@ -240,6 +240,12 @@ namespace Discord
 	 return (GetAsyncKeyState(key) & 0x8000) != 0;
 	}
 
+
+
+
+
+
+
 	// M02 - MÉTODO GETCOLORAT - CAPTURA A COR DO PIXEL NA COORDENADA (X, Y).
 	public static Color GetColorAt(int x, int y)
 	{
