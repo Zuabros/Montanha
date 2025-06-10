@@ -44,6 +44,9 @@ namespace Discord
 	public bool hasother;        // outros debuffs (ex: bleed)
 	public bool furbolg_form;    // está transformado com Dartol's Rod
 	public bool dazed;           // está atordoado (dazed)
+	public int  mobs;        // contador de mobs atacando
+	public bool  eating;        // comendo ou bebendo
+	public bool ready;    // GCD pronto (Global Cooldown)
 
 	// ----------- específicos do target (tar) -----------
 	public bool aggroed;         // tem aggro em mim
@@ -54,17 +57,51 @@ namespace Discord
 	// ----------- casting -----------
 	public bool iscaster;        // é uma criatura do tipo caster (futuro)
 	public bool casting;         // está castando
-	public string spell;         // letra inicial ou nome parcial da spell
 	public int castbar;          // progresso da castbar (0–100)
 	public int spellid;          // ID real da spell (uso futuro)
 
 	// ----------- uso futuro -----------
-	public bool meleerange;      // está em alcance melee (futuro)
+	public bool melee;      // está em alcance melee (futuro)
 	public bool rangedrange;     // está em alcance à distância (futuro)
  }
 
 
+ // --------------------------------
+ // CLASSE roguetable
+ // --------------------------------
+ public class roguetable
+ {
+	public int energy;         // energia atual do rogue (0-100)
+	public int combo;          // combo points acumulados (0-5)
+	public bool ss_up;          // pode castar SS (range, cooldown, etc.)
+	public bool evis_up;          // pode castar SS (range, cooldown, etc.)
+	public bool throw_up;          // pode tacar throw knife (range, cooldown, etc.)
+	public bool stealth_up;          // pode ficar stealth? 
+	public bool stealth;          // esta stealth?
 
+
+
+
+	// A IMPLEMENTAR 
+		public bool ss_range;      // pode usar sinister strike no target?
+	public int ss_cd;          // cooldown restante de sinister strike
+
+	public int snd;            // duração do buff slice and dice (em s)
+	public int rupture;        // duração do debuff rupture no alvo (em s)
+
+	public int evasion_cd;     // cooldown restante de evasion
+	public int vanish_cd;      // cooldown restante de vanish
+	public int sprint_cd;      // cooldown restante de sprint
+
+	public int kick_cd;        // cooldown de kick
+	public bool kick_range;    // está em range do kick?
+	public int gouge_cd;       // cooldown de gouge
+
+	public int cs_cd;          // cooldown de cheap shot
+	public int ks_cd;          // cooldown de kidney shot
+	public int garrote_cd;     // cooldown de garrote
+	public bool garrote_range; // está em range do garrote?
+ }
  // --------------------------------
  // CLASSE PALATABLE - STATUS DO PALADINO
  // --------------------------------
@@ -98,6 +135,7 @@ namespace Discord
 	public bool sow;             // Seal of Wisdom
 	public bool sol;             // Seal of Light
 	public bool sotc;            // Seal of the Crusader
+	public bool soj;            // Seal of the Crusader
 
 	// COOLDOWNS (0–255s ou flags)
 	public int judge_cd;         // Judgement

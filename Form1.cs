@@ -249,7 +249,7 @@ namespace Discord
 	public const int SLOW = F2;     // debuff de lentidão (genérico)
 	public const int ASSIST = F6;     // debuff de lentidão (genérico)
 	public const int GCD = 1501;  // Global Cooldown (tempo de recarga global em milissegundos)
-
+	public const int FOOD = F12;     // ataque automático
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO PALADINO
@@ -279,6 +279,21 @@ namespace Discord
 	public const int DSHIELD = F9;     // Divine Shield (Bubble)
 	public const int FLASHHEAL = F10;     // Divine Shield (Bubble)
 
+	// --------------------------------------------
+	// SKILLS EXCLUSIVAS DO ROGUE
+	// --------------------------------------------
+	public const int SS = N1; // Sinister Strike
+	public const int EVIS = N2; // Eviscerate
+	public const int THROW = N3; // Throwing knife
+	public const int STEALTH = N4; // Stealth
+	public const int PICKPOCKET = N5; // Pickpocket
+	public const int GOUGE = F6; // Gouge
+	public const int KICK = F7; // Kick
+	public const int VANISH = F8; // Vanish
+	public const int SPRINT = F9; // Sprint
+	public const int EVASION = F10; // Evasion
+	public const int KS = 1; // Kidney Shot
+	public const int CS = 1; // Cheap Shot
 
 	// --------------------------------------------
 	// TIPOS DE CRIATURAS
@@ -294,6 +309,19 @@ namespace Discord
 	public const int DRAGONKIN = 230; // dragonete
 	public const int GIANT = 240; // gigante
 	public const int CRITTER = 80; // criatura pequena (critter)
+
+	// --------------------------------------------
+	// CÓDIGOS DE CLASSE (pixel 6 canal G)
+	// --------------------------------------------
+	public const int PALADIN = 255; // paladino
+	public const int WARRIOR = 250; // guerreiro
+	public const int HUNTER = 245; // caçador
+	public const int ROGUE = 240; // ladino
+	public const int PRIEST = 235; // sacerdote
+	public const int SHAMAN = 230; // xamã
+	public const int MAGE = 225; // mago
+	public const int WARLOCK = 220; // bruxo
+	public const int DRUID = 215; // druida
 
 	// --------------------------------------------
 	// UTILIDADES
@@ -322,8 +350,7 @@ namespace Discord
 	// --------------------------------------------
 	// CLASSES  E STRUCTS 
 	// --------------------------------------------
-	public const int PALADIN = 1; // Paladin
-
+	
 	// M10 - STRUCT LOC - REPRESENTA UMA POSIÇÃO (X, Y) NA ESCALA MULTIPLICADA POR 10.
 	public struct loc
 	{
@@ -431,140 +458,177 @@ namespace Discord
 	 // ----------------------------------------
 	 // PIXEL 0 – STATUS DO PLAYER E TARGET
 	 // ----------------------------------------
-	 // R: Bitflags de status do player e do alvo
+	 // R: Bitflags combinadas do player
 	 //     128 = autoattack ativo
 	 //      64 = healing potion pronta (no inventário e cooldown zerado)
-	 //      32 = player está com debuff Dazed
-	 //      16 = (livre para uso futuro)
-	 //       0–15 = (livres para uso futuro)
-	 // G: Proporção do HP do player (HP atual / HP máx × 255)
-	 // B: (vazio – reservado para uso futuro)
-
-	 //1 Player Mana:
-	 //   R: Slots livres nas bags (255-free slots)
-	 //   G: Facing wrong way = 255 / Out of range = 100 / 0 = normal. 
-	 //   B: Mana atual / Mana máx × 255
-
-	 //2 Player X posição:
-	 //   R: (parte inteira de X / 10) × 25
-	 //   G: parte decimal de X × 2.5 (até 100)
-	 //   B: (parte inteira de X % 10) × 25
-
-	 //3 Player Y posição:
-	 //   R: (parte inteira de Y / 10) × 25
-	 //   G: parte decimal de Y × 2.5 (até 100)
-	 //   B: (parte inteira de Y % 10) × 25
-
-	 // 4 Facing e Velocidade:
-	 //   R: Facing normalizado (0 a 1) × 255
-	 //   G: 255 - Velocidade atual (em unidades do jogo)
-	 //   B: Bits combinados:
-	 //      bits 0–5: Cooldown do Stoneform (0 a 63 segundos)
-	 //      bit 6  (64): Racial disponível (Stoneform ou Shadowmeld)
-	 //      bit 7 (128): Buff "Furbolg Form" ativo
+	 //      32 = debuff Dazed
+	 //       8 = em melee range
+	 //    0–7  = número de mobs batendo (cap 7)
+	 // G: HP atual do player (0–255)
+	 // B: (vazio)
 
 
-	 //5 Status de Combate:
-	 //   R: 0 = fora de combate, 255 se em combate
-	 //   G: 255 se nadando na agua
-	 //   B: Tipos de debuffs no char (somatório vestibular x 8)
+	 // ----------------------------------------
+	 // PIXEL 1 – INVENTÁRIO, ERROS E RECURSO
+	 // ----------------------------------------
+	 // R: Slots livres nas bags (255 - slots livres)
+	 // G: Erros:
+	 //     128 = de costas (Facing wrong way)
+	 //      64 = fora de alcance (Out of range)
+	 //      0  = normal
+	 // B: Recurso primário (mana, rage, energia etc.) proporcional (0–255)
 
-	 //6 Player Level e Classe:
-	 //   R: Level × 4 (cap em 255)
-	 //   G: 255 se classe for Paladino
-	 //   B: Bubble ready (B == 0)
 
-	 //-- -------------------------------------------
-	 //-- pixel 7 - Target HP (R), flags (G), Level (B)
-	 //-- -------------------------------------------
-	 //--   R: HP atual do alvo × 255 / HP máx
-	 //--   G: bits de status do target:
-	 //--      128 = target existe
-	 //--       64 = target é raro
-	 //--       32 = target é elite / rareelite / worldboss
-	 //--   B: Level do alvo × 4 (cap implícito em 63)
+	 // ----------------------------------------
+	 // PIXEL 2 – POSIÇÃO X
+	 // ----------------------------------------
+	 // R: parte inteira de X dividido por 10 × 25
+	 // G: parte decimal de X × 2.5
+	 // B: parte inteira de X módulo 10 × 25
 
-	 //8 vazio 
-	 //   R: 0 
-	 //   G: 0
-	 //   B: 0
 
-	 // -------------------------------------
-	 // PIXEL 9 – JUDGEMENT + MELEE + AURAS
-	 // -------------------------------------
-	 // R: 255 se Judgement estiver em alcance
-	 // G: Cooldown restante de Judgement (0–255, proporcional)
-	 // B: Bitflags combinados:
-	 //      1 = em melee range
-	 //      2 = Crusader Aura
-	 //      4 = Devotion Aura
-	 //      8 = Frost Resist | 16 = Shadow Resist | 32 = Fire Resist
-	 //      64 = Concentration | 128 = Retribution
+	 // ----------------------------------------
+	 // PIXEL 3 – POSIÇÃO Y
+	 // ----------------------------------------
+	 // R: parte inteira de Y dividido por 10 × 25
+	 // G: parte decimal de Y × 2.5
+	 // B: parte inteira de Y módulo 10 × 25
 
-	 //10 Cast do Player:
-	 //   R: 255 se castando
-	 //   G: Progresso da barra de cast (0–255)
-	 //   B: ASCII da primeira letra da magia
 
-	 //11 Cast do Target:
-	 //   R: 255 se castando
-	 //   G: Progresso da barra de cast (0–255)
-	 //   B: ASCII da primeira letra da magia
+	 // ----------------------------------------
+	 // PIXEL 4 – FACING, VELOCIDADE E RACIAL
+	 // ----------------------------------------
+	 // R: Facing (0 a 1) × 255
+	 // G: 255 - velocidade do player
+	 // B: Bitflags:
+	 //     bits 0–5 = cooldown do Stoneform (0–63)
+	 //     bit 6 (64) = racial disponível (Stoneform ou Shadowmeld)
+	 //     bit 7 (128) = Furbolg Form ativo
 
-	 // -------------------------------------
-	 // PIXEL 12 – SEALS + JUDGEMENTS + CASTS
-	 // -------------------------------------
-	 // R: Bitflags dos seals ativos em você
-	 //      128 = SOR       | Seal of Righteousness
-	 //      64  = SOTC      | Seal of the Crusader
-	 //      32  = SOJ       | Seal of Justice
-	 //      16  = SOL       | Seal of Light
-	 //      8   = SOW       | Seal of Wisdom
-	 //      4   = SOC       | Seal of Command
-	 //
-	 // G: Bitflags dos judgements no target (apenas os que aplicam debuff)
-	 //      128 = Forbearance em mim
-	 //      64  = JOTC      | Judgement of the Crusader
-	 //      32  = JOJ       | Judgement of Justice
-	 //      16  = JOL       | Judgement of Light
-	 //      8   = JOW       | Judgement of Wisdom
-	 //
-	 // B: Bitflags de cast disponível
-	 //      128 = pode castar Lay on Hands
-	 //      64  = pode castar Blessing of Protection
-	 //      32  = pode castar Divine Shield (bubble)
 
-	 // -------------------------------------
-	 // PIXEL 13 – BLESSINGS + HOJ STATUS
-	 // -------------------------------------
-	 // R: Bitflags dos blessings ativos em você
-	 //      1 = Salvation | 2 = Light | 4 = Freedom | 8 = Wisdom
-	 //      16 = Protection | 32 = Kings | 64 = Might | 128 = Sanctuary
-	 // G: 128 se Hammer of Justice estiver pronto (CD 0), senão 0
-	 // B: 255 se Hammer of Justice estiver em alcance do target
-	 // -------------------------------------
-	 // PIXEL 14 - TIPO DA CRIATURA DO TARGET
-	 // -------------------------------------
-	 // R: tipo da criatura ou player mané (codificado)
-	 //      50  = Humanoide
-	 //     100  = Besta
-	 //     105  = Player mané ogro (não-caster)
-	 //     110  = Player mané caster
-	 //     150  = Morto-vivo
-	 //     200  = Demônio
-	 //     210  = Elemental
-	 //     220  = Mecânico
-	 //     230  = Dragonete
-	 //     240  = Gigante
-	 //      80  = Criatura pequena (Critter)
-	 // G: livre
-	 // B: livre
+	 // ----------------------------------------
+	 // PIXEL 5 – STATUS DE COMBATE E AMBIENTE
+	 // ----------------------------------------
+	 // R: Bitflags:
+	 //     128 = em combate
+	 //      64 = respirando (baixo d’água)
+	 //      32 = comendo ou bebendo
+	 // G: Progresso do cast do target (0–255)
+	 // B: Debuffs no player, codificados:
+	 //     1 = Curse | 2 = (genérico) | 4 = Poison | 8 = Disease | 16 = Magic
+	 //     Resultado é somado e multiplicado por 8 (mantido compatível)
 
-	 //15 Reação e Ameaça:
-	 //   R: 255 se alvo for hostil
-	 //   G: 255 se alvo for amigável
-	 //   R+G = 255/255 se neutro
-	 //   B: 255 se com ameaça máxima (aggro fixado)
+
+	 // ----------------------------------------
+	 // PIXEL 6 – LEVEL, CLASSE E CAST DO PLAYER
+	 // ----------------------------------------
+	 // R: Level do player × 4 (cap implícito em 255)
+	 // G: Classe:
+	 //     255 = Paladino | 240 = Rogue | etc.
+	 // B: Progresso do cast do player (0–255)
+
+
+	 // ----------------------------------------
+	 // PIXEL 7 – STATUS DO TARGET
+	 // ----------------------------------------
+	 // R: HP atual do target (0–255)
+	 // G: Bitflags:
+	 //     128 = target existe
+	 //      64 = raro
+	 //      32 = elite, rareelite ou worldboss
+	 // B: Level do target × 4
+
+
+	 // ----------------------------------------
+	 // PIXEL 8 – TIPO DO TARGET
+	 // ----------------------------------------
+	 // R: Tipo codificado:
+	 //     50 = Humanoide | 100 = Besta | 105 = Player melee | 110 = Caster
+	 //     150 = Undead | 200 = Demônio | 210 = Elemental | 220 = Mecânico
+	 //     230 = Dragonete | 240 = Gigante | 80 = Critter
+	 // G: (livre)
+	 // B: (livre)
+
+
+	 // ----------------------------------------
+	 // PIXEL 9 – REAÇÃO E AMEAÇA DO TARGET
+	 // ----------------------------------------
+	 // R: 255 se hostil
+	 // G: 255 se amigável
+	 // R+G = 255/255 se neutro
+	 // B: 255 se com ameaça máxima (aggro fixado)
+
+	 // ----------------------------------------
+	 // PIXEL 10 (Paladino) – Judgement e Auras
+	 // ----------------------------------------
+	 // R: 255 se Judgement em alcance
+	 // G: Cooldown restante de Judgement (0–255 proporcional)
+	 // B: Bitflags de auras:
+	 //     2 = Crusader | 4 = Devotion | 8/16/32 = Resistências
+	 //     64 = Concentration | 128 = Retribution
+
+
+	 // ----------------------------------------
+	 // PIXEL 11 (Paladino) – Vazio
+	 // ----------------------------------------
+	 // R, G, B = 0
+
+
+	 // ----------------------------------------
+	 // PIXEL 12 (Paladino) – Seals, Judgements e CDs
+	 // ----------------------------------------
+	 // R: Bitflags dos seals ativos:
+	 //     128 = SOR | 64 = SOTC | 32 = SOJ | 16 = SOL | 8 = SOW | 4 = SOC
+	 // G: Bitflags de judgements no target:
+	 //     128 = Forbearance | 64 = JOTC | 32 = JOJ | 16 = JOL | 8 = JOW
+	 // B: Bitflags de cast disponíveis:
+	 //     128 = Lay on Hands | 64 = BoP | 32 = Bubble | 16 = Divine Protection
+
+
+	 // ----------------------------------------
+	 // PIXEL 13 (Paladino) – Blessings e HOJ
+	 // ----------------------------------------
+	 // R: Bitflags de blessings ativos:
+	 //     1 = Salvation | 2 = Light | 4 = Freedom | 8 = Wisdom
+	 //     16 = Protection | 32 = Kings | 64 = Might | 128 = Sanctuary
+	 // G: 128 se HOJ estiver pronto (CD = 0)
+	 // B: 255 se HOJ em alcance
+
+
+	 // ----------------------------------------
+	 // PIXEL 14 (Paladino) – Vazio
+	 // ----------------------------------------
+	 // R, G, B = 0
+
+
+	 // ----------------------------------------
+	 // PIXEL 15 (Paladino) – Vazio
+	 // ----------------------------------------
+	 // R, G, B = 0
+
+
+	 // ----------------------------------------
+	 // ROGUE 
+	 // ----------------------------------------
+	 // PIXEL 10 (Rogue) – Combo Points + Throw + Stealth
+	 // ----------------------------------------
+	 // R: bits 0–2 = número de combo points (0 a 7)
+	 //     bit 0 = soma 1
+	 //     bit 1 = soma 2
+	 //     bit 2 = soma 4
+	 //     bit 3 = throw_up (faca pronta para uso e em range)
+	 //     bit 4 = stealth_up (é possível ativar Stealth agora)
+	 // G: bit 0 = has_stealth (está com aura de Stealth ativa)
+	 // B: (vazio)
+
+	 // ----------------------------------------
+	 // PIXEL 11 a 15 (Rogue) – Vazios por enquanto
+	 // ----------------------------------------
+	 // R, G, B = 0
+
+
+
+
 	}
 	// --------------------------------
 	// M17 - MÉTODO CALIBRAPIXELS - DETECTA PRATOS E CALCULA HAMBÚRGUERES ENTRE ELES
@@ -671,14 +735,15 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	loga("hamburger " + i + ": R=" + p.r + " G=" + p.g + " B=" + p.b); // mostra cor lida
 }
 }
-// --------------------------------
-// M16 - MÉTODO GETSTATS - CAPTURA STATUS DO PERSONAGEM
-// --------------------------------
-public void getstats(ref element e)
-{
-readpixels(pixels);
+	// --------------------------------
+	// M16 - MÉTODO GETSTATS - CAPTURA STATUS DO PERSONAGEM
+	// --------------------------------
+	public void getstats(ref element e)
+	{
+	 readpixels(pixels);
+
 	 // ----------------------------------------
-	 // PIXEL 0 – HP, Autoattack, Potion, Dazed
+	 // PIXEL 0 – HP, Autoattack, Potion, Dazed, Mobcount, MELEE RANGE (NOVO)
 	 // ----------------------------------------
 
 	 // converte G em % de vida do player
@@ -697,8 +762,27 @@ readpixels(pixels);
 	 // healing potion pronta = bit 64
 	 e.hp_potion_rdy = (pixels[0].r & 64) != 0;
 
+	 // NOVO: Em melee range = bit 8
+	 me.melee = (pixels[0].r & 8) != 0; // Movido do antigo Pixel 9B1
+
+	 // número de mobs batendo = bits 0 a 2
+	 int mobs = pixels[0].r & 7; // extrai os 3 bits menos significativos (0–7)
+	 if (me.combat && mobs != me.mobs) // se mudou o número de mobs
+	 {
+		if (mobs > me.mobs && me.combat && me.hp < 90 && mobs > 1)
+		{
+		 loga("Chegaram novos convidados na festa!");
+		 loga("Dando backpedal para evitar dar as costas.");
+		 casta(SKEY); // backpedal por 1,5 segundos
+		}
+		loga("Mobs: " + mobs); // loga a mudança
+	 }
+	 me.mobs = mobs; // atualiza contagem de mobs batendo
+
 	 // debug opcional: mostra HP no textbox
 	 tb_hp.Text = v_hp.ToString();
+	 // Debug para melee range
+	 
 
 
 	 // ------------------------------------------
@@ -706,44 +790,44 @@ readpixels(pixels);
 	 // ------------------------------------------
 
 	 // MANA
-	 int v_mana = (pixels[1].b * 100) / 255;           // canal B (0–255) convertido em porcentagem
-	 e.mana = v_mana;                                  // atualiza atributo de mana
-	 tb_mana.Text = v_mana.ToString();                 // exibe no textbox (debug)
+	 int v_mana = (pixels[1].b * 100) / 255;            // canal B (0–255) convertido em porcentagem
+	 e.mana = v_mana;                                   // atualiza atributo de mana
+	 tb_mana.Text = v_mana.ToString();                  // exibe no textbox (debug)
 
 	 // SLOTS LIVRES NAS BAGS
-	 int v_slots = 255 - pixels[1].r;                  // canal R invertido → slots livres reais
-	 e.freeslots = v_slots;                            // atualiza slots livres
+	 int v_slots = 255 - pixels[1].r;                   // canal R invertido → slots livres reais
+	 e.freeslots = v_slots;                             // atualiza slots livres
 
 	 // ERROS DE COMBATE (bitmask no canal G)
-	 int g = pixels[1].g;                              // canal G codifica erros combinados
-	 e.wrongway = (g & 128) > 0;                     // 128 = "You are facing the wrong way!"
-	 e.outofrange = (g & 64) > 0;                     //  64 = "Out of range" ou "You are too far away!"
-	 
-	 
+	 int g_erro = pixels[1].g;                           // canal G codifica erros combinados
+	 e.wrongway = (g_erro & 128) > 0;                   // 128 = "You are facing the wrong way!"
+	 e.outofrange = (g_erro & 64) > 0;                  //  64 = "Out of range" ou "You are too far away!"
 
 
 	 // ------------------------------------------
-	 // Pixel 3 e 4
+	 // Pixel 2 e 3 (Coordenadas X e Y)
 	 // ------------------------------------------
 
 	 // X
-	 int dez_x = (int)Math.Round(pixels[2].r / 25.0);     // R = dezena × 25
-	 int uni_x = (int)Math.Round(pixels[2].b / 25.0);     // B = unidade × 25
-	 int dec_x = (int)Math.Round(pixels[2].g / 2.5);      // G = decimal × 2.5
-	 int final_x = (dez_x * 10 + uni_x) * 100 + dec_x;    // X = (dezena*10 + unidade)*100 + decimal
+	 int dez_x = (int)Math.Round(pixels[2].r / 25.0);
+	 int uni_x = (int)Math.Round(pixels[2].b / 25.0);
+	 int dec_x = (int)Math.Round(pixels[2].g / 2.5);
+	 int final_x = (dez_x * 10 + uni_x) * 100 + dec_x;
 	 e.pos.x = final_x;
 	 tb_x.Text = final_x.ToString(); // debug opcional
 
 	 // Y
-	 int dez_y = (int)Math.Round(pixels[3].r / 25.0);     // R = dezena × 25
-	 int uni_y = (int)Math.Round(pixels[3].b / 25.0);     // B = unidade × 25
-	 int dec_y = (int)Math.Round(pixels[3].g / 2.5);      // G = decimal × 2.5
-	 int final_y = (dez_y * 10 + uni_y) * 100 + dec_y;    // Y = (dezena*10 + unidade)*100 + decimal
+	 int dez_y = (int)Math.Round(pixels[3].r / 25.0);
+	 int uni_y = (int)Math.Round(pixels[3].b / 25.0);
+	 int dec_y = (int)Math.Round(pixels[3].g / 2.5);
+	 int final_y = (dez_y * 10 + uni_y) * 100 + dec_y;
 	 e.pos.y = final_y;
 	 tb_y.Text = final_y.ToString(); // debug opcional
 
 
+	 // ------------------------------------------
 	 // PIXEL 4 - facing (yaw) em W e velocidade (spd)
+	 // ------------------------------------------
 	 if (pixels.Count > 4) // verifica se o pixel 4 existe
 	 {
 		// yaw (em W)
@@ -756,30 +840,39 @@ readpixels(pixels);
 		if (cb_debug.Checked) tb_spd.Text = e.spd.ToString();
 
 		// leitura do canal B
-		var b = pixels[4].b;
-		int sform_cd = b & 63;                    // bits 0–5 = cooldown da Stoneform (0–63)
-		bool racial_up = (b & 64) != 0;           // bit 6 = racial disponível
-		bool furbolg = (b & 128) != 0;            // bit 7 = buff Furbolg ativo
+		var b4 = pixels[4].b;
+		int sform_cd = b4 & 63;                     // bits 0–5 = cooldown da Stoneform (0–63)
+		bool racial_up = (b4 & 64) != 0;             // bit 6 = racial disponível
+																								 // bool furbolg = (b4 & 128) != 0;           // bit 7 = buff Furbolg ativo (REMOVIDO)
 
-		if (cb_dwarf.Checked)                     // se for anão, usa racial como Stoneform
+		if (cb_dwarf.Checked)
 		 e.racialready = racial_up;
 
-		e.furbolg_form = cb_furbolg.Checked && furbolg; // só ativa se checkbox estiver marcada
+		// e.furbolg_form = cb_furbolg.Checked && furbolg; // REMOVIDO: Furbolg Form
 	 }
 
 
 	 // ----------------------------------------------
-	 // combate, nadando e debuffs (pixel 5)
+	 // PIXEL 5 - Combate + Barra de Respiração + CAST TARGET (NOVO) + Debuffs
 	 // ----------------------------------------------
 	 if (pixels.Count > 5)
 	 {
-		e.combat = pixels[5].r > 250; // está em combate se vermelho alto
+		// R: Combate e Respiração
+		e.combat = (pixels[5].r & 128) != 0; // está em combate
+		e.swim = (pixels[5].r & 64) != 0;   // está nadando/barra de respiração ativa
 		cb_combat.Checked = e.combat; // atualiza checkbox na UI
 
-		e.swim = pixels[5].g > 250; // está se afogando se canal verde for 255
+		// G: NOVO: Progresso da barra de cast do Target
+		tar.castbar = (pixels[5].g * 100) / 255;
+		tar.casting = tar.castbar > 0; // 'tar.casting' agora é derivado de 'tar.castbar'
+																	 // tar.spell = ((char)pixels[11].b).ToString(); // REMOVIDO: Leitura de nome da spell
+																	 // tar.spellid = 0; // REMOVIDO/Não necessário aqui
 
+		tb_tarcast.Text = tar.casting ? "Casting..." : "-"; // Mostra status simples, não a letra
+		pb_tarcast.Value = tar.castbar;
+
+		// B: Tipos de debuffs
 		int debuff_raw = pixels[5].b / 8; // extrai valor base dos debuffs (0–31)
-
 		e.hascurse = (debuff_raw & 1) != 0;   // bit 0 → Curse
 		e.hasother = (debuff_raw & 2) != 0;   // bit 1 → outro debuff (sem dispelType)
 		e.haspoison = (debuff_raw & 4) != 0;  // bit 2 → Poison
@@ -788,26 +881,41 @@ readpixels(pixels);
 	 }
 
 	 // -------------------------------------
-	 // Pixel 6: Player Level, Classe, Flags
+	 // PIXEL 6: Player Level, Classe, CAST PLAYER (NOVO)
 	 // -------------------------------------
 	 if (pixels.Count > 6)
 	 {
-		int val = pixels[6].b; // canal B codifica flags
-
-		// FLAGS DO PALADINO (bitfield)
-		pala.divine_protection_up = (val & 128) > 0;            // bolha disponível
-		pala.exorcism_up = (val & 64) > 0; // true se exorcism está disponível
-		pala.joj = (val & 32) > 0;             // mob com debuff JoJ
-		pala.exorcism_range = (val & 16) > 0;             // exorcism em alcance
-		//cb_exorange.Checked = pala.exorcism_range; // preenche a checkbox
-
-		// LEVEL E CLASSE
+		// LEVEL
 		e.level = (int)Math.Round(pixels[6].r / 4.0);
 		tb_level.Text = e.level.ToString();
 
-		bool isPaladino = (pixels[6].g >= 250) || true;
-		tb_class.Text = isPaladino ? "Paladino" : "Outro";
-		if (isPaladino) e.classe = 1;
+		// CLASSE
+		// Nota: O valor do pixel 6.g já é a ID da classe do WoW Classic que o addon Lua envia.
+		// O `isPaladino` era uma lógica interna do seu C#, mas podemos usar o valor direto.
+		int class_id_raw = pixels[6].g;
+		string className = "Unknown";
+		if (class_id_raw == PALADIN) className = "Paladin";
+		else if (class_id_raw == WARRIOR) className = "Warrior";
+		else if (class_id_raw == HUNTER) className = "Hunter";
+		else if (class_id_raw == ROGUE) className = "Rogue";
+		else if (class_id_raw == PRIEST) className = "Priest";
+		else if (class_id_raw == SHAMAN) className = "Shaman";
+		else if (class_id_raw == MAGE) className = "Mage";
+		else if (class_id_raw == WARLOCK) className = "Warlock";
+		else if (class_id_raw == DRUID) className = "Druid";
+
+		tb_class.Text = className;
+		e.classe = class_id_raw; // Armazena o valor bruto da classe, se preferir
+		//loga(e.classe.ToString());
+
+		// B: NOVO: Progresso da barra de cast do Player
+		e.castbar = (pixels[6].b * 100) / 255;
+		e.casting = e.castbar > 0; // 'e.casting' agora é derivado de 'e.castbar'
+															 // e.spell = ((char)pixels[10].b).ToString(); // REMOVIDO: Leitura de nome da spell
+															 // e.spellid = 0; // REMOVIDO/Não necessário aqui
+    me.ready = e.casting; // Atualiza o estado de "pronto" do player 
+
+		pb_playercast.Value = e.castbar; // Atualiza progressbar (0-100)
 	 }
 
 
@@ -816,169 +924,199 @@ readpixels(pixels);
 	 // -------------------------------------
 	 if (pixels.Count > 7)
 	 {
-		tar.hp = (pixels[7].r * 100) / 255;                // R: HP do alvo (%)
-		tar.morreu = tar.hp == 0;                          // morreu se HP = 0
-		tb_tarhp.Text = tar.hp.ToString();                // mostra na textbox
+		tar.hp = (pixels[7].r * 100) / 255;          // R: HP do alvo (%)
+		tar.morreu = tar.hp == 0;                    // morreu se HP = 0
+		tb_tarhp.Text = tar.hp.ToString();           // mostra na textbox
 
-		e.hastarget = (pixels[7].g & 128) > 0;             // G: bit 7 → existe target
-																											 //tar.skinnable = (pixels[7].g & 64) > 0;          
+		e.hastarget = (pixels[7].g & 128) > 0;       // G: bit 7 → existe target
+		tar.israre = (pixels[7].g & 64) > 0;         // G: bit 6 → raro
+		tar.ieslite = (pixels[7].g & 32) > 0;        // G: bit 5 → elite
 
-		tar.israre = (pixels[7].g & 64) > 0;              // G: bit 6 → raro
-		tar.ieslite = (pixels[7].g & 32) > 0;              // G: bit 5 → elite
-
-		tar.level = (int)Math.Round(pixels[7].b / 4.0);    // B: level do target (×4)
-		tb_tarlevel.Text = tar.level.ToString();          // mostra na textbox
+		tar.level = (int)Math.Round(pixels[7].b / 4.0); // B: level do target (×4)
+		tb_tarlevel.Text = tar.level.ToString();     // mostra na textbox
 	 }
 
 	 // -------------------------------------
-	 // Pixel 8: Livre (Radar)
+	 // NOVO PIXEL 8: TIPO DA CRIATURA DO TARGET (Movido do antigo Pixel 14)
 	 // -------------------------------------
 	 if (pixels.Count > 8)
 	 {
-		// ainda não usado — radar será decodificado aqui depois
-	 }
-
-	 // -------------------------------------
-	 // Pixel 9: Judgement (alcance, cooldown) + Auras + Melee range
-	 // -------------------------------------
-	 if (pixels.Count > 9)
-	 {
-		// canal R → está em alcance
-		pala.jud_range = (pixels[9].r > 250);           // Judgement em alcance
-
-		// canal G → cooldown restante (0–255)
-		pala.judge_cd = pixels[9].g;                    // cooldown em segundos (cap 255)
-
-		// canal B → decodifica bitflags de aura e melee range
-		int b = pixels[9].b;                            // lê valor bruto (0–255)
-		e.meleerange = (b & 1) != 0;            // bit 0 = melee range
-		pala.crusader = (b & 2) != 0;            // bit 1 = Crusader Aura
-		pala.devotion = (b & 4) != 0;            // bit 2 = Devotion Aura
-		pala.frost = (b & 8) != 0;            // bit 3 = Frost Resist Aura
-		pala.shadow = (b & 16) != 0;            // bit 4 = Shadow Resist Aura
-		pala.fire = (b & 32) != 0;            // bit 5 = Fire Resist Aura
-		pala.concentration = (b & 64) != 0;            // bit 6 = Concentration Aura
-		pala.retribution = (b & 128) != 0;            // bit 7 = Retribution Aura
-
-		cb_melee.Checked = e.meleerange;                // marca checkbox se em alcance físico
-	 }
-
-
-	 // Pixel 10: Cast do Player
-	 // -------------------------------------
-	 if (pixels.Count > 10)
-	 {
-		e.casting = pixels[10].r > 250;                           // está castando se canal R for 255
-		e.castbar = (pixels[10].g * 100) / 255;                   // progresso em %
-		e.spell = ((char)pixels[10].b).ToString();               // converte byte para letra
-		e.spellid = 0;                                            // ainda não disponível
-
-		tb_playercast.Text = me.casting ? me.spell : "-";         // exibe a letra da spell
-		pb_playercast.Value = me.castbar;                         // atualiza progressbar (0-100)
-	 }
-	 
-	 // Pixel 11: Cast do Target
-	 // -------------------------------------
-	 if (pixels.Count > 11)
-	 {
-		tar.castbar = (pixels[11].g * 100) / 255;                  // progresso em %
-		tar.casting = tar.castbar > 0; // pixels[11].r > 250;                          // está castando se canal R = 255
-
-		tar.spell = ((char)pixels[11].b).ToString();              // converte byte p
-																															// ara letra
-		tar.spellid = 0;                                           // ainda não disponível
-
-		tb_tarcast.Text = tar.casting ? tar.spell : "-";          // mostra spell no textbox
-		pb_tarcast.Value = tar.castbar;                           // atualiza progressbar
-	 }
-
-	 // -------------------------------------
-	 // Pixel 12: Seals ativos (R) + Judgements no target (G) + flags de cast e debuff (B)
-	 // -------------------------------------
-	 if (pixels.Count > 12)
-	 {
-		int ar = pixels[12].r; // R = bitmask dos seals ativos
-		int ag = pixels[12].g; // G = bitmask dos judgements no target
-		int ab = pixels[12].b; // B = bitflags de cast e debuff
-
-		// SEALS ATIVOS (true se bit correspondente estiver ligado)
-		pala.sor = (ar & 128) != 0; // Seal of Righteousness
-		pala.sotc = (ar & 64) != 0; // Seal of the Crusader
-		pala.soc = (ar & 4) != 0; // Seal of Command
-		pala.sol = (ar & 16) != 0; // Seal of Light
-		pala.sow = (ar & 8) != 0; // Seal of Wisdom
-
-		// JUDGEMENTS NO TARGET
-		pala.jotc = (ag & 64) != 0; // Judgement of the Crusader
-		pala.joj = (ag & 32) != 0; // Judgement of Justice
-		pala.jol = (ag & 16) != 0; // Judgement of Light
-		pala.jow = (ag & 8) != 0; // Judgement of Wisdom
-
-		// FLAGS (CANCAST / DEBUFF)
-		pala.cancast_LOH = (ab & 128) != 0; // pode castar Lay on Hands
-		pala.BOP_up = (ab & 64) != 0; // pode castar Blessing of Protection
-		pala.divine_shield_up = (ab & 32) != 0 && !pala.forbearance; // divine shield 
-		pala.forbearance = (ag & 128) != 0; // tem debuff Forbearance
-
-		// LA DO PIXEL 6 
-		pala.divine_protection_up &= !pala.forbearance; // bolha disponível
-	 }
-
-
-	 // -------------------------------------
-	 // Pixel 13: Blessings ativos (R) + HoJ ready (G bit 7) + HoJ range (B)
-	 // -------------------------------------
-	 if (pixels.Count > 13)
-	 {
-		int ar = pixels[13].r; // R = bitmask dos blessings ativos
-		int ag = pixels[13].g; // G = bitflags de cooldowns (bit 7 = HoJ pronto)
-		int ab = pixels[13].b; // B = 255 se HoJ está em alcance
-
-		// BLESSINGS ATIVOS (bit por ordem nova)
-		pala.bos = (ar & 1) != 0; // bit 0 = Salvation
-		pala.bol = (ar & 2) != 0; // bit 1 = Light
-		pala.bof = (ar & 4) != 0; // bit 2 = Freedom
-		pala.bow = (ar & 8) != 0; // bit 3 = Wisdom
-		pala.bop = (ar & 16) != 0; // bit 4 = Protection
-		pala.bok = (ar & 32) != 0; // bit 5 = Kings
-		pala.bom = (ar & 64) != 0; // bit 6 = Might
-		pala.bosanc = (ar & 128) != 0; // bit 7 = Sanctuary
-
-		// HAMMER OF JUSTICE
-		pala.hoj_ready = (ag & 128) != 0;        // está pronto
-		pala.hoj_range = (ab > 250);             // está em alcance
-		cb_hammer_range.Checked = pala.hoj_range;
-	 }
-
-	 // Pixel 14: Creature Type
-	 // -------------------------------------
-	 if (pixels.Count > 14)
-	 {
-		tar.type = pixels[14].r;               // lê valor bruto do canal R
+		tar.type = pixels[8].r; // lê valor bruto do canal R
 		tb_tartype.Text = tar.type.ToString(); // exibe no textbox
 	 }
 
+
 	 // -------------------------------------
-	 // Pixel 15: Mood (R/G) + Mob está me atacando? (B)
+	 // NOVO PIXEL 9: REAÇÃO E AMEAÇA DO TARGET (Movido do antigo Pixel 15)
 	 // -------------------------------------
-	 if (pixels.Count > 15)
+	 if (pixels.Count > 9)
 	 {
 		// mood / reação do target
-		bool hostile = pixels[15].r > 200 && pixels[15].g < 50;   // vermelho puro
-		bool neutral = pixels[15].r > 200 && pixels[15].g > 200;  // amarelo
-		bool friendly = pixels[15].r < 50 && pixels[15].g > 200;  // verde
+		bool hostile = pixels[9].r > 200 && pixels[9].g < 50;  // vermelho puro
+		bool neutral = pixels[9].r > 200 && pixels[9].g > 200; // amarelo
+		bool friendly = pixels[9].r < 50 && pixels[9].g > 200; // verde
 
 		if (hostile) tar.mood = -1;
 		else if (friendly) tar.mood = 1;
 		else tar.mood = 0;
 
 		tb_mood.Text = (tar.mood == -1) ? "Hostile" :
-									 (tar.mood == 1) ? "Friendly" : "Neutral";
+																 (tar.mood == 1) ? "Friendly" : "Neutral";
 
 		// canal azul = 255 se o mob está me atacando (aggro confirmado)
-		tar.aggroed = (pixels[15].b > 250);         // reuse da propriedade para "aggro ativo"
+		tar.aggroed = (pixels[9].b > 250); // reuse da propriedade para "aggro ativo"
 	 }
 
+	 // ====================================================================
+	 // PIXELS ESPECÍFICOS DE ROGUE (10 a 15)
+	 // ====================================================================
+	 if (e.classe == ROGUE) // se for Rogue, lê o Pixel 10
+	 {
+		// -------------------------------------
+		// PIXEL 10 - COMBO POINTS + THROW + STEALTH
+		// R: bits 0–2 = combo points (0 a 7)
+		// R: bit 3 (valor 8)  = throw_up
+		// R: bit 4 (valor 16) = stealth_up (pode usar Stealth)
+		// G: bit 0 (valor 1)  = stealth (está stealth)
+		// -------------------------------------
+		int r10 = pixels[10].r;              // lê canal R do pixel 10
+		int g10 = pixels[10].g;              // lê canal G do pixel 10
+
+		rog.combo = r10 & 7;                 // extrai bits 0–2 (valor de 0 a 7)
+		rog.throw_up = (r10 & 8) != 0;       // bit 3 = flag de throw pronta
+		rog.stealth_up = (r10 & 16) != 0;    // bit 4 = pode usar Stealth
+		rog.stealth = (g10 & 1) != 0;        // bit 0 de G = está stealth
+
+		tb_combos.Text = rog.combo.ToString(); // exibe combo points no textbox
+
+		rog.evis_up = me.mana > 35 && rog.combo > 0 && me.melee;  // Eviscerate disponível
+		rog.ss_up = me.mana > 45 && me.melee;                     // Sinister Strike disponível
+	 }
+
+	 // ====================================================================
+	 // PIXELS ESPECÍFICOS DE PALADINO (10 a 15)
+	 // ====================================================================
+
+	 // Condicional para classe Paladino
+	 else if (e.classe == PALADIN) // Usa o valor 255 para Paladino que o Lua envia
+	 {
+		// -------------------------------------
+		// NOVO PIXEL 10: Judgement (alcance, cooldown) + Auras (Movido do antigo Pixel 9)
+		// -------------------------------------
+		if (pixels.Count > 10)
+		{
+		 // canal R → está em alcance
+		 pala.jud_range = (pixels[10].r > 250); // Judgement em alcance
+
+		 // canal G → cooldown restante (0–255)
+		 pala.judge_cd = pixels[10].g; // cooldown em segundos (cap 255)
+
+		 // canal B → decodifica bitflags de aura
+		 int b10 = pixels[10].b; // lê valor bruto (0–255)
+														 // e.meleerange = (b10 & 1) != 0; // REMOVIDO: movido para Pixel 0
+		 pala.crusader = (b10 & 2) != 0; // bit 1 = Crusader Aura
+		 pala.devotion = (b10 & 4) != 0; // bit 2 = Devotion Aura
+		 pala.frost = (b10 & 8) != 0; // bit 3 = Frost Resist Aura
+		 pala.shadow = (b10 & 16) != 0; // bit 4 = Shadow Resist Aura
+		 pala.fire = (b10 & 32) != 0; // bit 5 = Fire Resist Aura
+		 pala.concentration = (b10 & 64) != 0; // bit 6 = Concentration Aura
+		 pala.retribution = (b10 & 128) != 0; // bit 7 = Retribution Aura
+		}
+
+
+		// -------------------------------------
+		// NOVO PIXEL 11: VAZIO (Conteúdo Cast Player/Target movido para Pixel 5 e 6)
+		// -------------------------------------
+		// Não há lógica de leitura, pois o pixel estará zerado/vazio
+		// Certifique-se de que suas variáveis C# correspondentes (se existirem) estejam zeradas/falsas por padrão.
+
+		// -------------------------------------
+		// NOVO PIXEL 12: VAZIO (Conteúdo Cast Target movido para Pixel 5)
+		// -------------------------------------
+		// Não há lógica de leitura, pois o pixel estará zerado/vazio
+		// Certifique-se de que suas variáveis C# correspondentes (se existirem) estejam zeradas/falsas por padrão.
+
+
+		// -------------------------------------
+		// NOVO PIXEL 13: Seals ativos (R) + Judgements no target (G) + Cooldowns Defensivos (B) (Movido do antigo Pixel 12)
+		// -------------------------------------
+		if (pixels.Count > 13)
+		{
+		 int ar13 = pixels[13].r; // R = bitmask dos seals ativos
+		 int ag13 = pixels[13].g; // G = bitmask dos judgements no target
+		 int ab13 = pixels[13].b; // B = bitflags de cooldowns defensivos
+
+		 // SEALS ATIVOS (true se bit correspondente estiver ligado)
+		 pala.sor = (ar13 & 128) != 0; // Seal of Righteousness
+		 pala.sotc = (ar13 & 64) != 0; // Seal of the Crusader
+		 pala.soc = (ar13 & 4) != 0; // Seal of Command
+		 pala.sol = (ar13 & 16) != 0; // Seal of Light
+		 pala.sow = (ar13 & 8) != 0; // Seal of Wisdom
+		 pala.soj = (ar13 & 32) != 0; // Seal of Justice (Adicionado: estava faltando na lista do C#)
+
+		 // JUDGEMENTS NO TARGET
+		 pala.jotc = (ag13 & 64) != 0; // Judgement of the Crusader
+		 pala.joj = (ag13 & 32) != 0; // Judgement of Justice
+		 pala.jol = (ag13 & 16) != 0; // Judgement of Light
+		 pala.jow = (ag13 & 8) != 0; // Judgement of Wisdom
+
+		 // FLAGS (CANCAST / DEBUFF)
+		 pala.cancast_LOH = (ab13 & 128) != 0; // pode castar Lay on Hands
+		 pala.BOP_up = (ab13 & 64) != 0; // pode castar Blessing of Protection
+		 pala.divine_shield_up = (ab13 & 32) != 0; // Divine Shield (movido)
+
+		 // NOVO: Divine Protection Ready (movido do antigo Pixel 6)
+		 pala.divine_protection_up = (ab13 & 16) != 0;
+
+		 pala.forbearance = (ag13 & 128) != 0; // tem debuff Forbearance
+
+		 // Anula os cooldowns defensivos se estiver sob Forbearance
+		 if (pala.forbearance)
+		 {
+			pala.divine_protection_up = false;
+			pala.divine_shield_up = false;
+			pala.BOP_up = false; // Anula BOP se Forbearance ativo
+		 }
+		}
+
+
+		// -------------------------------------
+		// NOVO PIXEL 14: Blessings ativos (R) + HoJ ready (G bit 7) + HoJ range (B) (Movido do antigo Pixel 13)
+		// -------------------------------------
+		if (pixels.Count > 14)
+		{
+		 int ar14 = pixels[14].r; // R = bitmask dos blessings ativos
+		 int ag14 = pixels[14].g; // G = bitflags de cooldowns (bit 7 = HoJ pronto)
+		 int ab14 = pixels[14].b; // B = 255 se HoJ está em alcance
+
+		 // BLESSINGS ATIVOS (bit por ordem nova)
+		 pala.bos = (ar14 & 1) != 0; // bit 0 = Salvation
+		 pala.bol = (ar14 & 2) != 0; // bit 1 = Light
+		 pala.bof = (ar14 & 4) != 0; // bit 2 = Freedom
+		 pala.bow = (ar14 & 8) != 0; // bit 3 = Wisdom
+		 pala.bop = (ar14 & 16) != 0; // bit 4 = Protection
+		 pala.bok = (ar14 & 32) != 0; // bit 5 = Kings
+		 pala.bom = (ar14 & 64) != 0; // bit 6 = Might
+		 pala.bosanc = (ar14 & 128) != 0; // bit 7 = Sanctuary
+
+		 // HAMMER OF JUSTICE
+		 pala.hoj_ready = (ag14 & 128) != 0; // está pronto
+		 pala.hoj_range = (ab14 > 250);      // está em alcance
+		 cb_hammer_range.Checked = pala.hoj_range;
+		}
+
+		// -------------------------------------
+		// NOVO PIXEL 15: VAZIO (Específico de Paladino - mas não usado agora)
+		// -------------------------------------
+		// Se a classe é Paladino, mas este pixel não é usado, garanta que seja preto
+		// Não há lógica de leitura, pois o pixel estará zerado/vazio
+		// Certifique-se de que suas variáveis C# correspondentes (se existirem) estejam zeradas/falsas por padrão.
+		// Já estará zerado pelo "else" abaixo se não for Paladino.
+	 }
+	 else // Se a classe NÃO for Paladino, zera TODOS os pixels de 10 a 15
+	 {
+
+	 }
 	}
 
 	// M03 - MÉTODO WAIT - ESPERA SEM TRAVAR A JANELA.
@@ -1022,17 +1160,7 @@ void press(byte key)
 	 keybd_event(key, 0, KEYEVENTF_KEYUP, 0); // Simula soltura da tecla
 	}
 	
-	// método separado que executa a simulação
-	private void executa_simulacao()
-	{
-	 button7.Enabled = false;
-	 loga("Iniciando testes. Aguarde.");
 
-	 SimulaOtimos();
-
-	 loga("Simulação finalizada.");
-	 button7.Enabled = true;
-	}
 
 
 	// M01 - MÉTODO CLICA - MOVE O MOUSE PARA (loc.x, loc.y) E CLICA COM O BOTÃO (padrão: direito)
@@ -1072,7 +1200,8 @@ return (int)distance;
 public element me;
 public element tar;
 public palatable pala = new palatable(); // inicializa tabela de status de paladino 
-public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
+public roguetable rog = new roguetable(); // inicializa tabela de status de rogue
+	public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
 
 	//------------------------------
 	// NAO DEIXA AFOGAR 
@@ -1145,11 +1274,14 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		}
 		temp++;
 		checkme(); // atualiza estado do personagem
-							 // -----------------------------
-							 // BUFFS OUT OF COMBAT 
-							 // -----------------------------
-		bless(me); // 
-
+	// -----------------------------
+	// BUFFS OUT OF COMBAT 
+	// -----------------------------
+		// PALADINO
+		if (me.classe==PALADIN) bless(me); // 
+		// ROGUE 
+		// ainda não implementado, mas pode ser feito aqui
+//------------------------		
 		// -----------------------------
 		// ANDAR (direção e pulo)
 		// -----------------------------
@@ -1162,7 +1294,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 }
 		 checkme();
 		 drawmap(destino);
-		 loga($"Distancia do alvo: {dist(me.pos, destino)}");
+		 loga($"Distancia do waypoint: {dist(me.pos, destino)}");
 		 giralvo(destino);
 		 drawmap(destino);
 		 press(WKEY);
@@ -1212,7 +1344,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		// PULL CODE (ataque inicial)
 		// -----------------------------
 		if (cb_anda.Checked && cb_pull.Checked && !me.combat)
-		 puxa(pala);
+		 puxa();
 
 		// -----------------------------
 		// MORTE
@@ -1243,12 +1375,14 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 // SE PALADINO
 		 //------------
 		 // if paladino.... 
-
+		 if (me.classe == PALADIN)
+		 { 
 		 if (me.hp < atoi(tb_preheal))
 		 {
 			if (mana(20) && (me.hp < 60 || !cb_flashheal.Checked))
 			{
 			 aperta(HLIGHT); wait(2500);
+			 logacura("HOly Light", "HP > 60, MANA > 20, HP < 60 || Flashheal unckecked");
 			}
 			else
 			 casta(FLASHHEAL);
@@ -1263,18 +1397,7 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 			 && mana(30) // tem mana
 			 )
 			aperta(PURIFY, GCD); // ativa o purify
-		//----------------------------------------------
-		 if (me.mana < 60) loga($"Esperando recuperação da mana: {me.mana}");
-
-		 while (me.mana < atoi(tb_pull_mana) && !me.combat) // espera recuperar mana
-		 {
-			if (!pala.bow) aperta(BOW); // buffa se não tiver buff ativo
-
-
-			
-			wait(1000);
-			checkme();
-		 }
+			 }
 		 // -----------------------------------
 		 // LOOT 
 		 // -----------------------------------
@@ -1306,12 +1429,12 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 				 if (p.x < 0) break;        // nada encontrado
 
 				 clica(p);                  // clica diretamente — cursor já é validado no scanloot
-				 wait(100);
+//				 wait(100);
 				 checkme();
 
 				 if (me.spd == 0 && !me.combat)
 				 {
-					wait(1000);            // espera loot ou skin
+					wait(400);            // espera loot ou skin
 					if (cb_skinning.Checked) wait_cast(); // só se for skinnando
 				 }
 				 else
@@ -1340,9 +1463,44 @@ public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de pl
 		 return; // sai do moveto após combate. 
 		}
 
+		//----------------------------------
+		// RECUPERAÇAO POS COMBATE - PALADINO
+		//----------------------------------
+		if (me.classe == PALADIN)
+
+		{
+		 //---------------------RECUPERA MANA-------------------------
+		 if (me.mana < 60) loga($"Esperando recuperação da mana: {me.mana}");
+
+		 while (me.mana < atoi(tb_pull_mana) && !me.combat) // espera recuperar mana
+		 {
+			if (!pala.bow) aperta(BOW); // buffa se não tiver buff ativo
+			wait(1000);
+			checkme();
+		 }
+
+		}
+		//----------------------------------
+		// RECUPERAÇAO POS COMBATE - ROGUE
+		//----------------------------------
+		else if (me.classe == ROGUE)
+		{
+		 // espera recuperar energia
+		 if (me.hp < atoi(tb_rogue_eat_at))
+		 {
+
+			loga($"Esperando recuperação de HP: {me.hp}");
+			aperta(F12); // COMIDA 
+			while (me.hp < 80)
+			{
+			 espera(1);
+			}
+		 }
+		}
+		//--------------------------------------
 
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 110)); // enquanto ativo e longe (20 se catando)
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Alvo atingido. Partindo para proximo alvo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
@@ -1563,6 +1721,8 @@ void andaplanta(loc alvo)
 	// ----------------------------------------
 	void scan_elites()
 	{
+	 if (!cb_scan_elite.Checked) return; 
+
 	 aperta(TAB);       // seleciona o alvo mais próximo
 	 checkme();         // atualiza status do alvo
 
@@ -1593,16 +1753,16 @@ void andaplanta(loc alvo)
 	// MÉTODO puxa - Versão Paladino com verificação organizada
 	// Inicia o combate apenas se o target for válido
 	// --------------------------------------------
-	void puxa(palatable pala)
+	void puxa()
 	{
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum Seal
 	 Func<int, bool> mana = (p) => me.mana > p;
-	 aperta(TAB);                                                               // seleciona inimigo próximo
+	 if (!me.hastarget) aperta(TAB);                                                               // seleciona inimigo próximo
 	 checkme();                                                                 // atualiza status depois do tab
 
 	 // NAO DEIXA AFOGAR 
 	 //------------------------------
-nao_afoga(); // nada para cima se estiver afogando
+	 nao_afoga(); // nada para cima se estiver afogando
 
 	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 
@@ -1615,7 +1775,7 @@ nao_afoga(); // nada para cima se estiver afogando
 	 if (!me.hastarget)                                                        // sem alvo
 		good_target = false;
 	 else if (cb_pacifist.Checked)       // pacifista e não quer atacar
-		good_target = false;                                                  
+		good_target = false;
 	 else if (tar.hp == 0)                                                     // mob já morto
 		good_target = false;
 	 else if (isgray(me.level, tar.level) && !cb_killgray.Checked)            // mob cinza e não queremos cinza
@@ -1634,77 +1794,145 @@ nao_afoga(); // nada para cima se estiver afogando
 						(tar.type == 230 && cb_nodragonkin.Checked))                   // dragonkin e checkbox ativa
 		good_target = false;
 
-	 if (!good_target || me.combat)                                                         // se não é um bom alvo
+	 if (!good_target && !me.combat)                                                         // se não é um bom alvo
 	 {
 		aperta(CLEARTGT);                                                     // limpa o target
 		return;                                                               // aborta o pull
 	 }
+	 
 
 	 // --------------------------------------------
 	 // CORRE ATE O MOB E ATACA (PULL)
 	 // --------------------------------------------
 	 int ticker = 0; // contador de ciclos
-	 
-	 while (me.hastarget && !me.combat && tar.hp==100) // alvo válido e ainda fora de combate
+	 if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
 	 {
-		checkme();
-
-		// NAO DEIXA AFOGAR 
-		//------------------------------
-		nao_afoga(); // nada para cima se estiver afogando
-
-
-		aperta(best_seal()); // aplica o melhor seal fora de combate
-
-		// verifica se pode puxar com EXORCISM
-		bool pode_exorcism = cb_use_exorcism.Checked
-			&& me.level >= 20 
-		  && (tar.type == 150 || tar.type == 200)  // undead ou demon
-			&& pala.exorcism_up
-			&& pala.exorcism_range
-			&& mana(8);
-
-		// se pode, usa EXORCISM no lugar do Judgement
-		if (pode_exorcism)
+		loga("Alvo válido encontrado. Iniciando pull.");
+		do // while (me.hastarget && !me.combat && tar.hp == 100) // alvo válido e ainda fora de combate
 		{
-		 aperta(PULA);        // interrompe qualquer cast se necessário
-		 aperta(EXORCISM);        // tecla de Exorcism
-		 aperta(AUTOATTACK);  // inicia ataque automático
-		}
-		// senão, tenta puxar com JUDGEMENT
-		else if (
-			me.level >= 4 &&
-			has_seal() &&
-			pala.jud_range &&
-			pala.judge_cd == 0 &&
-			mana(4))
-		{
-		 aperta(PULA);
-		 aperta(JUDGEMENT);
-		 aperta(AUTOATTACK);
-		}
-		else
-		{
-		 aperta(AUTOATTACK); // ataca direto se nenhuma opção acima for válida
-		 aperta(INTERACT); // anda até o mob11
-		}
+		 checkme();
 
-		if (ticker++ % 8 == 0)
-		 aperta(PULA); // pulo de simulação humana a cada 2s
+		 // NAO DEIXA AFOGAR 
+		 //------------------------------
+		 nao_afoga(); // nada para cima se estiver afogando
 
-		aperta(INTERACT); // anda até o mob11
+		 //------------------------------- PULL PALADINO ----------------
+		 if (me.classe == PALADIN)
+		 {
+			aperta(best_seal()); // aplica o melhor seal fora de combate
+													 // verifica se pode puxar com EXORCISM
+			bool pode_exorcism = cb_use_exorcism.Checked
+				&& me.level >= 20
+				&& (tar.type == 150 || tar.type == 200)  // undead ou demon
+				&& pala.exorcism_up
+				&& pala.exorcism_range
+				&& mana(8);
 
-		wait(200);   // aguarda meio segundo
-		checkme();   // atualiza status
+			// se pode, usa EXORCISM no lugar do Judgement
+			if (pode_exorcism)
+			{
+			 aperta(PULA);        // interrompe qualquer cast se necessário
+			 aperta(EXORCISM);        // tecla de Exorcism
+			 aperta(AUTOATTACK);  // inicia ataque automático
+			}
+			// senão, tenta puxar com JUDGEMENT
+			else if (
+				me.level >= 4 &&
+				has_seal() &&
+				pala.jud_range &&
+				pala.judge_cd == 0 &&
+				mana(4))
+			{
+			 aperta(PULA);
+			 aperta(JUDGEMENT);
+			 aperta(AUTOATTACK);
+			}
+			else
+			{
+			 aperta(AUTOATTACK); // ataca direto se nenhuma opção acima for válida
+			 aperta(INTERACT); // anda até o mob11
+			}
 
-		if (ticker > 10) // passou 5s e não entrou em combate
-		{
-		 aperta(CLEARTGT); // limpa target e aborta pull
-		 break;
-		}
+			if (ticker++ % 8 == 0)
+			 aperta(PULA); // pulo de simulação humana a cada 2s
+
+			aperta(INTERACT); // anda até o mob11
+
+			wait(200);   // aguarda meio segundo
+			checkme();   // atualiza status
+		 }
+		 // ---------------------INICIO PULL ROGUE ----------------
+		 else if (me.classe == ROGUE) // se for rogue
+		 {
+			aperta(AUTOATTACK);   // ativa autoattack
+			aperta(INTERACT);     // começa a andar até o mob
+			checkme(); // atualiza status
+								 // novo: se faca estiver pronta, lança e para de andar
+			if (rog.throw_up)     // chegou em range da faca
+			{
+			 loga("Parando para lançar faca.");
+			 para(); // para de andar
+			 if (!rog.throw_up)
+			 {
+				loga("Muito perto da faca. Voltando a andar.");
+				aperta(INTERACT); // religa movimento se perdeu range
+			 }
+			 else
+			 {
+				casta(THROW);         // lança faca (Throw)
+				espera(3);
+				checkme(); // atualiza status
+				if (me.combat) return;
+			 }
+
+			}
+			if (rog.ss_up)        // se estiver em range de SS, usa
+			 casta(SS);
+
+			//wait(100);            // aguarda um pouco
+			checkme();            // atualiza status
+			if (me.combat) return;
+
+			if (ticker++ % 16 == 0)
+			 aperta(PULA);      // pulo humano a cada 2s
+			aperta(INTERACT); // anda até o mob11
+		 }
+		 // ---------------------FIM PULL ROGUE---------------------
+
+
+		 checkme();
+		 if (ticker > 10 && !me.combat) // passou 5s e não entrou em combate
+		 {
+			aperta(CLEARTGT); // limpa target e aborta pull
+			break;
+		 }
+		} while (me.hastarget && !me.combat && tar.hp == 100); // alvo válido e ainda fora de combate
+	 
+		if (me.combat) para();
+
+
 	 }
 	}
-
+	//------------
+	// METODO PARA
+	//------------
+	void para()
+	{
+	 if (me.spd > 0) // se estiver andando
+	 {
+		aperta(SKEY); // pequeno toque para trás
+		solta(WKEY); // para de andar para frente
+		checkme(); // atualiza status
+	 }
+	 while (me.spd > 0) // enquanto estiver andando
+	 {
+		solta(WKEY); // para de andar
+		solta(SKEY); // para de andar para trás
+		solta(AKEY); // para de andar para a esquerda
+		solta(DKEY); // para de andar para a direita
+		checkme(); // atualiza status
+	 }
+	}
 	// --------------------------------
 	// MÉTODO COMBATLOOP - ROTINAS DE COMBATE
 	// --------------------------------
@@ -1714,7 +1942,9 @@ nao_afoga(); // nada para cima se estiver afogando
 
 	public void combatloop()
 	{
+	 int combat_ticker = 0; // contador de ciclos de combate
 	 solta(ANDA); // PARA DE ANDAR
+	 aperta(SKEY); // anda para trás se necessário
 	 bool ja_deu_backpedal = false; // se estiver apanhando muito anda um pouco para tras pra nao dar as costas 
 	 bool jalogou = false; // se já logou o decay
 	 if (!emCombate) // decay
@@ -1725,9 +1955,9 @@ nao_afoga(); // nada para cima se estiver afogando
 	 int ticker= 0; // contador de ciclos
 	 do
 	 {
+		combat_ticker++; // incrementa contador de combate 
 		ticker++;
 		Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum seal ativo
-
 		Func<int, bool> mana = (p) => me.mana > p;
 
 		if (me.combat) // calculo do decay
@@ -1761,7 +1991,7 @@ nao_afoga(); // nada para cima se estiver afogando
 		// recuo tático se estiver apanhando demais
 		// -----------------------------------------
 		
-		if (me.dazed || (!dungeon && !ja_deu_backpedal && me.hp < 85))
+		if (me.mobs>1 && (me.dazed || (!dungeon && !ja_deu_backpedal && me.hp < 85))) // se estiver apanhando de mais ou com 2 mobs batendo
 		{
 		 
 		 int limiar = int.Parse(tb_back_limiar.Text); // Lê o valor do limiar 
@@ -1807,8 +2037,6 @@ nao_afoga(); // nada para cima se estiver afogando
 		checkme();
 		if (!dungeon && !tar.aggroed) // target morto ou aparentemente inválido
 		{
-		 wait(100); // dá tempo do jogo atualizar
-		 checkme(); // atualiza dados após espera
 
 		 if (!tar.aggroed) // confirma que ainda está inválido
 		 {
@@ -1822,22 +2050,17 @@ nao_afoga(); // nada para cima se estiver afogando
 		else // Mob vivo e com agro em mim
 
 		{
-		 if (!dungeon && me.casting && me.spell.StartsWith("S")) // se está castando skinning no meio do combate 
-		 {
-			aperta(PULA);
-			roda(150);                // gira pra manter face no inimigo
-		 }
 		 aperta(INTERACT);               // anda até o alvo se estiver longe
 		 if (ticker%6==0) aperta(PULA); // da uns pulinhos a cada 3 ciclos pra pular a cerca ao ir atras do target 
 		}
 
-		if (true || me.classe == 1)           // no futuro separar cura só pra paladino ou classe que cura 
+		//---------------------ROTINA EXCLUSIVA PALADINO ---------------------
+		if (me.classe == PALADIN)           //  
 		{
 		 wait_cast();                    // espera fim de cast se tiver algum
 
 		 if (tar.mood != 1 && !me.autoattack) // se mob não é amigável e não estou  atacando ele
 			aperta(AUTOATTACK);         // inicia ataque automático
-
 		 tenta_curar();                  // verifica se precisa curar e executa se necessário
 
 		 // -------------------------------------
@@ -1847,19 +2070,18 @@ nao_afoga(); // nada para cima se estiver afogando
 			&& me.level >= 20 
 			&& (tar.type == 150 || tar.type == 200)  // undead ou demon
 			 && pala.exorcism_up
-			 && pala.exorcism_range
 			 && mana(8);
-		 if (tar.hp <100 && tar.combat && tar.meleerange)
-
-		 // se pode, usa EXORCISM no lugar do Judgement
 		 if (pode_exorcism)
 			aperta(EXORCISM);
 
-		 //-----------------SOR-------------------
-		 aperta(best_seal(), 500); // ativa o melhor seal automaticamente
-																		 //----------------BLESSINGS----------------
-		 bless(me);                      // aplica blessing se necessário
-																		 //---------------STONEFORM------------------
+		 //-----------------SEAL-------------------
+		 aperta(best_seal()); // ativa o melhor seal SE NECESSARIO	
+		
+		 //----------------BLESSINGS----------------
+		 bless(me);                      
+		 // aplica blessing se necessário
+																		 
+		 //---------------STONEFORM------------------
 
 		 //---------------AURAS------------------
 
@@ -1903,8 +2125,35 @@ nao_afoga(); // nada para cima se estiver afogando
 
 		 solta(ANDA);                                            // para de andar no final do turno
 		}
+		else if (me.classe == ROGUE) // se for rogue
+		{
+		 // ------------------------------------------
+		 // autoattack e movimentação
+		 // ------------------------------------------
+		 if (tar.mood != 1 && !me.autoattack) aperta(AUTOATTACK);
+		 if (ticker % 6 == 0) aperta(PULA); // human-like
 
-		
+		 // ------------------------------------------
+		 // só age se estiver em melee
+		 // ------------------------------------------
+		 if (!me.melee) return;
+
+		 // ------------------------------------------
+		 // decisão de Eviscerate
+		 // ------------------------------------------
+		 bool rotina = rog.combo >= atoi(tb_evis_cp);                  // ideal
+		 bool pressa = tar.hp < 40 && rog.evis_up;     // mob morrendo, qualquer combo ajuda
+		 bool pode_evis = rog.evis_up && (rotina || pressa);
+
+		 // ------------------------------------------
+		 // executa skill
+		 // ------------------------------------------
+		 if (pode_evis)
+			casta(EVIS);
+		 else if (rog.ss_up)
+			casta(SS);
+		}
+
 		checkme();
 
 	 } while (me.combat); // FIM DO LOOP DE COMBATE 
@@ -1912,7 +2161,7 @@ nao_afoga(); // nada para cima se estiver afogando
 	 //---------------------------------------------
 	 // TERMINA O COMBATE 
 	 // ---------------------------------------------
-
+	 loga($"Combate encerrado. Ciclos: {combat_ticker}");
 	 // PALADINO (reseta variaveis de combate) 
 	 //----------------------------------------------
 	 pala.defseal = false;     // volta a permitir uso de SOR
@@ -1935,29 +2184,61 @@ nao_afoga(); // nada para cima se estiver afogando
 	// --------------------------------
 	// MÉTODO DE ESPERA VIGILANTE
 	// --------------------------------
-	void espera(int seconds)
+	void espera(int seconds=1)
 	{
 	 solta(ANDA); // para de andar antes de esperar
 	 for (int i = seconds; i > 0; i--)
 	 {
 		if (me.combat)
-		{
-		 combatloop(); // entra na rotina de combate se estiver em combate
 		 return;
-		}
 		wait(1000); // espera 1 segundo
+		nao_afoga(); // verifica se não está afogando
 		checkme(); // atualiza status do jogador
 	 }
 	}
+	// ----------------------------------------
+	// FUNÇÃO DEBUGCURA – Atualiza checkboxes da cura e chama logacura()
+	// ----------------------------------------
+	void debugcura(string ultima = "", string motivo = "", string idle = "")
+	{
+	 debug_gcd.Checked = (me.castbar > 0 && me.castbar <= 20 );
+	 debug_forbearance.Checked = pala.forbearance;
+	 debug_BOP.Checked = pala.BOP_up;
+	 debug_dprot.Checked = pala.divine_protection_up;
+	 debug_LOH.Checked = pala.cancast_LOH;
+	 debug_potion.Checked = me.hp_potion_rdy;
+	 debug_HOJ.Checked = pala.hoj_ready;
 
+	 logacura(ultima, motivo, idle);  // atualiza textboxes e loga se checkbox marcada
+	}
+
+
+	// ----------------------------------------
+	// FUNÇÃO LOGACURA – Preenche logs visuais da cura
+	// Nunca apaga campos já preenchidos
+	// Só substitui se vier conteúdo novo
+	// ----------------------------------------
+	void logacura(string ultima = "", string motivo = "", string idle = "")
+	{
+	 // preserva valores anteriores se os novos forem vazios
+	 if (!string.IsNullOrEmpty(ultima)) tb_ultima_cura.Text = ultima;
+	 if (!string.IsNullOrEmpty(motivo)) tb_motivo_cura.Text = motivo;
+
+	 // idle_reason sempre sobrescreve
+	 tb_idle_reason.Text = idle;
+
+	 if (cb_logar_cura.Checked)
+		loga($"[cura] ultima={ultima} motivo={motivo} idle={idle}");
+	}
 
 	// --------------------------------
 	// MÉTODO DE CURA GERAL DO PALADINO
 	// --------------------------------
 	void tenta_curar()
 	{
+	 debugcura(); // atualiza os checkboxes de debug
 	 int limiar_loh = 30; // hp abaixo desse valor pode disparar LOH
-	 int.TryParse(tb_loh_hp.Text, out limiar_loh); // pega valor da caixa de texto
+	 limiar_loh = atoi(tb_combatheal); // atoi(tb_LOH_limiar); // pega valor do textbox de limiar de LOH
 
 	 int limiar_hp = atoi(tb_combatheal); // pega valor de hp considerado critico
 	 if (pala.sol) limiar_hp -= 7; // se tem Seal of Light, permite segurar mais
@@ -1970,8 +2251,49 @@ nao_afoga(); // nada para cima se estiver afogando
 	 dbg += "BoP ativo em você....: " + (pala.bop ? "sim" : "não") + "\r\n";
 	 dbg += "Potion pronta........: " + (me.hp_potion_rdy ? "sim" : "não") + "\r\n";
 	 dbg += "Decay estimado.......: " + tbdecay.Text + " hp/m" + "\r\n";
+	 dbg += "Mobs no combate......: " + me.mobs.ToString() + "\r\n";
 
 	 if (me.hp < limiar_hp) loga(dbg); // loga debug se hp estiver abaixo do limiar crítico
+
+
+	 // -------------------------------------------------------------
+	 // **NOVA CAMADA: CURAS ESPECIAIS PRIORITÁRIAS PARA 3 OU MAIS MOBS**
+	 // Estas verificações são as primeiras a serem feitas.
+	 // Se uma ação for tomada aqui e exigir, a função pode retornar imediatamente.
+	 // -------------------------------------------------------------
+	 if (me.mobs >= 3)
+	 {
+		// Regra 1: Vida abaixo de 50% => Usa poção em qualquer cenário (se disponível)
+		if (me.hp < 50 && me.hp_potion_rdy)
+		{
+		 aperta(HEALTHPOTION);
+		 loga("ALERTA (3+ mobs)! HP abaixo de 50%, usando Poção de Vida prioritariamente.");
+		 wait(GCD); // Espera o Global Cooldown da poção
+		 checkme();  // Atualiza o status após usar a poção
+		 debugcura("POTION", "ativação prioritária em 3+ mobs - HP < 50%");
+		 // Não damos 'return' aqui. Permitimos que o LoH (abaixo) seja avaliado
+		 // caso a poção não seja suficiente ou as condições se mantenham.
+		}
+
+		// Regra 2: Vida abaixo de 40%, sem poção E sem proteções (incluindo Forbearance) => Usa Lay on Hands
+		if (me.hp < 40 &&
+				!me.hp_potion_rdy &&         // Sem poção
+				!pala.BOP_up &&              // Sem Blessing of Protection
+				!pala.divine_protection_up && // Sem Divine Protection
+				!pala.divine_shield_up &&    // Sem Divine Shield
+				pala.forbearance == false &&   // Forbearance deve ser false para usar LOH
+				pala.cancast_LOH &&          // LOH deve estar pronto
+				cb_loh.Checked)              // LOH deve estar permitido pelo checkbox
+		{
+		 aperta(LOH);
+		 loga("EMERGÊNCIA (3+ mobs)! HP abaixo de 40% e sem proteções, usando Lay on Hands prioritariamente.");
+		 debugcura("LOH", "ativação prioritária em 3+ mobs - HP < 40%, sem proteções");
+		 return; // Lay on Hands é uma cura massiva, geralmente resolve a situação. Retorna imediatamente.
+		}
+	 }
+
+
+
 
 
 	 // ----------------------------------------
@@ -1980,36 +2302,64 @@ nao_afoga(); // nada para cima se estiver afogando
 	 if (me.hp < limiar_hp && me.mana > 20 && !pala.forbearance)
 	 {
 		bool usou_protecao = false;
+		string motivo = ""; // para registrar no log final
 
 		if (pala.divine_shield_up && me.mana > 25)
 		{
 		 casta(DSHIELD); // usa Divine Shield
 		 loga("Curando com divine shield.");
 		 usou_protecao = true;
+		 motivo = "cura com proteção (Divine Shield)";
 		}
 		else if (pala.divine_protection_up && me.mana > 25)
 		{
 		 casta(DPROT); // usa Divine Protection
 		 loga("Curando com divine protection.");
 		 usou_protecao = true;
+		 motivo = "cura com proteção (Divine Protection)";
 		}
 		else if (pala.BOP_up && cb_BOP.Checked && me.mana > 25)
 		{
 		 casta(BOP); // usa Blessing of Protection
 		 loga("Curando com blessing of protection.");
 		 usou_protecao = true;
+		 motivo = "cura com proteção (BOP)";
 		}
 
 		if (usou_protecao)
 		{
-		 casta(HLIGHT); // casta HLIGHT
-		 wait_cast();
-		 checkme();
-		 if (me.level >= 20 && me.hp < 90) casta(FLASHHEAL); // se ainda estiver baixo, usa FLASHHEAL
-		 if (me.hp >= limiar_hp) return; // cura resolveu
+		 casta(HLIGHT);            // casta HLIGHT
+		 wait_cast();              // espera o cast
+		 checkme();                // atualiza status após cast
+
+		 debugcura("HLIGHT", motivo); // registra nos debug e caixas
+
+		 if (me.level >= 20 && me.hp < 90)
+		 {
+			casta(FLASHHEAL);     // usa FLASHHEAL se necessário
+			debugcura("FLASHHEAL", "HLIGHT nao curou suficiente, level >= 20, HP < 90"); // registra no debug
+		 }
+		 else if (me.mobs <2 && me.level < 20 && me.hp < 60)
+		 {
+			casta(HLIGHT);            // casta mais um HLIGHT
+			debugcura("OUTRO HLIGHT", "O primeiro nao curou suficiente, level < 20"); // registra no debug
+			wait_cast();              // espera o cast
+			checkme();                // atualiza status após cast
+		 }
+
+		 if (me.hp >= limiar_hp)
+			return;               // encerra se cura foi suficiente
+		}
+		else
+		{
+		 // nenhuma proteção disponível → não curou
+		 debugcura("", "", "não curou – sem proteção disponível");
+		 return;
 		}
 	 }
 
+
+	 // ----------------------------------------
 	 // NAO USOU PROTEÇÃO OU A CURA FOI POUCA.
 	 // ----------------------------------------
 	 // CURA CRÍTICA – POTION OU HLIGHT COM STUN
@@ -2018,41 +2368,58 @@ nao_afoga(); // nada para cima se estiver afogando
 	 {
 		if (me.hp_potion_rdy)
 		{
-		 aperta(HEALTHPOTION); // usa poção se tiver pronta
+		 aperta(HEALTHPOTION);         // usa poção
 		 loga("Curando com potion.");
 		 wait(GCD);
 		 checkme();
-		 if (me.hp >= limiar_hp) return; // cura resolveu
+
+		 debugcura("POTION", "sem proteção, usou poção como recurso crítico");
+
+		 if (me.hp >= limiar_hp)
+			return;                   // cura resolveu
 		}
 		else if (pala.hoj_ready && pala.hoj_range)
 		{
-		 aperta(HOJ, GCD); // stuna o alvo com HOJ
+		 aperta(HOJ, GCD);            // stuna o alvo
 		 loga("Curando com hammer of justice.");
-		 aperta(HLIGHT, 1000); // casta HLIGHT durante o stun
+		 aperta(HLIGHT, 1000);        // casta HLIGHT durante o stun
 		 wait_cast();
 		 checkme();
-		 if (me.hp >= limiar_hp) return; // cura resolveu
+
+		 debugcura("HLIGHT", "usou HOJ para interromper dano e conseguir curar");
+
+		 if (me.hp >= limiar_hp)
+			return;                   // cura resolveu
+		}
+		else
+		{
+		 // nenhum recurso crítico disponível
+		 debugcura("", "", "não curou – sem poção e sem stun disponível");
+		 return;
 		}
 	 }
+
 
 	 // ----------------------------------------
 	 // CURA DE EMERGÊNCIA – LOH OU CAST SECO
 	 // ----------------------------------------
 	 bool pode_usar_loh =
 		 me.hp < limiar_loh &&
-		 !me.hp_potion_rdy && // não tem potion
-		 !pala.BOP_up &&       // não tem BOP
-		 !pala.divine_protection_up &&    // não tem bubble
-		 !pala.hoj_ready &&    // não tem stun
-		 pala.cancast_LOH &&   // LOH disponível
+		 !me.hp_potion_rdy &&                  // não tem potion
+		 !pala.BOP_up &&                       // não tem BOP
+		 !pala.divine_protection_up &&        // não tem bubble
+		 (!pala.hoj_ready || me.hp < 25) &&    // não tem stun ou tá no bico do corvo
+		 pala.cancast_LOH &&                  // LOH disponível
 		 cb_loh.Checked;
 
 	 if (pode_usar_loh)
 	 {
 		aperta(LOH); // cura total com LOH
 		loga("Emergência. Curando com lay on hands.");
+		debugcura("LOH", "cura emergencial – sem nenhum outro recurso defensivo");
 		return;
 	 }
+
 
 	 // ---------------------------------------------
 	 // ÚLTIMA TENTATIVA: CURA SEM PROTEÇÃO
@@ -2060,7 +2427,7 @@ nao_afoga(); // nada para cima se estiver afogando
 	 if (me.hp < limiar_hp && me.mana > 20) // vida baixa e mana viável
 	 {
 		bool trocou_aura = false;       // flag pra saber se trocou aura
-		byte aura_antiga = 0;            // salva a aura anterior pra restaurar depois
+		byte aura_antiga = 0;           // salva a aura anterior pra restaurar depois
 
 		// verifica se deve usar concentration aura temporariamente
 		if (cb_concentration_aura.Checked && !pala.concentration)
@@ -2085,10 +2452,13 @@ nao_afoga(); // nada para cima se estiver afogando
 		 trocou_aura = true;    // marca que houve troca
 		}
 
-		loga("For the light!");     // tentativa heroica
-		aperta(HLIGHT, 1000);       // casta holy light
-		wait_cast();                // espera o cast
-		checkme();                  // atualiza status
+		loga("For the light!");         // tentativa heroica
+		aperta(HLIGHT, 1000);           // casta holy light
+		wait_cast();                    // espera o cast
+		checkme();                      // atualiza status
+
+		// registra que castou HLIGHT no desespero
+		debugcura("HLIGHT", "último recurso – castou no seco, com ou sem aura");
 
 		// restaura aura antiga se tiver trocado
 		if (trocou_aura && aura_antiga != 0)
@@ -2098,6 +2468,9 @@ nao_afoga(); // nada para cima se estiver afogando
 		 aperta(aura_antiga, GCD);
 		}
 	 }
+
+
+
 
 	}
 
@@ -2177,7 +2550,15 @@ nao_afoga(); // nada para cima se estiver afogando
 	 return false; // não atende critérios
 	}
 
-	void wait_cast() { checkme(); while (me.casting) { checkme(); wait(125); } } 
+	void wait_cast()
+	{
+	 do
+	 {
+		checkme();
+		wait(10);
+	 } while (me.casting); // espera até não estar mais castando
+	}
+
 	// METODO WAITCAST - ESPERA CASTAR 																												
 	// --------------------------------																												
 	// MÉTODO MANA (TEM?)																													
@@ -3063,7 +3444,7 @@ lbwp.Items.Clear();
 
 
 	// VARIAVEIS GLOBAIS DE LOOT
-	int pausa = 35; // delay padrão entre movimentos do mouse
+	
 	loc last_success = new loc { x = -1, y = -1 }; // último ponto que deu loot
 	double peso_otimo = 10.0; // valor padrão, será carregado do arquivo
 	double exp_otimo = 1.0;   // idem
@@ -3116,12 +3497,13 @@ lbwp.Items.Clear();
 	// ---------------------------------------------
 	public loc scanloot()
 	{
-	 const double CHANCE_PULAR_ZERO_FREQ = 0.85; // chance de ignorar ponto com freq 0
+	 int pausa = 20; // delay padrão entre movimentos do mouse
+	 const double CHANCE_PULAR_ZERO_FREQ = 0.65; // chance de ignorar ponto com freq 0
 
 	 if (DateTime.Now >= prox_salva)
 	 {
 		salva_loot(); // salva vetor e aplica trim se necessário
-		prox_salva = DateTime.Now.AddMinutes(10);
+		prox_salva = DateTime.Now.AddMinutes(5);
 	 }
 
 	 focawow(); // traz o WoW pra frente
@@ -3144,8 +3526,8 @@ lbwp.Items.Clear();
 		last_success = centro; total_loots++;
 		logastats(); lootCombates++;
 
-		if (tipo == 64) loga("Localizou loot.");
-		else if (tipo == 63) loga("Localizou couro.");
+		if (tipo == 64) loga("Realizando loot.");
+		else if (tipo == 63) loga("Extraindo couro.");
 		else if (tipo == 69) loga("Localizou planta.");
 
 		return centro;
@@ -3264,7 +3646,7 @@ lbwp.Items.Clear();
 	{
 	 if (pos <= 0 || pos >= 25) return; // ignora índice 0 e inválidos
 
-	 if (fila_fifo.Count >= 500)
+	 if (fila_fifo.Count >= 1000)
 	 {
 		int velho = fila_fifo.Dequeue();
 		if (velho > 0 && velho < 25)
@@ -3286,9 +3668,9 @@ lbwp.Items.Clear();
 
 	 // aplica trim leve se necessário (apenas índices 1 a 24)
 	 int max = lootfreq.Skip(1).Take(24).Max();
-	 if (max > 400)
+	 if (max > 2000)
 	 {
-		double fator = 400.0 / max;
+		double fator = 2000.0 / max;
 		for (int i = 1; i < 25; i++)
 		 lootfreq[i] = Math.Max(0, (int)(lootfreq[i] * fator)); // trim e clipe
 	 }
@@ -3323,137 +3705,7 @@ lbwp.Items.Clear();
 	 find_center(); // chama o método de encontrar o centro do minimapa
 	}
 
-	// --------------------------------------------
-	// MÉTODO SimulaOtimos
-	// --------------------------------------------
-	// Simulação de força bruta para encontrar peso_otimo e exp_otimo ideais
-	// Usa seu vetor lootfreq atual como base para a simulação
-	private void SimulaOtimos()
-	{
-	 int total_tests = int.Parse(tb_loot_tries.Text);  
-	 double melhor_peso = 0.0;
-	 double melhor_exp = 0.0;
-	 double melhor_media = double.MaxValue;
-
-	 double peso_min = 1.0;
-	 double peso_max = 20.0;
-	 double exp_min = 0.5;
-	 double exp_max = 2.0;
-
-	 int n = (int)Math.Sqrt(total_tests);
-
-	 for (int i = 0; i < n; i++)
-	 {
-		double peso_teste = peso_min + (peso_max - peso_min) * i / (n - 1);
-
-		for (int j = 0; j < n; j++)
-		{
-		 double exp_teste = exp_min + (exp_max - exp_min) * j / (n - 1);
-
-		 double media = simula_media_tentativas(peso_teste, exp_teste);
-
-		 if (media < melhor_media)
-		 {
-			melhor_media = media;
-			melhor_peso = peso_teste;
-			melhor_exp = exp_teste;
-		 }
-		}
-
-		if (i % 10 == 0) wait(1);
-		if (i % (n / 10) == 0)
-		 loga($"Progresso da simulação: {(100 * i) / n}%");
-
-	 }
-
-	 peso_otimo = melhor_peso;
-	 exp_otimo = melhor_exp;
-
-	 loga($"Melhor peso_otimo = {melhor_peso:F3}, melhor exp_otimo = {melhor_exp:F3}, média tentativas = {melhor_media:F3}");
-	}
-
-	// --------------------------------------------
-	// MÉTODO simula_media_tentativas (placeholder)
-	// --------------------------------------------
-	// Implementar a lógica da simulação aqui conforme seu modelo
-	private double simula_media_tentativas(double peso_teste, double exp_teste)
-	{
-	 int simulacoes = 10000;  // número de rodadas simuladas para média
-	 Random rnd = new Random();
-
-	 // Calcula a soma das frequências ignorando posição 0 (central)
-	 int soma_freq = lootfreq.Skip(1).Take(24).Sum();
-
-	 // Gera vetor de probabilidades reais normalizadas para as 24 posições (1 a 24)
-	 double[] probs = new double[24];
-	 if (soma_freq == 0)
-	 {
-		for (int i = 0; i < 24; i++)
-		 probs[i] = 1.0 / 24.0;
-	 }
-	 else
-	 {
-		for (int i = 0; i < 24; i++)
-		 probs[i] = (double)lootfreq[i + 1] / soma_freq;
-	 }
-
-	 double soma_tentativas = 0;
-
-	 for (int rodada = 0; rodada < simulacoes; rodada++)
-	 {
-		// sorteia a posição correta de acordo com probs
-		double val = rnd.NextDouble();
-		double acumulado = 0;
-		int pos_certa = 0;
-		for (int i = 0; i < 24; i++)
-		{
-		 acumulado += probs[i];
-		 if (val <= acumulado)
-		 {
-			pos_certa = i;
-			break;
-		 }
-		}
-
-		// calcula pesos adaptativos para todas as posições (1 a 24)
-		double[] pesos = new double[24];
-		double soma_pesos = 0;
-		for (int i = 0; i < 24; i++)
-		{
-		 double chance = probs[i];
-		 double peso_real = 1 + Math.Pow(chance, exp_teste) * peso_teste;
-		 // aplica randomização no peso para simular o sorteio ponderado
-		 pesos[i] = peso_real * (rnd.NextDouble() * 0.9 + 0.1); // entre 10% e 100% do peso_real
-		 soma_pesos += pesos[i];
-		}
-
-		// simula o sorteio ponderado até encontrar a posição correta
-		// para isso, ordena as posições por peso decrescente, e tenta uma a uma
-		// ou simula o sorteio múltiplas vezes até achar pos_certa
-
-		// Optamos por ordenar e contar a posição do pos_certa na ordem decrescente
-		int tentativas = 1;
-		int[] indices = Enumerable.Range(0, 24).ToArray();
-
-		// ordena índices por peso decrescente
-		Array.Sort(indices, (a, b) => pesos[b].CompareTo(pesos[a]));
-
-		// conta quantas tentativas até achar pos_certa
-		foreach (int idx in indices)
-		{
-		 if (idx == pos_certa)
-			break;
-		 tentativas++;
-		}
-
-		soma_tentativas += tentativas;
-	 }
-
-	 return soma_tentativas / simulacoes;
-	}
-
-
-
+	
 
 
 	// --------------------------------
@@ -4334,44 +4586,20 @@ else
 
 	}
 	// ----------------------------------------
-	// BOTAO DEBUG - DUMP COMPLETO DO CURSOR
-	// Mostra o checksum + nome conhecido do cursor (se aplicável)
+	// BOTAO DEBUG - DUMP COMPLETO DO PALATABLE
+	// Mostra todos os campos e estados do objeto pala
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 on = true;
-
-	 while (on)
-	 {
-		wait(1000); // coleta a cada segundo
-
-		IntPtr h = getcursor();       // pega o cursor atual
-		IntPtr bmp = rendercursor(h); // desenha em memória
-		byte[] img = getpixels(bmp);  // extrai pixels da imagem
-		byte sig = checksum(img);     // gera assinatura (0–255)
-		string nome;
-		switch (sig)
-		{
-		 case 0: nome = "INVISÍVEL"; break;
-		 case 64: nome = "LOOT"; break;
-		 case 63: nome = "SKINNING"; break;
-		 case 44: nome = "SKINNING (OOR)"; break;
-		 case 79: nome = "MAOZINHA"; break;
-		 case 33: nome = "ESPADA"; break;
-		 case 201: nome = "ESPADA (OOR)"; break;
-		 case 50: nome = "TRAIN / BOOK"; break;
-		 case 62: nome = "TRAIN / BOOK (OOR)"; break;
-		 case 254: nome = "HERBALISM (OOR)"; break;
-		 case 209: nome = "BALLOON"; break;
-		 case 239: nome = "BALLOON (OOR)"; break;
-		 case 233: nome = "TRADE"; break;
-		 case 206: nome = "TRADE (OOR)"; break;
-		 default: nome = "DESCONHECIDO"; break;
-		}
-
-		loga($"Cursor ID: {sig}  →  {nome}"); // mostra ID + descrição
-	 }
+	 checkme();
+	 // -------------------------------------------------
+	 // LOGA STATUS DE STEALTH DO ROGUE
+	 // -------------------------------------------------
+	 string s1 = rog.stealth_up ? "pode stealth" : "não pode stealth"; // se pode ativar
+	 string s2 = rog.stealth ? "em stealth" : "fora de stealth";       // se está stealth
+	 loga("Status Stealth: " + s1 + " / " + s2); // loga mensagem combinada
 	}
+
 
 	// ----------------------------------------
 	// MÉTODO rendercursor
@@ -4407,6 +4635,7 @@ else
  + "retri=" + pala.retribution;
 
 	 loga(aura_log); // ou tb_debug1.Text = aura_log;
+	 loga(me.classe.ToString()); // mostra a classe do player
 	}
 
 	// ----------------------------------------
@@ -4426,6 +4655,16 @@ else
 	 File.WriteAllLines("loot.txt", linhas);                          // salva imediatamente
 
 	 loga("Loot resetado. Arquivo loot.txt zerado.");
+	}
+
+	private void button20_Click(object sender, EventArgs e)
+	{
+	 debugcura("FLASHHEAL", "HLIGHT nao curou suficiente, level >= 20, HP < 90"); // registra no debug
+	}
+
+	private void label25_Click(object sender, EventArgs e)
+	{
+
 	}
 
 
