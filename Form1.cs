@@ -2023,7 +2023,12 @@ void andaplanta(loc alvo)
 				 if (me.melee || me.mobs > 0)  // se entrou em combate, sai do loop
 					break;
 				}
-				if (me.combat) return;
+				if (me.combat)
+				{
+				 return; // sai do pull se nao conseguiu engajar
+				}
+				else aperta(CLEARTGT);
+				
 			 }
 			}
 
