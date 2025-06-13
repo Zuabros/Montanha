@@ -32,6 +32,7 @@ namespace Discord
 	public bool wrongway;     // está de costas para o alvo
 	public bool outofrange;   // alvo fora de alcance (melee ou spell)
 	public bool swim;         // está nadando
+	public bool armabroken;   // MH ou OH quebrada (bit 1 no 7G)
 
 	// ----------- específicos de mim (me) -----------
 	public int freeslots;        // slots livres na bag
@@ -78,18 +79,15 @@ namespace Discord
 	public bool throw_up;          // pode tacar throw knife (range, cooldown, etc.)
 	public bool stealth_up;          // pode ficar stealth? 
 	public bool stealth;          // esta stealth?
+	public bool evasion_up;     // cooldown restante de evasion
+	public bool SAD_up;            // pode usar slice and dice? (range, cooldown, etc.)
+	public bool has_SAD;            // tem SAD
+	public bool expose_armor_up; // pode usar expose armor? (range, cooldown, energy, etc.)
+	public bool has_expose_armor; // target tem expose armor debuff?
 
 
 
-
-	// A IMPLEMENTAR 
-		public bool ss_range;      // pode usar sinister strike no target?
-	public int ss_cd;          // cooldown restante de sinister strike
-
-	public int snd;            // duração do buff slice and dice (em s)
 	public int rupture;        // duração do debuff rupture no alvo (em s)
-
-	public int evasion_cd;     // cooldown restante de evasion
 	public int vanish_cd;      // cooldown restante de vanish
 	public int sprint_cd;      // cooldown restante de sprint
 

@@ -133,6 +133,9 @@ namespace Discord
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
 	 this.cb_SOR = new System.Windows.Forms.CheckBox();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
+	 this.cb_pickpocket = new System.Windows.Forms.CheckBox();
+	 this.tb_rogue_eat_at = new System.Windows.Forms.TextBox();
+	 this.label25 = new System.Windows.Forms.Label();
 	 this.tb_evis_cp = new System.Windows.Forms.TextBox();
 	 this.label24 = new System.Windows.Forms.Label();
 	 this.label23 = new System.Windows.Forms.Label();
@@ -216,8 +219,10 @@ namespace Discord
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button19 = new System.Windows.Forms.Button();
-	 this.tb_rogue_eat_at = new System.Windows.Forms.TextBox();
-	 this.label25 = new System.Windows.Forms.Label();
+	 this.cb_stealth_pull = new System.Windows.Forms.CheckBox();
+	 this.tb_evasion = new System.Windows.Forms.TextBox();
+	 this.label26 = new System.Windows.Forms.Label();
+	 this.cb_noelite = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -686,6 +691,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_noelite);
 	 this.tabPage2.Controls.Add(this.cb_scan_elite);
 	 this.tabPage2.Controls.Add(this.cb_elite_patrol);
 	 this.tabPage2.Controls.Add(this.cb_rare_patrol);
@@ -876,8 +882,8 @@ namespace Discord
 	 // 
 	 // tab_buffs
 	 // 
-	 this.tab_buffs.Controls.Add(this.Paladin);
 	 this.tab_buffs.Controls.Add(this.tabPage4);
+	 this.tab_buffs.Controls.Add(this.Paladin);
 	 this.tab_buffs.Location = new System.Drawing.Point(314, 52);
 	 this.tab_buffs.Name = "tab_buffs";
 	 this.tab_buffs.SelectedIndex = 0;
@@ -1352,6 +1358,10 @@ namespace Discord
 	 // tabPage4
 	 // 
 	 this.tabPage4.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage4.Controls.Add(this.tb_evasion);
+	 this.tabPage4.Controls.Add(this.label26);
+	 this.tabPage4.Controls.Add(this.cb_stealth_pull);
+	 this.tabPage4.Controls.Add(this.cb_pickpocket);
 	 this.tabPage4.Controls.Add(this.tb_rogue_eat_at);
 	 this.tabPage4.Controls.Add(this.label25);
 	 this.tabPage4.Controls.Add(this.tb_evis_cp);
@@ -1364,6 +1374,36 @@ namespace Discord
 	 this.tabPage4.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage4.TabIndex = 1;
 	 this.tabPage4.Text = "Rogue";
+	 // 
+	 // cb_pickpocket
+	 // 
+	 this.cb_pickpocket.AutoSize = true;
+	 this.cb_pickpocket.Checked = true;
+	 this.cb_pickpocket.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_pickpocket.Location = new System.Drawing.Point(223, 11);
+	 this.cb_pickpocket.Name = "cb_pickpocket";
+	 this.cb_pickpocket.Size = new System.Drawing.Size(80, 17);
+	 this.cb_pickpocket.TabIndex = 6;
+	 this.cb_pickpocket.Text = "Pickpocket";
+	 this.cb_pickpocket.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_rogue_eat_at
+	 // 
+	 this.tb_rogue_eat_at.Location = new System.Drawing.Point(76, 55);
+	 this.tb_rogue_eat_at.Name = "tb_rogue_eat_at";
+	 this.tb_rogue_eat_at.Size = new System.Drawing.Size(26, 20);
+	 this.tb_rogue_eat_at.TabIndex = 5;
+	 this.tb_rogue_eat_at.Text = "50";
+	 // 
+	 // label25
+	 // 
+	 this.label25.AutoSize = true;
+	 this.label25.Location = new System.Drawing.Point(35, 57);
+	 this.label25.Name = "label25";
+	 this.label25.Size = new System.Drawing.Size(35, 13);
+	 this.label25.TabIndex = 4;
+	 this.label25.Text = "Eat at";
+	 this.label25.Click += new System.EventHandler(this.label25_Click);
 	 // 
 	 // tb_evis_cp
 	 // 
@@ -2156,23 +2196,46 @@ namespace Discord
 	 this.button19.UseVisualStyleBackColor = true;
 	 this.button19.Click += new System.EventHandler(this.button19_Click);
 	 // 
-	 // tb_rogue_eat_at
+	 // cb_stealth_pull
 	 // 
-	 this.tb_rogue_eat_at.Location = new System.Drawing.Point(76, 55);
-	 this.tb_rogue_eat_at.Name = "tb_rogue_eat_at";
-	 this.tb_rogue_eat_at.Size = new System.Drawing.Size(26, 20);
-	 this.tb_rogue_eat_at.TabIndex = 5;
-	 this.tb_rogue_eat_at.Text = "50";
+	 this.cb_stealth_pull.AutoSize = true;
+	 this.cb_stealth_pull.Checked = true;
+	 this.cb_stealth_pull.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_stealth_pull.Location = new System.Drawing.Point(223, 29);
+	 this.cb_stealth_pull.Name = "cb_stealth_pull";
+	 this.cb_stealth_pull.Size = new System.Drawing.Size(79, 17);
+	 this.cb_stealth_pull.TabIndex = 7;
+	 this.cb_stealth_pull.Text = "Stealth Pull";
+	 this.cb_stealth_pull.UseVisualStyleBackColor = true;
 	 // 
-	 // label25
+	 // tb_evasion
 	 // 
-	 this.label25.AutoSize = true;
-	 this.label25.Location = new System.Drawing.Point(35, 57);
-	 this.label25.Name = "label25";
-	 this.label25.Size = new System.Drawing.Size(35, 13);
-	 this.label25.TabIndex = 4;
-	 this.label25.Text = "Eat at";
-	 this.label25.Click += new System.EventHandler(this.label25_Click);
+	 this.tb_evasion.Location = new System.Drawing.Point(76, 74);
+	 this.tb_evasion.Name = "tb_evasion";
+	 this.tb_evasion.Size = new System.Drawing.Size(26, 20);
+	 this.tb_evasion.TabIndex = 9;
+	 this.tb_evasion.Text = "60";
+	 // 
+	 // label26
+	 // 
+	 this.label26.AutoSize = true;
+	 this.label26.Location = new System.Drawing.Point(19, 77);
+	 this.label26.Name = "label26";
+	 this.label26.Size = new System.Drawing.Size(57, 13);
+	 this.label26.TabIndex = 8;
+	 this.label26.Text = "Evasion at";
+	 // 
+	 // cb_noelite
+	 // 
+	 this.cb_noelite.AutoSize = true;
+	 this.cb_noelite.Checked = true;
+	 this.cb_noelite.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_noelite.Location = new System.Drawing.Point(432, 41);
+	 this.cb_noelite.Name = "cb_noelite";
+	 this.cb_noelite.Size = new System.Drawing.Size(63, 17);
+	 this.cb_noelite.TabIndex = 72;
+	 this.cb_noelite.Text = "No Elite";
+	 this.cb_noelite.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -2424,6 +2487,11 @@ namespace Discord
 	private CheckBox cb_scan_elite;
 	private TextBox tb_rogue_eat_at;
 	private Label label25;
+	private CheckBox cb_pickpocket;
+	private CheckBox cb_stealth_pull;
+	private TextBox tb_evasion;
+	private Label label26;
+	private CheckBox cb_noelite;
  }
 }
 

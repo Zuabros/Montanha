@@ -174,7 +174,8 @@ namespace Discord
 	public const int DKEY = 0x44; // tecla D 
 	public const int SPACEBAR = 0x20; // espaço
 	public const int ENTER = 0x0D; // tecla ENTER 
-	public const int BARRA = 0x6E; // tecla BARRA do NumPad
+	public const int BARRA = 0x6E; // NumPad Slash
+	public const int IGUAL = 0xBB; // tecla "=" padrão (igual normal, perto do Backspace)
 
 	// --------------------------------------------
 	// TECLAS NUMÉRICAS SUPERIORES
@@ -287,11 +288,14 @@ namespace Discord
 	public const int THROW = N3; // Throwing knife
 	public const int STEALTH = N4; // Stealth
 	public const int PICKPOCKET = N5; // Pickpocket
+	public const int EVASION = N6; // Evasion
+	public const int SAD = N7; // Evasion
+	public const int EXPOSE_ARMOR = N0; // EXPOSE ARMOR
+
 	public const int GOUGE = F6; // Gouge
 	public const int KICK = F7; // Kick
 	public const int VANISH = F8; // Vanish
 	public const int SPRINT = F9; // Sprint
-	public const int EVASION = F10; // Evasion
 	public const int KS = 1; // Kidney Shot
 	public const int CS = 1; // Cheap Shot
 
@@ -412,7 +416,8 @@ namespace Discord
 	 tab_nav.SelectedIndex = 0; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
 	 lb_log.Clear(); // limpa todos os itens da ListBox log
 	 carrega_loot(); // carrega frequencia de pontos de loot 
-	 //executa_simulacao();
+	 cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
+																 
 
 
 	 // ARRUMA INTERFACE---------------
@@ -463,9 +468,10 @@ namespace Discord
 	 //      64 = healing potion pronta (no inventário e cooldown zerado)
 	 //      32 = debuff Dazed
 	 //       8 = em melee range
-	 //    0–7  = número de mobs batendo (cap 7)
-	 // G: HP atual do player (0–255)
-	 // B: (vazio)
+	 //    1-2-4= número de mobs batendo (cap 7)
+	 // G: 0 a 127 HP atual do player (0–127)
+	 //    128 = main hand ou offhand quebrada
+	 // B: vazio
 
 
 	 // ----------------------------------------
@@ -618,8 +624,12 @@ namespace Discord
 	 //     bit 2 = soma 4
 	 //     bit 3 = throw_up (faca pronta para uso e em range)
 	 //     bit 4 = stealth_up (é possível ativar Stealth agora)
+	 //     bit 5 (32) evasion up
+	 //     bit 6 (64) slice and dice up
+	 // 	  bit 7 (128) expose armor pronto + energy 
 	 // G: bit 0 = has_stealth (está com aura de Stealth ativa)
-	 // B: (vazio)
+	 //		 bit 1 = has_SAD (slice and dice ativo)
+	 // B: 1 = target tem expose armor debuff 
 
 	 // ----------------------------------------
 	 // PIXEL 11 a 15 (Rogue) – Vazios por enquanto
@@ -743,17 +753,31 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 readpixels(pixels);
 
 	 // ----------------------------------------
-	 // PIXEL 0 – HP, Autoattack, Potion, Dazed, Mobcount, MELEE RANGE (NOVO)
+	 // PIXEL 0 – STATUS DO PLAYER E TARGET
+	 // ----------------------------------------
+	 // R: Bitflags combinadas do player
+	 //     128 = autoattack ativo
+	 //      64 = healing potion pronta
+	 //      32 = debuff Dazed
+	 //       8 = em melee range
+	 //    1-2-4 = número de mobs batendo (0–7)
+	 // G: 0 a 127 = HP atual (0–100%)
+	 //    128     = arma principal ou offhand quebrada
+	 // B: (vazio)
 	 // ----------------------------------------
 
-	 // converte G em % de vida do player
-	 int v_hp = (pixels[0].g * 100) / 255;
+	 // separa flag de arma quebrada (bit 7 do G)
+	 me.armabroken = (pixels[0].g & 128) != 0;
+
+	 // extrai bits 0–6 (valor do HP) e converte em % (0–100)
+	 int raw_hp = pixels[0].g & 127;
+	 int v_hp = (raw_hp * 100) / 127; // usa 127 porque é o valor máximo real
 	 e.hp = v_hp;
 
 	 // morreu: se HP chegou a 0
 	 e.morreu = (e.hp == 0);
 
-	 // player está com debuff Dazed = bit 32
+	 // debuff Dazed = bit 32
 	 me.dazed = (pixels[0].r & 32) != 0;
 
 	 // autoattack = bit 128
@@ -762,27 +786,26 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 // healing potion pronta = bit 64
 	 e.hp_potion_rdy = (pixels[0].r & 64) != 0;
 
-	 // NOVO: Em melee range = bit 8
-	 me.melee = (pixels[0].r & 8) != 0; // Movido do antigo Pixel 9B1
+	 // melee range = bit 8
+	 me.melee = (pixels[0].r & 8) != 0;
 
 	 // número de mobs batendo = bits 0 a 2
-	 int mobs = pixels[0].r & 7; // extrai os 3 bits menos significativos (0–7)
-	 if (me.combat && mobs != me.mobs) // se mudou o número de mobs
+	 int mobs = pixels[0].r & 7;
+	 if (me.combat && mobs != me.mobs)
 	 {
-		if (mobs > me.mobs && me.combat && me.hp < 90 && mobs > 1)
+		if (mobs > me.mobs && me.hp < 90 && mobs > 1)
 		{
 		 loga("Chegaram novos convidados na festa!");
 		 loga("Dando backpedal para evitar dar as costas.");
-		 casta(SKEY); // backpedal por 1,5 segundos
+		 aperta(SKEY, 1200); // backpedal 1.2s
 		}
-		loga("Mobs: " + mobs); // loga a mudança
+		loga("Mobs: " + mobs);
 	 }
-	 me.mobs = mobs; // atualiza contagem de mobs batendo
+	 me.mobs = mobs;
 
-	 // debug opcional: mostra HP no textbox
+	 // debug visual
 	 tb_hp.Text = v_hp.ToString();
-	 // Debug para melee range
-	 
+
 
 
 	 // ------------------------------------------
@@ -956,9 +979,9 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		bool neutral = pixels[9].r > 200 && pixels[9].g > 200; // amarelo
 		bool friendly = pixels[9].r < 50 && pixels[9].g > 200; // verde
 
-		if (hostile) tar.mood = -1;
+		if (hostile) tar.mood = -1; // hostil 
 		else if (friendly) tar.mood = 1;
-		else tar.mood = 0;
+		else tar.mood = 0; // neutral
 
 		tb_mood.Text = (tar.mood == -1) ? "Hostile" :
 																 (tar.mood == 1) ? "Friendly" : "Neutral";
@@ -973,25 +996,39 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 if (e.classe == ROGUE) // se for Rogue, lê o Pixel 10
 	 {
 		// -------------------------------------
-		// PIXEL 10 - COMBO POINTS + THROW + STEALTH
+		// PIXEL 10 – COMBO POINTS + CDs + STEALTH
 		// R: bits 0–2 = combo points (0 a 7)
-		// R: bit 3 (valor 8)  = throw_up
-		// R: bit 4 (valor 16) = stealth_up (pode usar Stealth)
-		// G: bit 0 (valor 1)  = stealth (está stealth)
+		// R: bit 3 (valor 8)   = throw_up
+		// R: bit 4 (valor 16)  = stealth_up (pode usar Stealth)
+		// R: bit 5 (valor 32)  = evasion_up (pode usar Evasion)
+		// R: bit 6 (valor 64)  = SAD_up (Slice and Dice pode ser usado)
+		// R: bit 7 (valor 128) = expose_armor_up (pode usar Expose Armor)
+		// G: bit 0 (valor 1)   = stealth (está em Stealth)
+		// G: bit 1 (valor 2)   = has_SAD (aura Slice and Dice ativa)
+		// B: bit 0 (valor 1)   = target com debuff Expose Armor
 		// -------------------------------------
-		int r10 = pixels[10].r;              // lê canal R do pixel 10
-		int g10 = pixels[10].g;              // lê canal G do pixel 10
+		int r10 = pixels[10].r;
+		int g10 = pixels[10].g;
+		int b10 = pixels[10].b;
 
-		rog.combo = r10 & 7;                 // extrai bits 0–2 (valor de 0 a 7)
-		rog.throw_up = (r10 & 8) != 0;       // bit 3 = flag de throw pronta
-		rog.stealth_up = (r10 & 16) != 0;    // bit 4 = pode usar Stealth
-		rog.stealth = (g10 & 1) != 0;        // bit 0 de G = está stealth
+		rog.combo = r10 & 7;           // bits 0–2 = combo points
+		rog.throw_up = (r10 & 8) != 0;    // bit 3 = throw_up
+		rog.stealth_up = (r10 & 16) != 0;   // bit 4 = stealth_up
+		rog.evasion_up = (r10 & 32) != 0;   // bit 5 = evasion_up
+		rog.SAD_up = (r10 & 64) != 0;   // bit 6 = Slice and Dice pode ser usado
+		rog.expose_armor_up = (r10 & 128) != 0;  // bit 7 = Expose Armor pode ser usado
 
-		tb_combos.Text = rog.combo.ToString(); // exibe combo points no textbox
+		rog.stealth = (g10 & 1) != 0;    // bit 0 = aura Stealth ativa
+		rog.has_SAD = (g10 & 2) != 0;    // bit 1 = aura Slice and Dice ativa
 
-		rog.evis_up = me.mana > 35 && rog.combo > 0 && me.melee;  // Eviscerate disponível
-		rog.ss_up = me.mana > 45 && me.melee;                     // Sinister Strike disponível
+		rog.has_expose_armor = (b10 & 1) != 0;    // bit 0 = target com debuff Expose Armor
+
+		tb_combos.Text = rog.combo.ToString(); // exibe combo points
+
+		rog.evis_up = me.mana > 35 && rog.combo > 0 && me.melee; // Eviscerate disponível
+		rog.ss_up = me.mana > 45 && me.melee;                  // Sinister Strike disponível
 	 }
+
 
 	 // ====================================================================
 	 // PIXELS ESPECÍFICOS DE PALADINO (10 a 15)
@@ -1220,6 +1257,9 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 	// --------------------------------
 	public void moveto(loc destino)
 	{
+	 // --------------------------------
+	 // ROTINAS GERAIS PRÉ-MOVIMENTAÇÃO
+	 // --------------------------------
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // tem algum seal ativo
 
 	 Func<int, bool> mana = (p) => me.mana > p;            // verifica se tem mana acima de p
@@ -1229,14 +1269,27 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 	 if (cb_herbalism.Checked) atualizamapa(me.pos);
 	 int temp = 0;                                         // contador de ciclos
 	 loc oldloc = me.pos;                                  // guarda posição inicial para unstuck
-
 	 Stopwatch timeout = new Stopwatch();                  // cronômetro para evitar travamento
 	 timeout.Start();                                      // inicia contagem
-	 if (cb_anda.Checked && Math.Abs(delta(me.pos, destino)) < 60)            // VIRA POUCO E MARCADO ANDA 
+
+	 //-----------------------------------------
+	 // UNSTUCK GERAL:
+	 //-----------------------------------------
+	 // Mais de 5 minutos sem matar nada 
+	 if (Environment.TickCount - last_kill_time > 300000) // 5 min sem kill
+	 {
+		loga("Inatividade de 5 minutos. Usando Hearthstone.");
+		HS();
+	 }
+	 // VIRA POUCO E MARCADO ANDA 
+	 if (cb_anda.Checked && Math.Abs(delta(me.pos, destino)) < 60)            
 		press(WKEY); // ANDA 
 	 else
 		solta(WKEY); // PARA DE ANDAR 
 	 long last = 0; // marca o tempo do último evento em milissegundos
+	 ///------------------------------------------------------
+	 //                 COMEÇA A ANDAR  
+	 //--------------------------------------------------------
 	 do
 	 {
 		// --------------------------------
@@ -1347,24 +1400,11 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 puxa();
 
 		// -----------------------------
-		// MORTE
-		// -----------------------------
-		//if (me.morreu)
-		if (me.hp == 0) // morri
-		{
-		 aperta(WKEY, 2); // solta W
-		 aperta(F5);      // botão de reset ou relog
-		 if (cb_log.Checked) loga("Morreu! Bot parando.");
-		 on = false;
-		 return;
-		}
-
-		// -----------------------------
 		// COMBATE
 		// -----------------------------
 		if (me.combat)
 		{
-		 aperta(WKEY, 2); // para de andar
+		 solta(ANDA); // para de andar
 		 if (cb_log.Checked) loga("Entrou em combate!");
 		 combatloop(); // entra na rotina de combate
 
@@ -1452,19 +1492,25 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 //-----FIM LOOT-----------------------------------
 
 		 // -----------------------------------
-		 // HEARTHSTONE SE BAGS FULL
+		 // HEARTHSTONE SE BAGS FULL / ARMA QUEBRADA 
 		 // -----------------------------------
 		 else if (cb_hearth_bagfull.Checked) // SEM ESPAÇO NA BAG - HEARTHSTONE ?
 		 {
 			HS(); // usa a pedra de lar se não tiver espaço na bag
 		 }
+		 else if (me.armabroken) // ARMA QUEBRADA – MAIN OU OFFHAND
+		 {
+			loga("Arma quebrada detectada. Usando Hearthstone.");
+			HS(); // retorna pra reparar
+		 }
 
 		 //if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
-		 return; // sai do moveto após combate. 
-		}
+		 return; // sai do moveto após combate.
+
+		} // FIM DA ROTINA PÓS COMBATE (LOOT / SKIN)
 
 		//----------------------------------
-		// RECUPERAÇAO POS COMBATE - PALADINO
+		// RECUPERAÇAO E PREPARO PRÉ COMBATE - PALADINO
 		//----------------------------------
 		if (me.classe == PALADIN)
 
@@ -1481,24 +1527,25 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 
 		}
 		//----------------------------------
-		// RECUPERAÇAO POS COMBATE - ROGUE
+		// RECUPERAÇAO E PREPARO PRÉ COMBATE - ROGUE
 		//----------------------------------
 		else if (me.classe == ROGUE)
 		{
 		 // espera recuperar energia
-		 if (me.hp < atoi(tb_rogue_eat_at))
+		 if (me.hp < 80)
 		 {
-
+			para(); // para de andar se estiver andando
 			loga($"Esperando recuperação de HP: {me.hp}");
 			aperta(F12); // COMIDA 
-			while (me.hp < 80)
+			while (me.hp < atoi(tb_rogue_eat_at)  && !me.combat)
 			{
-			 espera(1);
+			 wait(1000);
+			 checkme();
 			}
 		 }
 		}
 		//--------------------------------------
-
+		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
 	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
 
@@ -1513,10 +1560,11 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 	//--------------------------------------------
 	void HS()
 	{
+	 para(); // para de andar se estiver andando
 	 aperta(HEARTHSTONE); // Casta hearth 
 	 int segundos = 0; // timer para hearthstone 
 	 loc origin = me.pos; // de onde eu saí 
-	 loga("Bags full. Usando Hearthstone. ");
+	 loga("Usando Hearthstone. ");
 	 while (!me.combat && segundos < 20) // espera hearth 
 	 {
 		wait(1000);
@@ -1741,6 +1789,8 @@ void andaplanta(loc alvo)
 	 {
 		int seg = atoi(tb_wait_patrol); // segundos a esperar
 		loga($"Detectado patrulha do tipo {tipo}. Esperando {seg} segundos.");
+		if (me.classe == ROGUE && !rog.stealth)
+		 aperta(STEALTH); // entra em stealth se for rogue e não estiver stealth
 		espera(seg); // aguarda o tempo configurado
 	 }
 	 else
@@ -1757,49 +1807,87 @@ void andaplanta(loc alvo)
 	{
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum Seal
 	 Func<int, bool> mana = (p) => me.mana > p;
-	 if (!me.hastarget) aperta(TAB);                                                               // seleciona inimigo próximo
+
 	 checkme();                                                                 // atualiza status depois do tab
 
 	 // NAO DEIXA AFOGAR 
 	 //------------------------------
 	 nao_afoga(); // nada para cima se estiver afogando
-
 	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 
 
 	 // --------------------------------------------
-	 // VERIFICAÇÃO DO TARGET - bom ou ruim
+	 // VERIFICAÇÃO DO TARGET - ESCOLHA ENTRE DOIS
 	 // --------------------------------------------
-	 bool good_target = true;                                                  // assume que o mob é válido
 
-	 if (!me.hastarget)                                                        // sem alvo
-		good_target = false;
-	 else if (cb_pacifist.Checked)       // pacifista e não quer atacar
-		good_target = false;
-	 else if (tar.hp == 0)                                                     // mob já morto
-		good_target = false;
-	 else if (isgray(me.level, tar.level) && !cb_killgray.Checked)            // mob cinza e não queremos cinza
-		good_target = false;
-	 else if (tar.mood == 1)                                                  // mob amigável
-		good_target = false;
-	 else if (tar.combat)                                     // mob já em combate, e player não está
-		good_target = false;
-	 else if (tar.hp < 100)                                     // ja tem alguem batendo 
-		good_target = false;
-	 else if (tar.morreu)                                                     // mob já morreu
-		good_target = false;
-	 else if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text))       // mob acima do limite configurado
-		good_target = false;
-	 else if ((tar.type == 50 && cb_nohumanoid.Checked) ||                   // humanoide e checkbox ativa
-						(tar.type == 230 && cb_nodragonkin.Checked))                   // dragonkin e checkbox ativa
-		good_target = false;
-
-	 if (!good_target && !me.combat)                                                         // se não é um bom alvo
+	 bool bomtarget()
 	 {
-		aperta(CLEARTGT);                                                     // limpa o target
-		return;                                                               // aborta o pull
+		// avalia se o target atual é considerado bom
+		if (!me.hastarget) return false;
+		if (cb_pacifist.Checked) return false;
+		if (tar.hp == 0 || tar.morreu) return false;
+		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
+		if (tar.mood == 1) return false; // amarelo = não hostil
+		if (tar.combat) return false;
+		if (tar.ieslite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
+		if (tar.hp < 100) return false; // já apanhou
+		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
+		if ((tar.type == 50 && cb_nohumanoid.Checked) || (tar.type == 230 && cb_nodragonkin.Checked)) return false;
+		
+		return true;
 	 }
-	 
+
+	 // pega primeiro target
+	 if (!me.hastarget) aperta(TAB,400);
+	 checkme(); // atualiza status do segundo target
+	 int lvl1 = tar.level;
+	 int mood1 = tar.mood;
+	 bool t1_ok = bomtarget();
+
+	 // pega segundo target
+	 aperta(TAB,400);
+	 checkme(); // atualiza status do segundo target
+	 int lvl2 = tar.level;
+	 int mood2 = tar.mood;
+	 bool t2_ok = bomtarget();
+
+	 if (!t1_ok && !t2_ok)
+	 {
+		loga("Nenhum target válido encontrado. Limpando o alvo.");
+		aperta(CLEARTGT);
+		return;
+	 }
+	 else if (t1_ok && !t2_ok)
+	 {
+		loga("Apenas o primeiro target é válido. Retornando para ele.");
+		aperta(IGUAL);
+	 }
+	 else if (!t1_ok && t2_ok)
+	 {
+		loga("Apenas o segundo target é válido. Mantendo ele.");
+	 }
+	 else // ambos válidos
+	 {
+		if (mood1 != mood2)
+		 if (mood1 == -1 && mood2 == 0)
+		 {
+			loga("Primeiro target é hostil e o segundo é neutro. Preferindo o hostil.");
+			aperta(IGUAL);
+		 }
+		 else
+			loga("Segundo target é hostil ou ambos são neutros. Mantendo o segundo.");
+		else if (mood1 == -1) // ambos hostis
+		 if (lvl1 > lvl2)
+		 {
+			loga("Ambos hostis. Primeiro tem nível mais alto. Retornando para ele.");
+			aperta(IGUAL);
+		 }
+		 else
+			loga("Ambos hostis. Segundo tem nível igual ou mais alto. Mantendo o segundo.");
+		else
+		 loga("Ambos neutros. Mantendo o segundo por padrão.");
+	 }
+
 
 	 // --------------------------------------------
 	 // CORRE ATE O MOB E ATACA (PULL)
@@ -1867,37 +1955,91 @@ void andaplanta(loc alvo)
 			aperta(AUTOATTACK);   // ativa autoattack
 			aperta(INTERACT);     // começa a andar até o mob
 			checkme(); // atualiza status
-								 // novo: se faca estiver pronta, lança e para de andar
-			if (rog.throw_up)     // chegou em range da faca
+
+			// novo: se faca estiver pronta, lança e para de andar
+			if (rog.throw_up) // chegou em range da faca
 			{
+			 // ---------------------------------------------
+			 // PICKPOCKET / PULL STEALTH AO INVÉS DE FACA 
+			 // ---------------------------------------------
+			 if ((tar.type == HUMANOID && cb_pickpocket.Checked) || (cb_stealth_pull.Checked && rog.stealth_up))
+			 {
+				loga("Humanoide – tentando Pull em Stealth com Pickpocket.");
+				aperta(STEALTH); // entra em stealth
+				int t0 = Environment.TickCount;
+				int lastInteract = Environment.TickCount;
+
+				while (true) // loop com timeout real
+				{
+				 if (Environment.TickCount - lastInteract >= 500)
+				 {
+					aperta(INTERACT); // ajusta curso até o mob
+					lastInteract = Environment.TickCount;
+				 }
+
+				 if (me.melee && cb_pickpocket.Checked) aperta(PICKPOCKET); // tenta pickpocket
+				 if (me.melee) aperta(SS); // sempre tenta abrir com sinister strike
+
+				 checkme();
+
+				 if (me.combat) return; // combate iniciado
+
+				 if (tar.hp<100 || !me.hastarget || Environment.TickCount - t0 > 15000)
+				 {
+					loga("Timeout de segurança: Pull abortado.");
+					aperta(STEALTH);
+					para();
+					aperta(CLEARTGT);
+					return;
+				 }
+				}
+				
+			 }
+
+			 // ---------------------------------------------
+			 // PULL COM FACA
+			 // ---------------------------------------------
 			 loga("Parando para lançar faca.");
 			 para(); // para de andar
-			 if (!rog.throw_up)
+
+			 if (!rog.throw_up) // perdeu o range antes de lançar
 			 {
-				loga("Muito perto da faca. Voltando a andar.");
-				aperta(INTERACT); // religa movimento se perdeu range
+				loga("Muito perto da faca. Avaliando Stealth.");
+				if (rog.stealth_up && !rog.stealth)
+				{
+				 loga("Ativando Stealth após perder range da faca.");
+				 aperta(STEALTH);
+				 // espera(1);
+				}
+				aperta(INTERACT); // segue andando stealth ou normal
 			 }
 			 else
 			 {
-				casta(THROW);         // lança faca (Throw)
-				espera(3);
-				checkme(); // atualiza status
+				casta(THROW); // lança faca (Throw)
+				for (int i = 0; i < 15; i++) // 10 ciclos de 500ms = 5 segundos
+				{
+				 wait(300);      // espera 0.5s
+				 checkme();      // atualiza status
+				 if (me.melee || me.mobs > 0)  // se entrou em combate, sai do loop
+					break;
+				}
 				if (me.combat) return;
 			 }
-
 			}
-			if (rog.ss_up)        // se estiver em range de SS, usa
-			 casta(SS);
 
-			//wait(100);            // aguarda um pouco
-			checkme();            // atualiza status
+			// ---------------------------------------------
+			// PULL COM SINISTER STRIKE (range direto)
+			// ---------------------------------------------
+			if (rog.ss_up) casta(SS);
+
+			checkme();
 			if (me.combat) return;
 
-			if (ticker++ % 16 == 0)
-			 aperta(PULA);      // pulo humano a cada 2s
-			aperta(INTERACT); // anda até o mob11
+			if (ticker++ % 16 == 0) aperta(PULA); // pulo humano a cada 2s
+			aperta(INTERACT); // continua andando até o mob
 		 }
 		 // ---------------------FIM PULL ROGUE---------------------
+
 
 
 		 checkme();
@@ -1938,7 +2080,8 @@ void andaplanta(loc alvo)
 	// --------------------------------
 	// Variáveis de controle
 	long last_purify = 0; // armazena o último uso do purify em ms
-	// --------------------------------
+	int last_kill_time = Environment.TickCount; // tempo do último combate vencido
+																							// --------------------------------
 
 	public void combatloop()
 	{
@@ -2009,7 +2152,7 @@ void andaplanta(loc alvo)
 			if (me.dazed) loga("Dazed! Backpedal para evitar mob batendo atrás."); // loga se estiver atordoado
 			else loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
 			if (!me.dazed) aperta(SKEY, 1200);     // anda pra trás mantendo o facing
-			if (me.dazed) aperta(SKEY, 1300);     // anda pra trás mantendo o facing
+			if (me.dazed) aperta(SKEY, 1200);     // anda pra trás mantendo o facing
 			aperta(AUTOATTACK);
 			
 		 }
@@ -2125,35 +2268,70 @@ void andaplanta(loc alvo)
 
 		 solta(ANDA);                                            // para de andar no final do turno
 		}
-		else if (me.classe == ROGUE) // se for rogue
+		// -----------------------------------------------
+		// ROTINA DE COMBATE ROGUE
+		// -----------------------------------------------
+		else if (me.classe == ROGUE)
 		{
 		 // ------------------------------------------
-		 // autoattack e movimentação
+		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
-		 if (tar.mood != 1 && !me.autoattack) aperta(AUTOATTACK);
-		 if (ticker % 6 == 0) aperta(PULA); // human-like
+		 if (tar.mood != 1 && !me.autoattack) aperta(AUTOATTACK); // garante autoattack se mob hostil
+		 if (ticker % 6 == 0) aperta(PULA);                        // human-like pulo eventual
 
 		 // ------------------------------------------
-		 // só age se estiver em melee
+		 // DEFESA: EVASION se vida baixa
 		 // ------------------------------------------
-		 if (!me.melee) return;
+		 if (me.hp < atoi(tb_evasion))
+		 {
+			if (rog.evasion_up) aperta(EVASION);                 // ativa Evasion se disponível e HP < limiar
+		 }
+		 if (me.hp < 35 && me.hp_potion_rdy)
+			aperta(HEALTHPOTION); // usa poção de cura se HP < 35% e poção pronta
 
 		 // ------------------------------------------
-		 // decisão de Eviscerate
+		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
-		 bool rotina = rog.combo >= atoi(tb_evis_cp);                  // ideal
-		 bool pressa = tar.hp < 40 && rog.evis_up;     // mob morrendo, qualquer combo ajuda
-		 bool pode_evis = rog.evis_up && (rotina || pressa);
+		 if (!me.melee) aperta(INTERACT);                         // tenta chegar no alvo via Interact With
 
 		 // ------------------------------------------
-		 // executa skill
+		 // COMBATE SEM COMBO POINTS
 		 // ------------------------------------------
-		 if (pode_evis)
-			casta(EVIS);
-		 else if (rog.ss_up)
-			casta(SS);
+		 if (rog.combo == 0)
+		 {
+			if (rog.ss_up) casta(SS);  // sem combo → gerar com SS
+		 }
+		 // ------------------------------------------
+		 // COMBATE COM COMBO POINTS
+		 // ------------------------------------------
+		 else
+		 {
+			bool finalizavel = tar.hp <= 25;
+			bool rotina = rog.combo >= atoi(tb_evis_cp);  // combo ideal
+			bool pode_evis = rog.evis_up && (finalizavel || rotina);
+
+			if (pode_evis)
+			{
+			 casta(EVIS);  // mob vai morrer ou combo cheio
+			}
+			else if (!rog.has_SAD && rog.SAD_up)
+			{
+			 casta(SAD);   // não tem Slice and Dice → aplica
+			}
+			else if (rog.has_SAD && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70)
+			{
+			 loga("Aplicando Expose Armor.");
+			 casta(EXPOSE_ARMOR);
+			 espera(1);
+			 checkme();
+			}
+			else if (rog.ss_up && mana(45))
+			{
+			 casta(SS);  // fallback → gerar mais combo
+			}
+		 
 		}
-
+		}
 		checkme();
 
 	 } while (me.combat); // FIM DO LOOP DE COMBATE 
@@ -2169,18 +2347,17 @@ void andaplanta(loc alvo)
 	 pala.defaura = false;     // pode voltar pra Ret Aura
 	 pala.nomana = false;      // desativa fixação de BOW
 	 //----------------------------------------------------
-
+	 // ---------------- ROTINAS PÓS COMBATE GENERICAS
+	 // ---- decay --- 
 	 int final = decay.End(me.hp);
 	 tracker.Add(final);
 	 tbavdecay.Text = tracker.Average.ToString();
 	 tbdecay.Text = final.ToString(); // opcional: mostrar o valor final após a luta
-
-
-
 	 emCombate = false;
-
-
-	}
+	 //------Timer de kills 
+	 last_kill_time = Environment.TickCount;
+	 //--------------------------------
+	 }
 	// --------------------------------
 	// MÉTODO DE ESPERA VIGILANTE
 	// --------------------------------
@@ -3497,7 +3674,7 @@ lbwp.Items.Clear();
 	// ---------------------------------------------
 	public loc scanloot()
 	{
-	 int pausa = 20; // delay padrão entre movimentos do mouse
+	 int pausa = 30; // delay padrão entre movimentos do mouse
 	 const double CHANCE_PULAR_ZERO_FREQ = 0.65; // chance de ignorar ponto com freq 0
 
 	 if (DateTime.Now >= prox_salva)
