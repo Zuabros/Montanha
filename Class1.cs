@@ -53,7 +53,8 @@ namespace Discord
 	public bool aggroed;         // tem aggro em mim
 	public bool israre;          // criatura rara (bit 64 no 7G)
 	public bool ieslite;         // criatura elite (bit 32 no 7G)
-															 
+	public bool trivial;        // criatura trivial  
+	public int id;            // ID do mob (usado para spells, etc.)
 
 	// ----------- casting -----------
 	public bool iscaster;        // é uma criatura do tipo caster (futuro)
@@ -66,7 +67,32 @@ namespace Discord
 	public bool rangedrange;     // está em alcance à distância (futuro)
  }
 
+ // --------------------------------
+ // CLASSE warriortable
+ // --------------------------------
+ public class warriortable
+ {
+	public bool rend_up;          // pode aplicar Rend?  
+	public bool hs_up;            // pode usar Heroic Strike?  
+	public bool cleave_up;        // pode usar Cleave?  
+	public bool ovp_up;           // pode usar Overpower?  
+	public bool bs_up;            // pode usar Battle Shout?  
+	public bool bloodrage_up;     // pode usar Bloodrage?  
+	public bool demo_up;          // pode usar Demoralizing Shout?  
+	public bool thun_up;          // pode usar Thunder Clap?  
+	public bool hams_up;          // pode usar Hamstring?  
+	public bool retaliate_up;     // pode usar Retaliation?  
+	public bool dwish_up;         // pode usar Death Wish?  
+	public bool charge_up;        // pode usar Charge?  
+	public bool throw_up;         // pode tacar throw knife (range, cooldown, etc.)
 
+	public bool has_rend;         // target tem Rend ativo?  
+	public bool has_thunderclap;  // target tem Thunder Clap ativo?
+
+	public bool has_cleave;       // Cleave ativado?  
+	public bool has_bs;           // Battle Shout ativo?
+	public bool hs_casting;       // Heroic strike foi ativado?  
+ }
  // --------------------------------
  // CLASSE roguetable
  // --------------------------------
@@ -84,22 +110,7 @@ namespace Discord
 	public bool has_SAD;            // tem SAD
 	public bool expose_armor_up; // pode usar expose armor? (range, cooldown, energy, etc.)
 	public bool has_expose_armor; // target tem expose armor debuff?
-
-
-
-	public int rupture;        // duração do debuff rupture no alvo (em s)
-	public int vanish_cd;      // cooldown restante de vanish
-	public int sprint_cd;      // cooldown restante de sprint
-
-	public int kick_cd;        // cooldown de kick
-	public bool kick_range;    // está em range do kick?
-	public int gouge_cd;       // cooldown de gouge
-
-	public int cs_cd;          // cooldown de cheap shot
-	public int ks_cd;          // cooldown de kidney shot
-	public int garrote_cd;     // cooldown de garrote
-	public bool garrote_range; // está em range do garrote?
- }
+	 }
  // --------------------------------
  // CLASSE PALATABLE - STATUS DO PALADINO
  // --------------------------------

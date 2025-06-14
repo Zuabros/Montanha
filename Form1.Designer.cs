@@ -74,6 +74,7 @@ namespace Discord
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.bt_onoff = new System.Windows.Forms.Button();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_noelite = new System.Windows.Forms.CheckBox();
 	 this.cb_scan_elite = new System.Windows.Forms.CheckBox();
 	 this.cb_elite_patrol = new System.Windows.Forms.CheckBox();
 	 this.cb_rare_patrol = new System.Windows.Forms.CheckBox();
@@ -91,6 +92,17 @@ namespace Discord
 	 this.lb_map_zoom = new System.Windows.Forms.Label();
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
+	 this.tabPage4 = new System.Windows.Forms.TabPage();
+	 this.tb_evasion = new System.Windows.Forms.TextBox();
+	 this.label26 = new System.Windows.Forms.Label();
+	 this.cb_stealth_pull = new System.Windows.Forms.CheckBox();
+	 this.cb_pickpocket = new System.Windows.Forms.CheckBox();
+	 this.tb_rogue_eat_at = new System.Windows.Forms.TextBox();
+	 this.label25 = new System.Windows.Forms.Label();
+	 this.tb_evis_cp = new System.Windows.Forms.TextBox();
+	 this.label24 = new System.Windows.Forms.Label();
+	 this.label23 = new System.Windows.Forms.Label();
+	 this.tb_combos = new System.Windows.Forms.TextBox();
 	 this.Paladin = new System.Windows.Forms.TabPage();
 	 this.cb_flashheal = new System.Windows.Forms.CheckBox();
 	 this.tb_purify_delay = new System.Windows.Forms.TextBox();
@@ -132,14 +144,8 @@ namespace Discord
 	 this.cb_judge = new System.Windows.Forms.CheckBox();
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
 	 this.cb_SOR = new System.Windows.Forms.CheckBox();
-	 this.tabPage4 = new System.Windows.Forms.TabPage();
-	 this.cb_pickpocket = new System.Windows.Forms.CheckBox();
-	 this.tb_rogue_eat_at = new System.Windows.Forms.TextBox();
-	 this.label25 = new System.Windows.Forms.Label();
-	 this.tb_evis_cp = new System.Windows.Forms.TextBox();
-	 this.label24 = new System.Windows.Forms.Label();
-	 this.label23 = new System.Windows.Forms.Label();
-	 this.tb_combos = new System.Windows.Forms.TextBox();
+	 this.tabPage5 = new System.Windows.Forms.TabPage();
+	 this.cb_bersek = new System.Windows.Forms.CheckBox();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
 	 this.textBox1 = new System.Windows.Forms.TextBox();
@@ -219,18 +225,24 @@ namespace Discord
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button19 = new System.Windows.Forms.Button();
-	 this.cb_stealth_pull = new System.Windows.Forms.CheckBox();
-	 this.tb_evasion = new System.Windows.Forms.TextBox();
-	 this.label26 = new System.Windows.Forms.Label();
-	 this.cb_noelite = new System.Windows.Forms.CheckBox();
+	 this.cb_war_rangepull = new System.Windows.Forms.CheckBox();
+	 this.cb_use_thunderclap = new System.Windows.Forms.CheckBox();
+	 this.tb_thunderclap_count = new System.Windows.Forms.TextBox();
+	 this.label27 = new System.Windows.Forms.Label();
+	 this.tb_heroic_strike_rage = new System.Windows.Forms.TextBox();
+	 this.cb_use_rend = new System.Windows.Forms.CheckBox();
+	 this.cb_use_bloodrage = new System.Windows.Forms.CheckBox();
+	 this.tb_bloorrage_maxmobs = new System.Windows.Forms.TextBox();
+	 this.cb_range_pull = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
 	 this.tabPage2.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_map)).BeginInit();
 	 this.tab_buffs.SuspendLayout();
-	 this.Paladin.SuspendLayout();
 	 this.tabPage4.SuspendLayout();
+	 this.Paladin.SuspendLayout();
+	 this.tabPage5.SuspendLayout();
 	 this.pan_tar.SuspendLayout();
 	 this.pan_me.SuspendLayout();
 	 this.tabPage3.SuspendLayout();
@@ -291,7 +303,6 @@ namespace Discord
 	 this.tabPage1.Controls.Add(this.button3);
 	 this.tabPage1.Controls.Add(this.button2);
 	 this.tabPage1.Controls.Add(this.lbwp);
-	 this.tabPage1.Controls.Add(this.bt_onoff);
 	 this.tabPage1.Location = new System.Drawing.Point(4, 22);
 	 this.tabPage1.Name = "tabPage1";
 	 this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -680,7 +691,7 @@ namespace Discord
 	 // 
 	 // bt_onoff
 	 // 
-	 this.bt_onoff.Location = new System.Drawing.Point(113, 208);
+	 this.bt_onoff.Location = new System.Drawing.Point(6, 455);
 	 this.bt_onoff.Name = "bt_onoff";
 	 this.bt_onoff.Size = new System.Drawing.Size(75, 23);
 	 this.bt_onoff.TabIndex = 0;
@@ -717,6 +728,18 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 440);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_noelite
+	 // 
+	 this.cb_noelite.AutoSize = true;
+	 this.cb_noelite.Checked = true;
+	 this.cb_noelite.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_noelite.Location = new System.Drawing.Point(432, 41);
+	 this.cb_noelite.Name = "cb_noelite";
+	 this.cb_noelite.Size = new System.Drawing.Size(63, 17);
+	 this.cb_noelite.TabIndex = 72;
+	 this.cb_noelite.Text = "No Elite";
+	 this.cb_noelite.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_scan_elite
 	 // 
@@ -884,11 +907,126 @@ namespace Discord
 	 // 
 	 this.tab_buffs.Controls.Add(this.tabPage4);
 	 this.tab_buffs.Controls.Add(this.Paladin);
+	 this.tab_buffs.Controls.Add(this.tabPage5);
 	 this.tab_buffs.Location = new System.Drawing.Point(314, 52);
 	 this.tab_buffs.Name = "tab_buffs";
 	 this.tab_buffs.SelectedIndex = 0;
 	 this.tab_buffs.Size = new System.Drawing.Size(359, 373);
 	 this.tab_buffs.TabIndex = 25;
+	 // 
+	 // tabPage4
+	 // 
+	 this.tabPage4.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage4.Controls.Add(this.cb_range_pull);
+	 this.tabPage4.Controls.Add(this.tb_evasion);
+	 this.tabPage4.Controls.Add(this.label26);
+	 this.tabPage4.Controls.Add(this.cb_stealth_pull);
+	 this.tabPage4.Controls.Add(this.cb_pickpocket);
+	 this.tabPage4.Controls.Add(this.tb_rogue_eat_at);
+	 this.tabPage4.Controls.Add(this.label25);
+	 this.tabPage4.Controls.Add(this.tb_evis_cp);
+	 this.tabPage4.Controls.Add(this.label24);
+	 this.tabPage4.Controls.Add(this.label23);
+	 this.tabPage4.Controls.Add(this.tb_combos);
+	 this.tabPage4.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage4.Name = "tabPage4";
+	 this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+	 this.tabPage4.Size = new System.Drawing.Size(351, 347);
+	 this.tabPage4.TabIndex = 1;
+	 this.tabPage4.Text = "Rogue";
+	 // 
+	 // tb_evasion
+	 // 
+	 this.tb_evasion.Location = new System.Drawing.Point(76, 74);
+	 this.tb_evasion.Name = "tb_evasion";
+	 this.tb_evasion.Size = new System.Drawing.Size(26, 20);
+	 this.tb_evasion.TabIndex = 9;
+	 this.tb_evasion.Text = "60";
+	 // 
+	 // label26
+	 // 
+	 this.label26.AutoSize = true;
+	 this.label26.Location = new System.Drawing.Point(19, 77);
+	 this.label26.Name = "label26";
+	 this.label26.Size = new System.Drawing.Size(57, 13);
+	 this.label26.TabIndex = 8;
+	 this.label26.Text = "Evasion at";
+	 // 
+	 // cb_stealth_pull
+	 // 
+	 this.cb_stealth_pull.AutoSize = true;
+	 this.cb_stealth_pull.Checked = true;
+	 this.cb_stealth_pull.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_stealth_pull.Location = new System.Drawing.Point(223, 29);
+	 this.cb_stealth_pull.Name = "cb_stealth_pull";
+	 this.cb_stealth_pull.Size = new System.Drawing.Size(79, 17);
+	 this.cb_stealth_pull.TabIndex = 7;
+	 this.cb_stealth_pull.Text = "Stealth Pull";
+	 this.cb_stealth_pull.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_pickpocket
+	 // 
+	 this.cb_pickpocket.AutoSize = true;
+	 this.cb_pickpocket.Checked = true;
+	 this.cb_pickpocket.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_pickpocket.Location = new System.Drawing.Point(223, 11);
+	 this.cb_pickpocket.Name = "cb_pickpocket";
+	 this.cb_pickpocket.Size = new System.Drawing.Size(80, 17);
+	 this.cb_pickpocket.TabIndex = 6;
+	 this.cb_pickpocket.Text = "Pickpocket";
+	 this.cb_pickpocket.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_rogue_eat_at
+	 // 
+	 this.tb_rogue_eat_at.Location = new System.Drawing.Point(76, 55);
+	 this.tb_rogue_eat_at.Name = "tb_rogue_eat_at";
+	 this.tb_rogue_eat_at.Size = new System.Drawing.Size(26, 20);
+	 this.tb_rogue_eat_at.TabIndex = 5;
+	 this.tb_rogue_eat_at.Text = "50";
+	 // 
+	 // label25
+	 // 
+	 this.label25.AutoSize = true;
+	 this.label25.Location = new System.Drawing.Point(35, 57);
+	 this.label25.Name = "label25";
+	 this.label25.Size = new System.Drawing.Size(35, 13);
+	 this.label25.TabIndex = 4;
+	 this.label25.Text = "Eat at";
+	 this.label25.Click += new System.EventHandler(this.label25_Click);
+	 // 
+	 // tb_evis_cp
+	 // 
+	 this.tb_evis_cp.Location = new System.Drawing.Point(76, 35);
+	 this.tb_evis_cp.Name = "tb_evis_cp";
+	 this.tb_evis_cp.Size = new System.Drawing.Size(26, 20);
+	 this.tb_evis_cp.TabIndex = 3;
+	 this.tb_evis_cp.Text = "5";
+	 // 
+	 // label24
+	 // 
+	 this.label24.AutoSize = true;
+	 this.label24.Location = new System.Drawing.Point(7, 38);
+	 this.label24.Name = "label24";
+	 this.label24.Size = new System.Drawing.Size(69, 13);
+	 this.label24.TabIndex = 2;
+	 this.label24.Text = "Eviscerate at";
+	 // 
+	 // label23
+	 // 
+	 this.label23.AutoSize = true;
+	 this.label23.Location = new System.Drawing.Point(27, 16);
+	 this.label23.Name = "label23";
+	 this.label23.Size = new System.Drawing.Size(43, 13);
+	 this.label23.TabIndex = 1;
+	 this.label23.Text = "Combo:";
+	 // 
+	 // tb_combos
+	 // 
+	 this.tb_combos.Location = new System.Drawing.Point(76, 13);
+	 this.tb_combos.Name = "tb_combos";
+	 this.tb_combos.Size = new System.Drawing.Size(22, 20);
+	 this.tb_combos.TabIndex = 0;
+	 this.tb_combos.Text = "0";
 	 // 
 	 // Paladin
 	 // 
@@ -1355,89 +1493,33 @@ namespace Discord
 	 this.cb_SOR.Text = "Usar SOR";
 	 this.cb_SOR.UseVisualStyleBackColor = true;
 	 // 
-	 // tabPage4
+	 // tabPage5
 	 // 
-	 this.tabPage4.BackColor = System.Drawing.Color.Gray;
-	 this.tabPage4.Controls.Add(this.tb_evasion);
-	 this.tabPage4.Controls.Add(this.label26);
-	 this.tabPage4.Controls.Add(this.cb_stealth_pull);
-	 this.tabPage4.Controls.Add(this.cb_pickpocket);
-	 this.tabPage4.Controls.Add(this.tb_rogue_eat_at);
-	 this.tabPage4.Controls.Add(this.label25);
-	 this.tabPage4.Controls.Add(this.tb_evis_cp);
-	 this.tabPage4.Controls.Add(this.label24);
-	 this.tabPage4.Controls.Add(this.label23);
-	 this.tabPage4.Controls.Add(this.tb_combos);
-	 this.tabPage4.Location = new System.Drawing.Point(4, 22);
-	 this.tabPage4.Name = "tabPage4";
-	 this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-	 this.tabPage4.Size = new System.Drawing.Size(351, 347);
-	 this.tabPage4.TabIndex = 1;
-	 this.tabPage4.Text = "Rogue";
+	 this.tabPage5.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage5.Controls.Add(this.tb_bloorrage_maxmobs);
+	 this.tabPage5.Controls.Add(this.cb_use_bloodrage);
+	 this.tabPage5.Controls.Add(this.cb_use_rend);
+	 this.tabPage5.Controls.Add(this.tb_heroic_strike_rage);
+	 this.tabPage5.Controls.Add(this.label27);
+	 this.tabPage5.Controls.Add(this.tb_thunderclap_count);
+	 this.tabPage5.Controls.Add(this.cb_use_thunderclap);
+	 this.tabPage5.Controls.Add(this.cb_war_rangepull);
+	 this.tabPage5.Controls.Add(this.cb_bersek);
+	 this.tabPage5.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage5.Name = "tabPage5";
+	 this.tabPage5.Size = new System.Drawing.Size(351, 347);
+	 this.tabPage5.TabIndex = 2;
+	 this.tabPage5.Text = "Warrior";
 	 // 
-	 // cb_pickpocket
+	 // cb_bersek
 	 // 
-	 this.cb_pickpocket.AutoSize = true;
-	 this.cb_pickpocket.Checked = true;
-	 this.cb_pickpocket.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_pickpocket.Location = new System.Drawing.Point(223, 11);
-	 this.cb_pickpocket.Name = "cb_pickpocket";
-	 this.cb_pickpocket.Size = new System.Drawing.Size(80, 17);
-	 this.cb_pickpocket.TabIndex = 6;
-	 this.cb_pickpocket.Text = "Pickpocket";
-	 this.cb_pickpocket.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_rogue_eat_at
-	 // 
-	 this.tb_rogue_eat_at.Location = new System.Drawing.Point(76, 55);
-	 this.tb_rogue_eat_at.Name = "tb_rogue_eat_at";
-	 this.tb_rogue_eat_at.Size = new System.Drawing.Size(26, 20);
-	 this.tb_rogue_eat_at.TabIndex = 5;
-	 this.tb_rogue_eat_at.Text = "50";
-	 // 
-	 // label25
-	 // 
-	 this.label25.AutoSize = true;
-	 this.label25.Location = new System.Drawing.Point(35, 57);
-	 this.label25.Name = "label25";
-	 this.label25.Size = new System.Drawing.Size(35, 13);
-	 this.label25.TabIndex = 4;
-	 this.label25.Text = "Eat at";
-	 this.label25.Click += new System.EventHandler(this.label25_Click);
-	 // 
-	 // tb_evis_cp
-	 // 
-	 this.tb_evis_cp.Location = new System.Drawing.Point(76, 35);
-	 this.tb_evis_cp.Name = "tb_evis_cp";
-	 this.tb_evis_cp.Size = new System.Drawing.Size(26, 20);
-	 this.tb_evis_cp.TabIndex = 3;
-	 this.tb_evis_cp.Text = "5";
-	 // 
-	 // label24
-	 // 
-	 this.label24.AutoSize = true;
-	 this.label24.Location = new System.Drawing.Point(7, 38);
-	 this.label24.Name = "label24";
-	 this.label24.Size = new System.Drawing.Size(69, 13);
-	 this.label24.TabIndex = 2;
-	 this.label24.Text = "Eviscerate at";
-	 // 
-	 // label23
-	 // 
-	 this.label23.AutoSize = true;
-	 this.label23.Location = new System.Drawing.Point(27, 16);
-	 this.label23.Name = "label23";
-	 this.label23.Size = new System.Drawing.Size(43, 13);
-	 this.label23.TabIndex = 1;
-	 this.label23.Text = "Combo:";
-	 // 
-	 // tb_combos
-	 // 
-	 this.tb_combos.Location = new System.Drawing.Point(76, 13);
-	 this.tb_combos.Name = "tb_combos";
-	 this.tb_combos.Size = new System.Drawing.Size(22, 20);
-	 this.tb_combos.TabIndex = 0;
-	 this.tb_combos.Text = "0";
+	 this.cb_bersek.AutoSize = true;
+	 this.cb_bersek.Location = new System.Drawing.Point(13, 15);
+	 this.cb_bersek.Name = "cb_bersek";
+	 this.cb_bersek.Size = new System.Drawing.Size(89, 17);
+	 this.cb_bersek.TabIndex = 0;
+	 this.cb_bersek.Text = "Bersek Mode";
+	 this.cb_bersek.UseVisualStyleBackColor = true;
 	 // 
 	 // pan_tar
 	 // 
@@ -2126,7 +2208,7 @@ namespace Discord
 	 // lb_delta
 	 // 
 	 this.lb_delta.AutoSize = true;
-	 this.lb_delta.Location = new System.Drawing.Point(58, 452);
+	 this.lb_delta.Location = new System.Drawing.Point(86, 319);
 	 this.lb_delta.Name = "lb_delta";
 	 this.lb_delta.Size = new System.Drawing.Size(13, 13);
 	 this.lb_delta.TabIndex = 26;
@@ -2135,7 +2217,7 @@ namespace Discord
 	 // lb_yaw
 	 // 
 	 this.lb_yaw.AutoSize = true;
-	 this.lb_yaw.Location = new System.Drawing.Point(6, 452);
+	 this.lb_yaw.Location = new System.Drawing.Point(88, 348);
 	 this.lb_yaw.Name = "lb_yaw";
 	 this.lb_yaw.Size = new System.Drawing.Size(13, 13);
 	 this.lb_yaw.TabIndex = 27;
@@ -2196,46 +2278,94 @@ namespace Discord
 	 this.button19.UseVisualStyleBackColor = true;
 	 this.button19.Click += new System.EventHandler(this.button19_Click);
 	 // 
-	 // cb_stealth_pull
+	 // cb_war_rangepull
 	 // 
-	 this.cb_stealth_pull.AutoSize = true;
-	 this.cb_stealth_pull.Checked = true;
-	 this.cb_stealth_pull.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_stealth_pull.Location = new System.Drawing.Point(223, 29);
-	 this.cb_stealth_pull.Name = "cb_stealth_pull";
-	 this.cb_stealth_pull.Size = new System.Drawing.Size(79, 17);
-	 this.cb_stealth_pull.TabIndex = 7;
-	 this.cb_stealth_pull.Text = "Stealth Pull";
-	 this.cb_stealth_pull.UseVisualStyleBackColor = true;
+	 this.cb_war_rangepull.AutoSize = true;
+	 this.cb_war_rangepull.Location = new System.Drawing.Point(13, 34);
+	 this.cb_war_rangepull.Name = "cb_war_rangepull";
+	 this.cb_war_rangepull.Size = new System.Drawing.Size(138, 17);
+	 this.cb_war_rangepull.TabIndex = 1;
+	 this.cb_war_rangepull.Text = "Ranged pull (Crossbow)";
+	 this.cb_war_rangepull.UseVisualStyleBackColor = true;
 	 // 
-	 // tb_evasion
+	 // cb_use_thunderclap
 	 // 
-	 this.tb_evasion.Location = new System.Drawing.Point(76, 74);
-	 this.tb_evasion.Name = "tb_evasion";
-	 this.tb_evasion.Size = new System.Drawing.Size(26, 20);
-	 this.tb_evasion.TabIndex = 9;
-	 this.tb_evasion.Text = "60";
+	 this.cb_use_thunderclap.AutoSize = true;
+	 this.cb_use_thunderclap.Checked = true;
+	 this.cb_use_thunderclap.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_thunderclap.Location = new System.Drawing.Point(13, 55);
+	 this.cb_use_thunderclap.Name = "cb_use_thunderclap";
+	 this.cb_use_thunderclap.Size = new System.Drawing.Size(95, 17);
+	 this.cb_use_thunderclap.TabIndex = 2;
+	 this.cb_use_thunderclap.Text = "Thundeclap at";
+	 this.cb_use_thunderclap.UseVisualStyleBackColor = true;
 	 // 
-	 // label26
+	 // tb_thunderclap_count
 	 // 
-	 this.label26.AutoSize = true;
-	 this.label26.Location = new System.Drawing.Point(19, 77);
-	 this.label26.Name = "label26";
-	 this.label26.Size = new System.Drawing.Size(57, 13);
-	 this.label26.TabIndex = 8;
-	 this.label26.Text = "Evasion at";
+	 this.tb_thunderclap_count.Location = new System.Drawing.Point(104, 52);
+	 this.tb_thunderclap_count.Name = "tb_thunderclap_count";
+	 this.tb_thunderclap_count.Size = new System.Drawing.Size(15, 20);
+	 this.tb_thunderclap_count.TabIndex = 3;
+	 this.tb_thunderclap_count.Text = "3";
 	 // 
-	 // cb_noelite
+	 // label27
 	 // 
-	 this.cb_noelite.AutoSize = true;
-	 this.cb_noelite.Checked = true;
-	 this.cb_noelite.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_noelite.Location = new System.Drawing.Point(432, 41);
-	 this.cb_noelite.Name = "cb_noelite";
-	 this.cb_noelite.Size = new System.Drawing.Size(63, 17);
-	 this.cb_noelite.TabIndex = 72;
-	 this.cb_noelite.Text = "No Elite";
-	 this.cb_noelite.UseVisualStyleBackColor = true;
+	 this.label27.AutoSize = true;
+	 this.label27.Location = new System.Drawing.Point(13, 75);
+	 this.label27.Name = "label27";
+	 this.label27.Size = new System.Drawing.Size(80, 13);
+	 this.label27.TabIndex = 4;
+	 this.label27.Text = "Heroic Strike at";
+	 // 
+	 // tb_heroic_strike_rage
+	 // 
+	 this.tb_heroic_strike_rage.Location = new System.Drawing.Point(99, 72);
+	 this.tb_heroic_strike_rage.Name = "tb_heroic_strike_rage";
+	 this.tb_heroic_strike_rage.Size = new System.Drawing.Size(20, 20);
+	 this.tb_heroic_strike_rage.TabIndex = 5;
+	 this.tb_heroic_strike_rage.Text = "30";
+	 // 
+	 // cb_use_rend
+	 // 
+	 this.cb_use_rend.AutoSize = true;
+	 this.cb_use_rend.Checked = true;
+	 this.cb_use_rend.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_rend.Location = new System.Drawing.Point(13, 92);
+	 this.cb_use_rend.Name = "cb_use_rend";
+	 this.cb_use_rend.Size = new System.Drawing.Size(87, 17);
+	 this.cb_use_rend.TabIndex = 6;
+	 this.cb_use_rend.Text = "Rend (bleed)";
+	 this.cb_use_rend.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_use_bloodrage
+	 // 
+	 this.cb_use_bloodrage.AutoSize = true;
+	 this.cb_use_bloodrage.Checked = true;
+	 this.cb_use_bloodrage.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_bloodrage.Location = new System.Drawing.Point(13, 116);
+	 this.cb_use_bloodrage.Name = "cb_use_bloodrage";
+	 this.cb_use_bloodrage.Size = new System.Drawing.Size(121, 17);
+	 this.cb_use_bloodrage.TabIndex = 7;
+	 this.cb_use_bloodrage.Text = "Bloorrage max mobs";
+	 this.cb_use_bloodrage.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_bloorrage_maxmobs
+	 // 
+	 this.tb_bloorrage_maxmobs.Location = new System.Drawing.Point(136, 114);
+	 this.tb_bloorrage_maxmobs.Name = "tb_bloorrage_maxmobs";
+	 this.tb_bloorrage_maxmobs.Size = new System.Drawing.Size(15, 20);
+	 this.tb_bloorrage_maxmobs.TabIndex = 8;
+	 this.tb_bloorrage_maxmobs.Text = "1";
+	 // 
+	 // cb_range_pull
+	 // 
+	 this.cb_range_pull.AutoSize = true;
+	 this.cb_range_pull.Location = new System.Drawing.Point(223, 53);
+	 this.cb_range_pull.Name = "cb_range_pull";
+	 this.cb_range_pull.Size = new System.Drawing.Size(84, 17);
+	 this.cb_range_pull.TabIndex = 10;
+	 this.cb_range_pull.Text = "Ranged Pull";
+	 this.cb_range_pull.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -2271,6 +2401,7 @@ namespace Discord
 	 this.Controls.Add(this.tb_y);
 	 this.Controls.Add(this.tb_x);
 	 this.Controls.Add(this.tab_nav);
+	 this.Controls.Add(this.bt_onoff);
 	 this.Name = "Form1";
 	 this.Text = "Discord 1.0";
 	 this.Load += new System.EventHandler(this.Form1_Load);
@@ -2282,10 +2413,12 @@ namespace Discord
 	 this.tabPage2.PerformLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_map)).EndInit();
 	 this.tab_buffs.ResumeLayout(false);
-	 this.Paladin.ResumeLayout(false);
-	 this.Paladin.PerformLayout();
 	 this.tabPage4.ResumeLayout(false);
 	 this.tabPage4.PerformLayout();
+	 this.Paladin.ResumeLayout(false);
+	 this.Paladin.PerformLayout();
+	 this.tabPage5.ResumeLayout(false);
+	 this.tabPage5.PerformLayout();
 	 this.pan_tar.ResumeLayout(false);
 	 this.pan_tar.PerformLayout();
 	 this.pan_me.ResumeLayout(false);
@@ -2492,6 +2625,17 @@ namespace Discord
 	private TextBox tb_evasion;
 	private Label label26;
 	private CheckBox cb_noelite;
+	private TabPage tabPage5;
+	private CheckBox cb_bersek;
+	private CheckBox cb_war_rangepull;
+	private CheckBox cb_use_thunderclap;
+	private TextBox tb_thunderclap_count;
+	private TextBox tb_heroic_strike_rage;
+	private Label label27;
+	private CheckBox cb_use_rend;
+	private TextBox tb_bloorrage_maxmobs;
+	private CheckBox cb_use_bloodrage;
+	private CheckBox cb_range_pull;
  }
 }
 
