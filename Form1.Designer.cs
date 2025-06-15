@@ -72,7 +72,6 @@ namespace Discord
 	 this.button3 = new System.Windows.Forms.Button();
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
-	 this.bt_onoff = new System.Windows.Forms.Button();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
 	 this.cb_noelite = new System.Windows.Forms.CheckBox();
 	 this.cb_scan_elite = new System.Windows.Forms.CheckBox();
@@ -93,6 +92,7 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
+	 this.cb_range_pull = new System.Windows.Forms.CheckBox();
 	 this.tb_evasion = new System.Windows.Forms.TextBox();
 	 this.label26 = new System.Windows.Forms.Label();
 	 this.cb_stealth_pull = new System.Windows.Forms.CheckBox();
@@ -145,6 +145,14 @@ namespace Discord
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
 	 this.cb_SOR = new System.Windows.Forms.CheckBox();
 	 this.tabPage5 = new System.Windows.Forms.TabPage();
+	 this.tb_bloorrage_maxmobs = new System.Windows.Forms.TextBox();
+	 this.cb_use_bloodrage = new System.Windows.Forms.CheckBox();
+	 this.cb_use_rend = new System.Windows.Forms.CheckBox();
+	 this.tb_heroic_strike_rage = new System.Windows.Forms.TextBox();
+	 this.label27 = new System.Windows.Forms.Label();
+	 this.tb_thunderclap_count = new System.Windows.Forms.TextBox();
+	 this.cb_use_thunderclap = new System.Windows.Forms.CheckBox();
+	 this.cb_war_rangepull = new System.Windows.Forms.CheckBox();
 	 this.cb_bersek = new System.Windows.Forms.CheckBox();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
@@ -198,6 +206,7 @@ namespace Discord
 	 this.button13 = new System.Windows.Forms.Button();
 	 this.button1 = new System.Windows.Forms.Button();
 	 this.tb_mapname = new System.Windows.Forms.TextBox();
+	 this.bt_onoff = new System.Windows.Forms.Button();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
 	 this.bt_anda = new System.Windows.Forms.Button();
 	 this.tb_y = new System.Windows.Forms.TextBox();
@@ -225,15 +234,7 @@ namespace Discord
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button19 = new System.Windows.Forms.Button();
-	 this.cb_war_rangepull = new System.Windows.Forms.CheckBox();
-	 this.cb_use_thunderclap = new System.Windows.Forms.CheckBox();
-	 this.tb_thunderclap_count = new System.Windows.Forms.TextBox();
-	 this.label27 = new System.Windows.Forms.Label();
-	 this.tb_heroic_strike_rage = new System.Windows.Forms.TextBox();
-	 this.cb_use_rend = new System.Windows.Forms.CheckBox();
-	 this.cb_use_bloodrage = new System.Windows.Forms.CheckBox();
-	 this.tb_bloorrage_maxmobs = new System.Windows.Forms.TextBox();
-	 this.cb_range_pull = new System.Windows.Forms.CheckBox();
+	 this.cb_evis_auto = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -689,16 +690,6 @@ namespace Discord
 	 this.lbwp.Size = new System.Drawing.Size(98, 316);
 	 this.lbwp.TabIndex = 1;
 	 // 
-	 // bt_onoff
-	 // 
-	 this.bt_onoff.Location = new System.Drawing.Point(6, 455);
-	 this.bt_onoff.Name = "bt_onoff";
-	 this.bt_onoff.Size = new System.Drawing.Size(75, 23);
-	 this.bt_onoff.TabIndex = 0;
-	 this.bt_onoff.Text = "Stop";
-	 this.bt_onoff.UseVisualStyleBackColor = true;
-	 this.bt_onoff.Click += new System.EventHandler(this.button1_Click);
-	 // 
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
@@ -917,6 +908,7 @@ namespace Discord
 	 // tabPage4
 	 // 
 	 this.tabPage4.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage4.Controls.Add(this.cb_evis_auto);
 	 this.tabPage4.Controls.Add(this.cb_range_pull);
 	 this.tabPage4.Controls.Add(this.tb_evasion);
 	 this.tabPage4.Controls.Add(this.label26);
@@ -934,6 +926,16 @@ namespace Discord
 	 this.tabPage4.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage4.TabIndex = 1;
 	 this.tabPage4.Text = "Rogue";
+	 // 
+	 // cb_range_pull
+	 // 
+	 this.cb_range_pull.AutoSize = true;
+	 this.cb_range_pull.Location = new System.Drawing.Point(223, 53);
+	 this.cb_range_pull.Name = "cb_range_pull";
+	 this.cb_range_pull.Size = new System.Drawing.Size(84, 17);
+	 this.cb_range_pull.TabIndex = 10;
+	 this.cb_range_pull.Text = "Ranged Pull";
+	 this.cb_range_pull.UseVisualStyleBackColor = true;
 	 // 
 	 // tb_evasion
 	 // 
@@ -1511,6 +1513,85 @@ namespace Discord
 	 this.tabPage5.TabIndex = 2;
 	 this.tabPage5.Text = "Warrior";
 	 // 
+	 // tb_bloorrage_maxmobs
+	 // 
+	 this.tb_bloorrage_maxmobs.Location = new System.Drawing.Point(136, 114);
+	 this.tb_bloorrage_maxmobs.Name = "tb_bloorrage_maxmobs";
+	 this.tb_bloorrage_maxmobs.Size = new System.Drawing.Size(15, 20);
+	 this.tb_bloorrage_maxmobs.TabIndex = 8;
+	 this.tb_bloorrage_maxmobs.Text = "1";
+	 // 
+	 // cb_use_bloodrage
+	 // 
+	 this.cb_use_bloodrage.AutoSize = true;
+	 this.cb_use_bloodrage.Checked = true;
+	 this.cb_use_bloodrage.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_bloodrage.Location = new System.Drawing.Point(13, 116);
+	 this.cb_use_bloodrage.Name = "cb_use_bloodrage";
+	 this.cb_use_bloodrage.Size = new System.Drawing.Size(121, 17);
+	 this.cb_use_bloodrage.TabIndex = 7;
+	 this.cb_use_bloodrage.Text = "Bloorrage max mobs";
+	 this.cb_use_bloodrage.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_use_rend
+	 // 
+	 this.cb_use_rend.AutoSize = true;
+	 this.cb_use_rend.Checked = true;
+	 this.cb_use_rend.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_rend.Location = new System.Drawing.Point(13, 92);
+	 this.cb_use_rend.Name = "cb_use_rend";
+	 this.cb_use_rend.Size = new System.Drawing.Size(87, 17);
+	 this.cb_use_rend.TabIndex = 6;
+	 this.cb_use_rend.Text = "Rend (bleed)";
+	 this.cb_use_rend.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_heroic_strike_rage
+	 // 
+	 this.tb_heroic_strike_rage.Location = new System.Drawing.Point(99, 72);
+	 this.tb_heroic_strike_rage.Name = "tb_heroic_strike_rage";
+	 this.tb_heroic_strike_rage.Size = new System.Drawing.Size(20, 20);
+	 this.tb_heroic_strike_rage.TabIndex = 5;
+	 this.tb_heroic_strike_rage.Text = "30";
+	 // 
+	 // label27
+	 // 
+	 this.label27.AutoSize = true;
+	 this.label27.Location = new System.Drawing.Point(13, 75);
+	 this.label27.Name = "label27";
+	 this.label27.Size = new System.Drawing.Size(80, 13);
+	 this.label27.TabIndex = 4;
+	 this.label27.Text = "Heroic Strike at";
+	 // 
+	 // tb_thunderclap_count
+	 // 
+	 this.tb_thunderclap_count.Location = new System.Drawing.Point(104, 52);
+	 this.tb_thunderclap_count.Name = "tb_thunderclap_count";
+	 this.tb_thunderclap_count.Size = new System.Drawing.Size(15, 20);
+	 this.tb_thunderclap_count.TabIndex = 3;
+	 this.tb_thunderclap_count.Text = "3";
+	 // 
+	 // cb_use_thunderclap
+	 // 
+	 this.cb_use_thunderclap.AutoSize = true;
+	 this.cb_use_thunderclap.Checked = true;
+	 this.cb_use_thunderclap.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_thunderclap.Location = new System.Drawing.Point(13, 55);
+	 this.cb_use_thunderclap.Name = "cb_use_thunderclap";
+	 this.cb_use_thunderclap.Size = new System.Drawing.Size(95, 17);
+	 this.cb_use_thunderclap.TabIndex = 2;
+	 this.cb_use_thunderclap.Text = "Thundeclap at";
+	 this.cb_use_thunderclap.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_war_rangepull
+	 // 
+	 this.cb_war_rangepull.AutoSize = true;
+	 this.cb_war_rangepull.Location = new System.Drawing.Point(13, 34);
+	 this.cb_war_rangepull.Name = "cb_war_rangepull";
+	 this.cb_war_rangepull.Size = new System.Drawing.Size(138, 17);
+	 this.cb_war_rangepull.TabIndex = 1;
+	 this.cb_war_rangepull.Text = "Ranged pull (Crossbow)";
+	 this.cb_war_rangepull.UseVisualStyleBackColor = true;
+	 // 
 	 // cb_bersek
 	 // 
 	 this.cb_bersek.AutoSize = true;
@@ -2036,6 +2117,16 @@ namespace Discord
 	 this.tb_mapname.TabIndex = 28;
 	 this.tb_mapname.Text = "HSA";
 	 // 
+	 // bt_onoff
+	 // 
+	 this.bt_onoff.Location = new System.Drawing.Point(6, 455);
+	 this.bt_onoff.Name = "bt_onoff";
+	 this.bt_onoff.Size = new System.Drawing.Size(75, 23);
+	 this.bt_onoff.TabIndex = 0;
+	 this.bt_onoff.Text = "Stop";
+	 this.bt_onoff.UseVisualStyleBackColor = true;
+	 this.bt_onoff.Click += new System.EventHandler(this.button1_Click);
+	 // 
 	 // bt_loadWP
 	 // 
 	 this.bt_loadWP.Location = new System.Drawing.Point(58, 38);
@@ -2278,94 +2369,17 @@ namespace Discord
 	 this.button19.UseVisualStyleBackColor = true;
 	 this.button19.Click += new System.EventHandler(this.button19_Click);
 	 // 
-	 // cb_war_rangepull
+	 // cb_evis_auto
 	 // 
-	 this.cb_war_rangepull.AutoSize = true;
-	 this.cb_war_rangepull.Location = new System.Drawing.Point(13, 34);
-	 this.cb_war_rangepull.Name = "cb_war_rangepull";
-	 this.cb_war_rangepull.Size = new System.Drawing.Size(138, 17);
-	 this.cb_war_rangepull.TabIndex = 1;
-	 this.cb_war_rangepull.Text = "Ranged pull (Crossbow)";
-	 this.cb_war_rangepull.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_use_thunderclap
-	 // 
-	 this.cb_use_thunderclap.AutoSize = true;
-	 this.cb_use_thunderclap.Checked = true;
-	 this.cb_use_thunderclap.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_use_thunderclap.Location = new System.Drawing.Point(13, 55);
-	 this.cb_use_thunderclap.Name = "cb_use_thunderclap";
-	 this.cb_use_thunderclap.Size = new System.Drawing.Size(95, 17);
-	 this.cb_use_thunderclap.TabIndex = 2;
-	 this.cb_use_thunderclap.Text = "Thundeclap at";
-	 this.cb_use_thunderclap.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_thunderclap_count
-	 // 
-	 this.tb_thunderclap_count.Location = new System.Drawing.Point(104, 52);
-	 this.tb_thunderclap_count.Name = "tb_thunderclap_count";
-	 this.tb_thunderclap_count.Size = new System.Drawing.Size(15, 20);
-	 this.tb_thunderclap_count.TabIndex = 3;
-	 this.tb_thunderclap_count.Text = "3";
-	 // 
-	 // label27
-	 // 
-	 this.label27.AutoSize = true;
-	 this.label27.Location = new System.Drawing.Point(13, 75);
-	 this.label27.Name = "label27";
-	 this.label27.Size = new System.Drawing.Size(80, 13);
-	 this.label27.TabIndex = 4;
-	 this.label27.Text = "Heroic Strike at";
-	 // 
-	 // tb_heroic_strike_rage
-	 // 
-	 this.tb_heroic_strike_rage.Location = new System.Drawing.Point(99, 72);
-	 this.tb_heroic_strike_rage.Name = "tb_heroic_strike_rage";
-	 this.tb_heroic_strike_rage.Size = new System.Drawing.Size(20, 20);
-	 this.tb_heroic_strike_rage.TabIndex = 5;
-	 this.tb_heroic_strike_rage.Text = "30";
-	 // 
-	 // cb_use_rend
-	 // 
-	 this.cb_use_rend.AutoSize = true;
-	 this.cb_use_rend.Checked = true;
-	 this.cb_use_rend.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_use_rend.Location = new System.Drawing.Point(13, 92);
-	 this.cb_use_rend.Name = "cb_use_rend";
-	 this.cb_use_rend.Size = new System.Drawing.Size(87, 17);
-	 this.cb_use_rend.TabIndex = 6;
-	 this.cb_use_rend.Text = "Rend (bleed)";
-	 this.cb_use_rend.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_use_bloodrage
-	 // 
-	 this.cb_use_bloodrage.AutoSize = true;
-	 this.cb_use_bloodrage.Checked = true;
-	 this.cb_use_bloodrage.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_use_bloodrage.Location = new System.Drawing.Point(13, 116);
-	 this.cb_use_bloodrage.Name = "cb_use_bloodrage";
-	 this.cb_use_bloodrage.Size = new System.Drawing.Size(121, 17);
-	 this.cb_use_bloodrage.TabIndex = 7;
-	 this.cb_use_bloodrage.Text = "Bloorrage max mobs";
-	 this.cb_use_bloodrage.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_bloorrage_maxmobs
-	 // 
-	 this.tb_bloorrage_maxmobs.Location = new System.Drawing.Point(136, 114);
-	 this.tb_bloorrage_maxmobs.Name = "tb_bloorrage_maxmobs";
-	 this.tb_bloorrage_maxmobs.Size = new System.Drawing.Size(15, 20);
-	 this.tb_bloorrage_maxmobs.TabIndex = 8;
-	 this.tb_bloorrage_maxmobs.Text = "1";
-	 // 
-	 // cb_range_pull
-	 // 
-	 this.cb_range_pull.AutoSize = true;
-	 this.cb_range_pull.Location = new System.Drawing.Point(223, 53);
-	 this.cb_range_pull.Name = "cb_range_pull";
-	 this.cb_range_pull.Size = new System.Drawing.Size(84, 17);
-	 this.cb_range_pull.TabIndex = 10;
-	 this.cb_range_pull.Text = "Ranged Pull";
-	 this.cb_range_pull.UseVisualStyleBackColor = true;
+	 this.cb_evis_auto.AutoSize = true;
+	 this.cb_evis_auto.Checked = true;
+	 this.cb_evis_auto.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_evis_auto.Location = new System.Drawing.Point(109, 37);
+	 this.cb_evis_auto.Name = "cb_evis_auto";
+	 this.cb_evis_auto.Size = new System.Drawing.Size(48, 17);
+	 this.cb_evis_auto.TabIndex = 11;
+	 this.cb_evis_auto.Text = "Auto";
+	 this.cb_evis_auto.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -2636,6 +2650,7 @@ namespace Discord
 	private TextBox tb_bloorrage_maxmobs;
 	private CheckBox cb_use_bloodrage;
 	private CheckBox cb_range_pull;
+	private CheckBox cb_evis_auto;
  }
 }
 
