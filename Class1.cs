@@ -176,8 +176,36 @@ namespace Discord
 	public bool defaura;         // Está usando Aura defensiva?
 	public bool nomana;          // Mana abaixo de 20% no meio do combate
  }
+ // --------------------------------------------
+ // CLASSE mobrec
+ // --------------------------------------------
+ // Registro de avistamento de um mob:
+ // inclui momento, posição, direção e estimativa
+ // --------------------------------------------
+ public class mobrec
+ {
+	public loc p;     // minha posição ao ver o mob
+	public int t;     // timestamp do avistamento (em ms)
+	public int f;     // meu facing no momento do avistamento
+	public int id;    // id semi-único do mob
+ }
+ // --------------------------------------------
+ // CLASSE mobinfo
+ // --------------------------------------------
+ // Conjunto de avistamentos de um mob
+ // + posição estimada calculada
+ // --------------------------------------------
+ public class mobinfo
+ {
+	public List<mobrec> av;  // lista de avistamentos
+	public loc est;          // posição estimada do mob
 
-
+	public mobinfo()
+	{
+	 av = new List<mobrec>(); // inicializa lista
+	 est = new loc();         // inicializa posição estimada
+	}
+ }
 
  // --------------------------------
  // STRUCT POINT

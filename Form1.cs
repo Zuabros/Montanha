@@ -1301,15 +1301,16 @@ return (int)distance;
 
 
 
-
-// MÓDULO 18 - VARIÁVEL GLOBAL - OBJETO PLAYER e TARGET
+//-----------------------------------------------------------
+// MÓDULO 18 - VARIÁVEL GLOBAL -VARIÁVEIS GLOBAIS 
+//--------------------------------------------------------
 public element me;
 public element tar;
 public palatable pala = new palatable(); // inicializa tabela de status de paladino 
 public roguetable rog = new roguetable(); // inicializa tabela de status de rogue
 	public warriortable war = new warriortable(); // inicializa tabela de status de warrior
-
 	public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
+	Dictionary<int, mobinfo> mob_mem = new Dictionary<int, mobinfo>(); // memória de mobs avistados
 
 	//------------------------------
 	// NAO DEIXA AFOGAR 
@@ -3120,9 +3121,13 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 
 	 loc go = nloc(int.Parse(tb_debug1.Text), int.Parse(tb_debug2.Text));
 
+	 while (dist(me.pos, go) > 20) // enquanto a distância for maior que 1.5 metros
+	 {
+		 checkme(); // atualiza posição e facing
 	 moveto(go);
-		
-	 
+		 }
+	 on = false; // desativa o modo de movimento
+	 para(); // para de andar
 	}
 	// ------------------------------------------
 	// MÉTODO delta - Diferença angular entre me.facing e direção até b
@@ -5084,19 +5089,133 @@ else
 
 	}
 	// ----------------------------------------
-	// BOTAO DEBUG - DUMP COMPLETO DO PALATABLE
-	// Mostra todos os campos e estados do objeto pala
+	// BOTAO DEBUG - adiciona dados de avistamento 
+	// e atualiza estimativa do mob com base nos últimos 5 pontos
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 checkme();
-	 // -------------------------------------------------
-	 // LOGA STATUS DE STEALTH DO ROGUE
-	 // -------------------------------------------------
-	 string s1 = rog.stealth_up ? "pode stealth" : "não pode stealth"; // se pode ativar
-	 string s2 = rog.stealth ? "em stealth" : "fora de stealth";       // se está stealth
-	 loga("Status Stealth: " + s1 + " / " + s2); // loga mensagem combinada
+	 aperta(INTERACT);       // alinha com o target
+	 wait(2000);             // espera 1 segundo
+	 para();                 // interrompe movimento
+	 checkme();              // atualiza dados de posição, facing e target
+
+	 if (!me.hastarget)
+	 {
+		loga("Nenhum target ativo.");
+		return;
+	 }
+
+	 int id = tar.id;
+
+	 if (!mob_mem.ContainsKey(id))
+		mob_mem[id] = new mobinfo();
+
+	 mobrec novo = new mobrec();
+	 novo.id = id;
+	 novo.p = me.pos;
+	 novo.f = me.facing;
+	 novo.t = Environment.TickCount;
+
+	 mob_mem[id].av.Add(novo);
+
+	 // mantém no máximo 5 registros por mob
+	 if (mob_mem[id].av.Count > 5)
+		mob_mem[id].av.RemoveAt(0);
+
+	 loga("Avistamento adicionado para ID " + id);
+	 loga("Posição: X=" + novo.p.x + " Y=" + novo.p.y + "  Facing=" + novo.f);
+
+	 // calcula estimativa com os pares disponíveis
+	 if (mob_mem[id].av.Count >= 2)
+		calcula_est(id);
 	}
+
+
+
+	// ----------------------------------------
+	// FUNÇÃO calcula_est
+	// Calcula a posição estimada do mob
+	// com base em todas as interseções válidas
+	// entre os últimos avistamentos
+	// ----------------------------------------
+	void calcula_est(int id)
+	{
+	 if (!mob_mem.ContainsKey(id)) return;
+	 if (mob_mem[id].av.Count < 2) return;
+
+	 var av = mob_mem[id].av;
+	 List<loc> pontos = new List<loc>();
+
+	 // calcula todas as interseções entre pares diferentes
+	 for (int i = 0; i < av.Count; i++)
+	 {
+		for (int j = i + 1; j < av.Count; j++)
+		{
+		 loc p = intersec(av[i], av[j]);
+		 if (p.x != 0 || p.y != 0) // ignora paralelas (retorna 0,0)
+			pontos.Add(p);
+		}
+	 }
+
+	 if (pontos.Count == 0)
+	 {
+		loga("Nenhuma interseção válida.");
+		return;
+	 }
+
+	 // média das interseções
+	 int soma_x = 0, soma_y = 0;
+	 foreach (var p in pontos)
+	 {
+		soma_x += p.x;
+		soma_y += p.y;
+	 }
+
+	 int ex = soma_x / pontos.Count;
+	 int ey = soma_y / pontos.Count;
+
+	 // salva no mobinfo e atualiza tela
+	 mob_mem[id].est.x = ex;
+	 mob_mem[id].est.y = ey;
+
+	 tb_debug1.Text = ex.ToString();
+	 tb_debug2.Text = ey.ToString();
+
+	 loga("Posição estimada (" + pontos.Count + " interseções): X=" + ex + " Y=" + ey);
+	}
+
+	// ----------------------------------------
+	// FUNÇÃO intersec
+	// Calcula ponto de interseção entre 2 linhas de mira
+	// ----------------------------------------
+	loc intersec(mobrec a, mobrec b)
+	{
+	 double fa = a.f * Math.PI / 180.0;
+	 double fb = b.f * Math.PI / 180.0;
+
+	 double dax = Math.Sin(fa);
+	 double day = -Math.Cos(fa);
+	 double dbx = Math.Sin(fb);
+	 double dby = -Math.Cos(fb);
+
+	 double xa = a.p.x;
+	 double ya = a.p.y;
+	 double xb = b.p.x;
+	 double yb = b.p.y;
+
+	 double det = dax * dby - day * dbx;
+	 if (Math.Abs(det) < 0.001) return new loc(); // paralelo
+
+	 double dx = xb - xa;
+	 double dy = yb - ya;
+	 double t1 = (dx * dby - dy * dbx) / det;
+
+	 double px = xa + t1 * dax;
+	 double py = ya + t1 * day;
+
+	 return new loc((int)Math.Round(px), (int)Math.Round(py));
+	}
+
 
 
 	// ----------------------------------------
