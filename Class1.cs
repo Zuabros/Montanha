@@ -52,7 +52,7 @@ namespace Discord
 	// ----------- específicos do target (tar) -----------
 	public bool aggroed;         // tem aggro em mim
 	public bool israre;          // criatura rara (bit 64 no 7G)
-	public bool ieslite;         // criatura elite (bit 32 no 7G)
+	public bool iselite;         // criatura elite (bit 32 no 7G)
 	public bool trivial;        // criatura trivial  
 	public int id;            // ID do mob (usado para spells, etc.)
 

@@ -835,7 +835,8 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		{
 		 loga("Chegaram novos convidados na festa!");
 		 loga("Dando backpedal para evitar dar as costas.");
-		 aperta(SKEY, 1200); // backpedal 1.2s
+		 if (!tar.casting) aperta(SKEY, 1100); // backpedal 1.2s
+
 		}
 		loga("Mobs: " + mobs);
 	 }
@@ -993,7 +994,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 		e.hastarget = (pixels[7].g & 128) > 0;       // G: bit 7 → existe target
 		tar.israre = (pixels[7].g & 64) > 0;         // G: bit 6 → raro
-		tar.ieslite = (pixels[7].g & 32) > 0;        // G: bit 5 → elite
+		tar.iselite = (pixels[7].g & 32) > 0;        // G: bit 5 → elite
 
 		tar.level = (int)Math.Round(pixels[7].b / 4.0); // B: level do target (×4)
 		tb_tarlevel.Text = tar.level.ToString();     // mostra na textbox
@@ -1030,7 +1031,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		tar.aggroed = (pixels[9].b > 250); // reuse da propriedade para "aggro ativo"
 	 }
 
-	 tar.trivial =  tar.hp < 25 || tar.level < me.level - 2; // mob  trivial
+	 tar.trivial = !tar.iselite && (tar.hp <= 25 || tar.level <= me.level - 3);
 
 	 if (e.classe == WARRIOR) // se for Warrior, lê o Pixel 10
 	 {
@@ -1646,7 +1647,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 
 	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
 
-	 loga("Alvo atingido. Partindo para proximo alvo.");
+	 loga("Waypoint atingido. Partindo para proximo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
 
 	 //aperta(WKEY, 2); // solta W ao chegar no destino
@@ -1879,7 +1880,7 @@ void andaplanta(loc alvo)
 		tipo = "gigante";
 	 else if (tar.israre && cb_rare_patrol.Checked)
 		tipo = "raro";
-	 else if (tar.ieslite && cb_elite_patrol.Checked)
+	 else if (tar.iselite && cb_elite_patrol.Checked)
 		tipo = "elite";
 
 	 if (me.hastarget && tipo != "")
@@ -1926,7 +1927,7 @@ void andaplanta(loc alvo)
 		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
 		if (tar.mood == 1) return false; // amarelo = não hostil
 		if (tar.combat) return false;
-		if (tar.ieslite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
+		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
 		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
 		if ((tar.type == 50 && cb_nohumanoid.Checked) || (tar.type == 230 && cb_nodragonkin.Checked)) return false;
@@ -2184,9 +2185,12 @@ void andaplanta(loc alvo)
 
 			 else if ((tar.type == HUMANOID && cb_pickpocket.Checked) || !cb_range_pull.Checked || !rog.throw_up)
 			 {
-				loga("Humanoide – tentando Pull em Stealth com Pickpocket.");
-				if (cb_stealth_pull.Checked && rog.stealth_up)
-				 aperta(STEALTH);
+				loga("Iniciando body pull.");
+			 if (cb_stealth_pull.Checked && rog.stealth_up && !tar.trivial) // nao puxa trivial no stealth
+			 {
+				loga("Mob não trivial: ativando stealth.");
+				aperta(STEALTH);
+			 }
 
 				int t0 = Environment.TickCount;
 				int lastInteract = Environment.TickCount;
@@ -2217,7 +2221,7 @@ void andaplanta(loc alvo)
 					lastJump = now;
 				 }
 
-				 if (me.melee && cb_pickpocket.Checked)
+				 if (me.melee && cb_pickpocket.Checked && rog.stealth)
 					aperta(PICKPOCKET);
 				 else if (me.melee)
 					aperta(SS);
@@ -2347,36 +2351,43 @@ void andaplanta(loc alvo)
 		 aperta(F6); // limpa o target e assiste o tank
 		}
 		// -----------------------------------------
-		// recuo tático se estiver apanhando demais
+		// BACKPEDAL SE APANHANDO NAS COSTAS 
 		// -----------------------------------------
-		
-		if (me.mobs>1 && (me.dazed || (!dungeon && !ja_deu_backpedal && me.hp < 85))) // se estiver apanhando de mais ou com 2 mobs batendo
+
+		if (me.mobs > 1 && (!dungeon || me.dazed)) // combate perigoso: múltiplos mobs (fora de dungeon ou com dazed)
 		{
-		 
-		 int limiar = int.Parse(tb_back_limiar.Text); // Lê o valor do limiar 
-		 int decay = int.Parse(tbdecay.Text);// Obtém os valores de decay e avg_decay 
-		 int avg_decay = int.Parse(tbavdecay.Text);
-		 if (decay > 2000) decay = int.Parse(tbavdecay.Text); // se o decay estiver irreal
-																													// Executa a lógica apenas se o mob não estiver castando e o decay atual for maior que o limiar
+		 int limiar = int.Parse(tb_back_limiar.Text);      // valor-limite configurado pelo usuário
+		 int decay = int.Parse(tbdecay.Text);              // dano por segundo atual
+		 int avg_decay = int.Parse(tbavdecay.Text);        // média de decay
 
-		 bool precisa_backpedal = me.dazed || (tar.type != DRAGONKIN && !tar.casting && decay > limiar && tar.hp > 20);
-// Fica dazed ou toma muito dano se sem segundo mob batendo nas costas. Então dá um passinho para trás. 
+		 if (decay > 2000) decay = avg_decay;              // proteção contra leitura irreal
 
-		 if (precisa_backpedal)
+		 bool pode_backpedalar = false;
+
+		 if (me.dazed)
 		 {
-			if (me.dazed) loga("Dazed! Backpedal para evitar mob batendo atrás."); // loga se estiver atordoado
-			else loga($"Dando Backpedal: decay = {int.Parse(tbdecay.Text)}");
-		  aperta(SKEY, 1100);     // anda pra trás mantendo o facing
-	
-			aperta(AUTOATTACK);
-			
+			loga("Dazed! Backpedal para evitar mob batendo atrás.");
+			pode_backpedalar = true;
+		 }
+		 else if (!ja_deu_backpedal && decay > limiar && tar.type != DRAGONKIN && !tar.casting && tar.hp > 20)
+		 {
+			loga($"Dando Backpedal: decay = {decay}");
+			pode_backpedalar = true;
+			ja_deu_backpedal = true;
+		 }
+
+		 if (pode_backpedalar)
+		 {
+			aperta(SKEY, 1100);    // anda pra trás 1 segundo mantendo o facing
+			aperta(AUTOATTACK);    // garante ataque ligado após reposicionamento
 		 }
 		 else if (!jalogou)
 		 {
-			loga($"Backpedal não necessário: decay = {int.Parse(tbdecay.Text)}");
-			jalogou = true; // loga o decay apenas uma vez por combate
+			loga($"Backpedal não necessário: decay = {decay}");
+			jalogou = true;
 		 }
 		}
+
 		// -----------------------------------------
 		// GIRA PARA O ALVO SE ESTIVER APANHANDO DE COSTAS
 		// -----------------------------------------
@@ -2398,7 +2409,11 @@ void andaplanta(loc alvo)
 
 		 if (!tar.aggroed) // confirma que ainda está inválido
 		 {
-			if (!deucharge) aperta(CLEARTGT); // limpa o target
+			if (!deucharge)
+			{
+			 aperta(CLEARTGT); // limpa o target
+			 loga("Target não está com aggro em mim. Limpando target.");
+			}
 			else
 			 deucharge = false; // evita perder o target por causa do stun do charge 
 			
@@ -2626,8 +2641,14 @@ void andaplanta(loc alvo)
 		 // AÇÕES VARIADAS
 		 // ------------------------------------------
 		 // KICK
-		 if (tar.casting && rog.kick_up)
+		 if (tar.castbar > 0)
+		 {
+			loga ("Tentando interromper cast do mob.");
+			loga(rog.kick_up.ToString());
+			if (rog.kick_up)
 			casta(KICK); // interrompe cast do mob se possível
+		 }
+
 		 // ------------------------------------------
 		 // COMBATE SEM COMBO POINTS
 		 // ------------------------------------------
@@ -2640,6 +2661,9 @@ void andaplanta(loc alvo)
 		 // ------------------------------------------
 		 else
 		 {
+			// ------------------------------------------
+			// EVISCERATE
+			// ------------------------------------------			
 			if (cb_evis_auto.Checked)
 			{
 			 int dif = tar.level - me.level; // diferença entre os níveis
@@ -2654,8 +2678,6 @@ void andaplanta(loc alvo)
 				pontos = 5;
 			 tb_evis_cp.Text = pontos.ToString(); // mostra no textbox
 			}
-
-
 			bool finalizavel = tar.hp <= 25;
 			bool rotina = rog.combo >= atoi(tb_evis_cp);  // combo ideal
 			bool pode_evis = rog.evis_up && (finalizavel || rotina);
@@ -2664,17 +2686,24 @@ void andaplanta(loc alvo)
 			{
 			 casta(EVIS);  // mob vai morrer ou combo cheio
 			}
-			else if (!rog.has_SAD && rog.SAD_up)
+			// ------------------------------------------
+			// SLICE AND DICE
+			// ------------------------------------------		
+			else if (!(me.mobs == 1 && tar.trivial) && !rog.has_SAD && rog.SAD_up)
 			{
 			 casta(SAD);   // não tem Slice and Dice → aplica
 			}
-			else if (rog.has_SAD && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70)
+			// ------------------------------------------
+			// EXPOSE ARMOR
+			// ------------------------------------------					
+			else if (!tar.trivial && rog.has_SAD && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70)
 			{
 			 loga("Aplicando Expose Armor.");
 			 casta(EXPOSE_ARMOR);
-			 espera(1);
-			 checkme();
 			}
+			// ------------------------------------------
+			// SINISTER STRIKE (energy dump)
+			// ------------------------------------------						
 			else if (rog.ss_up && mana(45))
 			{
 			 casta(SS);  // fallback → gerar mais combo
