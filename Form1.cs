@@ -1445,7 +1445,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		// -----------------------------
 		if (cb_anda.Checked)
 		{
-		 if (timeout.ElapsedMilliseconds - last >= 4000) // passaram 4 segundos?
+		 if (timeout.ElapsedMilliseconds - last >= 3000) // passaram 4 segundos?
 		 {
 			aperta(SPACEBAR); // dá pulinho a cada 4 segudnos
 			last = timeout.ElapsedMilliseconds; // atualiza o tempo do último disparo
@@ -1690,7 +1690,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 80)); // enquanto ativo e longe (20 se catando)
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 90)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Waypoint atingido. Partindo para proximo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
