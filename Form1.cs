@@ -708,7 +708,7 @@ for (int y = max_y; y >= max_y - 100; y--)      // começa no topo até 100 pixe
 	{
 	 pratos.Add(y);                      // adiciona prato
 	 lastprato = y;                      // atualiza último prato
-	 if (false && cb_debug.Checked && cb_log.Checked)
+	 if (false )
 		loga("prato cor " + c.R + "," + c.G + "," + c.B + " em y=" + y);
 	}
 	else
@@ -720,7 +720,7 @@ for (int y = max_y; y >= max_y - 100; y--)      // começa no topo até 100 pixe
 	nao_prato_count++;                      // incrementa contador de não-pratos
 	if (nao_prato_count >= limite_nao_prato) // atingiu o limite?
 	{
-	 if (false && cb_debug.Checked && cb_log.Checked)
+	 if (false )
 		loga("encerrando busca por não encontrar pratos por " + limite_nao_prato + " pixels.");
 	 break;                              // encerra a busca
 	}
@@ -737,7 +737,7 @@ int y2 = pratos[primeiro_carne ? 0 : 1];         // próximo prato
 int ycarne = (int)Math.Round((y1 + y2) / 2.0);    // centro da carne
 pixels.Add(new pixel(x, ycarne));               // adiciona hambúrguer
 count++;                                        // incrementa contador
-if (false && cb_debug.Checked && cb_log.Checked) // codigo desabilitado
+if (false ) // codigo desabilitado
 {
  c = GetColorAt(x, ycarne);                   // lê cor da carne
  loga("hamburger " + count.ToString("d2") + ": cor " + c.R + "," + c.G + "," + c.B + " calculado em y=" + ycarne);
@@ -751,7 +751,7 @@ for (int i = primeiro_carne ? 0 : 1; i < pratos.Count - 1; i++)
  ycarne = (int)Math.Round((y1 + y2) / 2.0);    // centro da carne
  pixels.Add(new pixel(x, ycarne));           // adiciona hambúrguer
  count++;                                    // incrementa contador
- if (false && cb_debug.Checked && cb_log.Checked) // codigo desabilitado pra nao sujar interface
+ if (false) // codigo desabilitado pra nao sujar interface
  {
 	c = GetColorAt(x, ycarne);               // lê cor da carne
 	loga("hamburger " + count.ToString("d2") + ": cor " + c.R + "," + c.G + "," + c.B + " calculado em y=" + ycarne);
@@ -779,7 +779,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
  pixels[i].g = cor.G;            // salva canal verde
  pixels[i].b = cor.B;            // salva canal azul
 
- if (false && cb_debug.Checked && cb_log.Checked)  // se debug e loga estiverem marcados
+ if (false)  // se debug e loga estiverem marcados
 	loga("hamburger " + i + ": R=" + p.r + " G=" + p.g + " B=" + p.b); // mostra cor lida
 }
 }
@@ -897,11 +897,11 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		// yaw (em W)
 		double yaw_raw = pixels[4].r * 360.0 / 256.0; // converte de byte para grau real
 		e.facing = (int)Math.Round(yaw_raw);         // converte para W (milésimos de pi-rad)
-		if (cb_debug.Checked) tb_yaw.Text = e.facing.ToString();
+		if (true) tb_yaw.Text = e.facing.ToString();
 
 		// velocidade
 		e.spd = 255 - pixels[4].g; // canal G invertido
-		if (cb_debug.Checked) tb_spd.Text = e.spd.ToString();
+		if (true) tb_spd.Text = e.spd.ToString();
 
 		// leitura do canal B
 		var b4 = pixels[4].b;
@@ -1283,34 +1283,39 @@ void press(byte key)
 	}
 
 
-
-	// --------------------------------
-	// MÉTODO GIRALVO 5.2 - GIRA O PERSONAGEM PARA A COORDENADA ALVO (versão 0–360)
-	// --------------------------------
+	bool permitido_giro = false; // variável para controlar se pode girar ou não
+													// --------------------------------
+													// MÉTODO GIRALVO 5.2 - GIRA O PERSONAGEM PARA A COORDENADA ALVO (versão 0–360)
+													// --------------------------------
 	public void giralvo(loc alvo)
 	{
 	 giraface(getyaw(me.pos, alvo), dist(me.pos, alvo));
+	 permitido_giro = podegirar(alvo); // atualiza se pode girar ou não
 	}
 
 
-	// M11 - MÉTODO DIST - CALCULA A DISTÂNCIA ENTRE DUAS COORDENADAS (LOC).
+	// -----------------------------------------------------------
+	// M11 - MÉTODO DIST - CALCULA A DISTÂNCIA ENTRE DUAS COORDENADAS (LOC)
+	// Corrige o eixo Y comprimido dividindo por 1.515 se modo humanlike estiver ativo
+	// -----------------------------------------------------------
 	public int dist(loc orig, loc tar)
-{
-double distance = Math.Sqrt(Math.Pow(Math.Abs(orig.x - tar.x), 2) +
-														Math.Pow(Math.Abs(orig.y - tar.y), 2));
-return (int)distance;
-}
+	{
+	 double dx = orig.x - tar.x;                  // diferença no eixo X
+	 double dy = orig.y - tar.y;                  // diferença no eixo Y
+
+	 if (true || cb_humanlike.Checked)                    // se modo humanlike ativado
+		dy /= 1.515;                             // divide pra corrigir compressão do Y
+
+	 double distance = Math.Sqrt(dx * dx + dy * dy); // pitágoras
+	 return (int)distance;                        // retorna como inteiro
+	}
 
 
 
-
-
-
-
-//-----------------------------------------------------------
-// MÓDULO 18 - VARIÁVEL GLOBAL -VARIÁVEIS GLOBAIS 
-//--------------------------------------------------------
-public element me;
+	//-----------------------------------------------------------
+	// MÓDULO 18 - VARIÁVEL GLOBAL -VARIÁVEIS GLOBAIS 
+	//--------------------------------------------------------
+	public element me;
 public element tar;
 public palatable pala = new palatable(); // inicializa tabela de status de paladino 
 public roguetable rog = new roguetable(); // inicializa tabela de status de rogue
@@ -1359,11 +1364,33 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		loga("Inatividade de 5 minutos. Usando Hearthstone.");
 		HS();
 	 }
-	 // VIRA POUCO E MARCADO ANDA 
-	 if (cb_anda.Checked && Math.Abs(delta(me.pos, destino)) < 60)            
-		press(WKEY); // ANDA 
+	 //------------------------------
+	 // DECISÃO DE ANDAR OU PARAR
+	 //------------------------------
+	 if (cb_anda.Checked)
+	 {
+		if (cb_humanlike.Checked) // modo fluido e menos robótico
+		{
+		 if (Math.Abs(delta(me.pos, destino)) < 160)
+			press(WKEY); // curva possível → segue andando
+		 else
+			solta(WKEY); // curva fechada → para
+		}
+		else // modo clássico com base no delta angular
+		{
+		 if (dist(me.pos, destino) > 100 || Math.Abs(delta(me.pos, destino)) < 150)
+			press(WKEY); // pode andar
+		 else
+			solta(WKEY); // ângulo muito grande → para
+		}
+	 }
 	 else
-		solta(WKEY); // PARA DE ANDAR 
+	 {
+		solta(WKEY); // segurança: desativa andar se cb_anda não estiver marcado
+	 }
+
+
+
 	 long last = 0; // marca o tempo do último evento em milissegundos
 	 ///------------------------------------------------------
 	 //                 COMEÇA A ANDAR  
@@ -1399,7 +1426,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		// -----------------------------
 		if (timeout.ElapsedMilliseconds > 40000)
 		{
-		 aperta(WKEY, 2); // solta W
+		 solta(ANDA); // para de andar se timeout
 		 if (cb_log.Checked) loga("Timeout no moveto() — passando para o próximo ponto.");
 		 return;
 		}
@@ -1426,7 +1453,25 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 checkme();
 		 drawmap(destino);
 		 loga($"Distancia do waypoint: {dist(me.pos, destino)}");
+		 //--------------------------------------------------------
+		 // GIRA PARA O DESTINO (ALINHA FACING) 
+		 //---------------------------------------------------------
+		 int dif = delta(me.pos, destino);              // diferença angular com sinal
+		 double d = dist(me.pos, destino);              // distância até o destino
+		 double yaw = getyaw(me.pos, destino);          // direção até o destino
+
+		 loga($"Yaw até o destino: {yaw}°");
+		 loga($"Delta para virar: {Math.Abs(dif)}° ({(dif < 0 ? "esquerda" : "direita")})");
+		 loga($"Distância até o destino: {d}");
+
+		 if (podegirar(destino))
+			loga("Curva possível – seguindo em movimento.");
+		 else
+			loga("Curva muito fechada – será necessário parar.");
+
 		 giralvo(destino);
+		 // gira para o destino
+		 //--------------------------------------------------------
 		 drawmap(destino);
 		 press(WKEY);
 		}
@@ -1630,7 +1675,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		else if (me.classe == ROGUE)
 		{
 		 // espera recuperar energia
-		 if (me.hp < 80)
+		 if (me.hp < atoi(tb_rogue_eat_at))
 		 {
 			para(); // para de andar se estiver andando
 			loga($"Esperando recuperação de HP: {me.hp}");
@@ -1645,7 +1690,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 80)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Waypoint atingido. Partindo para proximo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
@@ -1971,12 +2016,12 @@ void andaplanta(loc alvo)
 		loga("Dois targets com mesmo comportamento. Priorizando o mais próximo.");
 		aperta(TARGETLAST);
 	 }
-	 else if (mood1 > mood2) // primeiro é mais hostil
+	 else if (mood1 < mood2) // primeiro é mais hostil
 	 {
 		loga("Primeiro target é mais hostil que o segundo. Retornando para ele.");
 		aperta(TARGETLAST);
 	 }
-	 else if (mood2 > mood1) // segundo é mais hostil
+	 else if (mood2 < mood1) // segundo é mais hostil
 		loga("Segundo target é mais hostil que o primeiro. Mantido.");
 	 else // empate total ou condição rara
 	 {
@@ -2144,127 +2189,109 @@ void andaplanta(loc alvo)
 
 
 
-			//------------------------------------------------------------
-			// ---------------------INICIO PULL ROGUE ----------------
-			//--------------------------------------------------------
-			else if (me.classe == ROGUE) // se for rogue
+		 //------------------------------------------------------------
+		 // ---------------------INICIO PULL ROGUE ----------------
+		 //--------------------------------------------------------
+		 else if (me.classe == ROGUE) // ---------------- INÍCIO PULL ROGUE ----------------
+		 {
+			loga("Iniciando pull como Rogue.");
+			aperta(AUTOATTACK);
+			aperta(INTERACT);                      // inicia aproximação
+			int t0 = Environment.TickCount;        // começa o timer global do pull
+			int lastInteract = t0;
+			int lastJump = t0;
+			bool jafalou= false; // flag para saber se já avisou
+			while (!me.combat && Environment.TickCount - t0 < 15000 && me.hastarget && tar.hp >= 100)
 			{
-			 aperta(AUTOATTACK);   // ativa autoattack
-			 aperta(INTERACT);     // começa a andar até o mob
-			 checkme(); // atualiza status
+			 checkme();
 
-			 // novo: se faca estiver pronta, lança e para de andar
-			 if (rog.throw_up && cb_range_pull.Checked) // chegou em range da faca
+			 // Se entrou em range do THROW
+			 if (rog.throw_up)
 			 {
-				// ---------------------------------------------
-				// PULL COM FACA
-				// ---------------------------------------------
-				loga("Parando para lançar faca.");
-				para(); // para de andar
-
-				if (!rog.throw_up)
+				if (!jafalou && !cb_range_pull.Checked && cb_stealth_pull.Checked && tar.trivial)
 				{
-				 loga("Perdeu o range antes de lançar.");
-				 break; // tenta outro método (Charge, Stealth etc)
+				 loga("Target trivial, não usando stealth.");
+				 jafalou = true; // avisa apenas uma vez
 				}
-
-				casta(THROW); // lança faca
-				for (int i = 0; i < 15; i++) // 15 ciclos de 300ms = 4,5s
+				if (cb_range_pull.Checked)
 				{
-				 wait(300);
-				 checkme();
-				 if (me.melee || me.mobs > 0)
-					break;
-				}
-				if (me.combat)
-				 return;
-			 }
-			 // ---------------------------------------------
-			 // PULL MELEE
-			 // ---------------------------------------------
-
-			 else if ((tar.type == HUMANOID && cb_pickpocket.Checked) || !cb_range_pull.Checked || !rog.throw_up)
-			 {
-				loga("Iniciando body pull.");
-			 if (cb_stealth_pull.Checked && rog.stealth_up && !tar.trivial) // nao puxa trivial no stealth
-			 {
-				loga("Mob não trivial: ativando stealth.");
-				aperta(STEALTH);
-			 }
-
-				int t0 = Environment.TickCount;
-				int lastInteract = Environment.TickCount;
-				int lastJump = Environment.TickCount;
-
-				while (true)
-				{
-				 int now = Environment.TickCount;
-
-				 if (now - t0 > 15000 || !me.hastarget || tar.hp < 100)
+				 loga("Em range do ranged. Executando ranged pull.");
+				 para();
+				 if (rog.throw_up)
 				 {
-					loga("Timeout de segurança: Pull abortado.");
-					if (rog.stealth) aperta(STEALTH); // sai de stealth se estava
-					para();
-					aperta(CLEARTGT);
-					return;
+					casta(THROW);
+
+					// Espera ativa após o Throw, até 15s totais
+					loga("Esperando reação do mob após ranged pull.");
+					while (Environment.TickCount - t0 < 15000)
+					{
+					 wait(300);
+					 checkme();
+					 if (me.melee || me.mobs > 0)
+						break;
+					}
 				 }
-
-				 if (now - lastInteract >= 500)
-				 {
-					aperta(INTERACT);
-					lastInteract = now;
-				 }
-
-				 if (now - lastJump >= 3000)
-				 {
-					aperta(PULA, 20); // pulo a cada 3 segundos
-					lastJump = now;
-				 }
-
-				 if (me.melee && cb_pickpocket.Checked && rog.stealth)
-					aperta(PICKPOCKET);
-				 else if (me.melee)
-					aperta(SS);
-
-				 checkme();
-
+				 else loga("Perdeu range do ranged pull. Fallback para melee pull.");
 				 if (me.combat)
 				 {
-					para();
-					aperta(PULA, 10);     // pulo humano
-					aperta(INTERACT);     // vira pro mob
-					loga("Body pull com sucesso.");
+					loga("Combate iniciado após ranged pull.");
 					return;
 				 }
 				}
+				else if (cb_stealth_pull.Checked && rog.stealth_up && !tar.trivial && !rog.stealth)
+				{
+				 loga("Ranged desativado. Entrando em Stealth.");
+				 para();
+				 aperta(STEALTH);
+				 wait(400); // dá tempo pro buff aplicar
+				 checkme();
+				}
 			 }
-
-
-
-
-
-			 // ---------------------------------------------
-			 // PULL COM SINISTER STRIKE (range direto)
-			 // ---------------------------------------------
-			 if (me.melee || rog.ss_up)
-			 {
-				para();
-				casta(SS);
-			 }
-
-			 checkme();
-			 if (me.combat) return;
-
-			 if (ticker++ % 16 == 0) aperta(PULA); // pulo humano a cada 2s
-			 aperta(INTERACT); // continua andando até o mob
+			
+			 // Se estiver em melee range
 			 if (me.melee)
-				para();
+			 {
+				if (tar.type == HUMANOID && cb_pickpocket.Checked && rog.stealth)
+				 aperta(PICKPOCKET);
+				else
+				 aperta(SS);
+			 }
+
+			 // Movimento contínuo
+			 int now = Environment.TickCount;
+			 if (now - lastInteract >= 500)
+			 {
+				aperta(INTERACT);
+				lastInteract = now;
+			 }
+			 if (now - lastJump >= 3000)
+			 {
+				aperta(PULA, 20);
+				lastJump = now;
+			 }
 			}
-			// ---------------------FIM PULL ROGUE---------------------
+
+			// Avaliação final: combate iniciou ou não
+			if (me.combat)
+			{
+			 para();
+			 aperta(PULA, 10);
+			 aperta(INTERACT);
+			 loga("Pull concluído com sucesso.");
+			 return;
+			}
+			else
+			{
+			 loga("Pull falhou. Não entrou em combate.");
+			 if (rog.stealth) aperta(STEALTH); // toggle stealth para sair
+			 para();
+			 // não limpa o target aqui — pode haver fallback fora
+			}
+		 }
 
 
 
-			checkme();
+		 checkme();
 			if (ticker > 10 && !me.combat) // passou 5s e não entrou em combate
 			{
 			 aperta(CLEARTGT); // limpa target e aborta pull
@@ -2609,7 +2636,7 @@ void andaplanta(loc alvo)
 
 
 		// -----------------------------------------------
-		// ROTINA DE COMBATE ROGUE
+		// ROTINA DE COMBATE ROGUE (RCR)
 		// -----------------------------------------------
 		else if (me.classe == ROGUE)
 		{
@@ -2689,14 +2716,16 @@ void andaplanta(loc alvo)
 			// ------------------------------------------
 			// SLICE AND DICE
 			// ------------------------------------------		
-			else if (!(me.mobs == 1 && tar.trivial) && !rog.has_SAD && rog.SAD_up)
+			else if (!(me.mobs == 1 && tar.trivial) && !rog.has_SAD && rog.SAD_up && cb_SAD.Checked)
 			{
-			 casta(SAD);   // não tem Slice and Dice → aplica
+			 casta(SAD);   // não tem Slice and Dice → aplica se indicado
 			}
 			// ------------------------------------------
 			// EXPOSE ARMOR
 			// ------------------------------------------					
-			else if (!tar.trivial && rog.has_SAD && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70)
+			else if (!tar.trivial && (rog.has_SAD || !cb_SAD.Checked) && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70
+				&& cb_expose_armor.Checked)
+			 
 			{
 			 loga("Aplicando Expose Armor.");
 			 casta(EXPOSE_ARMOR);
@@ -3206,26 +3235,29 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 
 
 
-
 	// -----------------------------------------------------------
 	// MÉTODO getyaw - Retorna facing ideal entre dois pontos
-	// (equivalente a lb_yaw.Text do botão drawmap, ou seja, 360 - yaw visual)
+	// Usa correção do eixo Y se cb_humanlike estiver marcada
 	// -----------------------------------------------------------
 	int getyaw(loc orig, loc tar)
+
+
 	{
-	 double dx = tar.x - orig.x; // diferença no eixo X (target menos origem)
-	 double dy = orig.y - tar.y; // inverte o eixo Y
+	 double dx = tar.x - orig.x;               // diferença no eixo X
+	 double dy = orig.y - tar.y;               // diferença no eixo Y (inverte por causa da orientação visual)
 
-	 double ang = Math.Atan2(dx, dy) * (180.0 / Math.PI); // calcula ângulo anti-horário
-	 if (ang < 0) ang += 360; // ajusta negativo para escala 0–360
+	 if (true || cb_humanlike.Checked)                 // se modo humanlike estiver ativado
+		dy /= 1.515;                          // divide pra compensar compressão do eixo Y
 
-	 double yaw = 360 - ang; // inverte o yaw visual (espelhamento em torno de 0)
-	 if (yaw >= 360) yaw -= 360; // ajusta caso passe de 360
+	 double ang = Math.Atan2(dx, dy) * (180.0 / Math.PI); // calcula ângulo visual
+	 if (ang < 0) ang += 360;                 // ajusta ângulo negativo
 
-	 return (int)Math.Round(yaw); // retorna yaw como inteiro
+	 double yaw = 360 - ang;                  // espelha para yaw no sentido horário
+	 if (yaw >= 360) yaw -= 360;              // corrige wrap
 
-
+	 return (int)Math.Round(yaw);             // retorna yaw arredondado
 	}
+
 	// ------------------------------------------
 	// MÉTODO giraface(facing) - Gira até o ângulo desejado
 	// ------------------------------------------
@@ -3233,51 +3265,65 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	{
 	 checkme();                              // atualiza posição e facing atual
 	 int f0 = me.facing;                     // facing atual
-	 bool correndo = isdown(WKEY); // esta correndo 
-	 
+	 bool correndo = isdown(WKEY);           // está correndo?
+
 	 int deltaR = (f0 - f1 + 360) % 360;     // ângulo pra direita
 	 int deltaL = (f1 - f0 + 360) % 360;     // ângulo pra esquerda
 
 	 bool direita = deltaR <= deltaL;        // decide direção
 	 int delta = direita ? deltaR : deltaL;  // menor ângulo
-	 bool logar = true; // flag para logar o giro em movimento
-	 int tempo = Math.Min((int)(delta * 5.55), 1000); // tempo proporcional
-	 float fator_drift = 1.25f; // fator de drift (ajuste fino)
-	 if (me.spd > 3) tempo = (int)(tempo * fator_drift);      // aplica fator pra compensar o deslocamento lateral
+	 bool logar = true;                      // flag para logar o giro em movimento
+
+	 int tempo = Math.Min((int)(delta * 5.55), 1000); // tempo proporcional ao ângulo
+	 float fator_drift = 1.25f;                        // fator de drift (ajuste fino pra não passar do ponto)
+	 if (me.spd > 3) tempo = (int)(tempo * fator_drift); // aplica fator se estiver se movendo com velocidade
 
 	 const byte BYTE_AKEY = 0x41;
 	 const byte BYTE_DKEY = 0x44;
-	 byte tecla = direita ? BYTE_DKEY : BYTE_AKEY;    // usa valor literal: DKEY (0x44) ou AKEY (0x41)
-	 if ((d < 200 && tempo > 350) || (d< 120 && tempo > 150)) // alvo muito perto e curva abrupta ORIGINAL ERA 200. TESTE DIMINUI TEMPO PARA 150
+	 byte tecla = direita ? BYTE_DKEY : BYTE_AKEY;    // define tecla de giro (A ou D)
+
+	 // ---------------------------
+	 // PARADA PARA GIRO
+	 // ---------------------------
+	 if (cb_humanlike.Checked)
 	 {
-		solta(WKEY); // melhor parar de correr senao vai passar reto 
-		//if (cb_log.Checked) loga($"Giro parado: Dist {d}m {tempo * 0.18} graus");
-		logar = false;
+		if (false) // modo humano: para se a curva não for possível em movimento
+		{
+		 solta(WKEY);
+		 logar = false;
+		 if (cb_log.Checked) loga("Curva impossível em movimento – parando para girar..");
+		}
+	 }
+	 else // modo clássico: para se curva for brusca e o alvo estiver muito perto
+	 {
+		if (d >= 120 && ((d < 200 && tempo > 600) || tempo > 450))
+		{
+		 solta(WKEY);
+		 logar = false;
+		
+			loga("Curva abrupta – parando para girar. (no giralvo)");
+		 loga($"Distância: {d}m - Tempo: {tempo}ms - Delta: {delta}°"); // loga detalhes da curva
+		}
 	 }
 
-   press(tecla);       // pressiona tecla de giro
-	 wait(tempo);        // segura tempo proporcional
-	 solta(tecla);       // solta tecla de giro
+	 press(tecla);     // pressiona tecla de giro (A ou D)
+	 wait(tempo);      // espera tempo proporcional ao ângulo
+	 solta(tecla);     // solta a tecla
 
 	 if (cb_log.Checked)
 	 {
-		checkme(); // atualiza posição e facing após o giro
-
-		int f2 = me.facing; // facing final
+		checkme(); // atualiza posição após o giro
+		int f2 = me.facing; // facing após o giro
 		int erro = ((f2 - f1 + 540) % 360) - 180; // erro com sinal
-		if (!direita) erro = -erro; // ajusta sinal conforme direção
-		int delta_total = delta; // salva delta original (pra usar abaixo)
-
-	
+		if (!direita) erro = -erro; // corrige sinal se girou à esquerda
+		int delta_total = delta; // delta original (pra uso futuro, se quiser logar)
+														 // loga($"Erro final do giro: {erro}°"); // (opcional)
 	 }
 
-
-	 if (correndo) press(WKEY);
-
-
-
+	 if (correndo) press(WKEY); // se estava andando antes, retoma
 	}
-	
+
+
 
 
 
@@ -5157,8 +5203,85 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 checkme();
-	 loga("target id: " + tar.id); // loga o ID do alvo atual
+	 wait(5000); // espera 5 segundos para aferição
+	 loga("Iniciando teste de velocidade real com facing...");
+
+	 List<double> vels = new List<double>();
+
+	 for (int i = 0; i < 2; i++) // 3 aferições
+	 {
+		loga("Aferição " + (i + 1));
+
+		checkme(); // atualiza status
+		int f1 = me.facing; // facing inicial
+		loc p1 = me.pos;    // posição inicial
+
+		loga("Facing inicial: " + f1 + "°");
+		loga("Posição inicial: X=" + p1.x + " Y=" + p1.y);
+
+		wait(4000);
+
+		checkme(); // atualiza status de novo
+		int f2 = me.facing; // facing final
+		loc p2 = me.pos;    // posição final
+
+		loga("Facing final: " + f2 + "°");
+		loga("Posição final:  X=" + p2.x + " Y=" + p2.y);
+
+		double d = dist(p1, p2);
+		loga("Distância percorrida: " + d.ToString("F2") + " yd");
+
+		double v = d / 4.0;
+		loga("Velocidade estimada: " + v.ToString("F2") + " yd/s");
+
+		vels.Add(v);
+
+		loga("---------------------------");
+	 }
+
+	 double media = vels.Average();
+	 loga("Velocidade média (3 trechos): " + media.ToString("F2") + " yd/s");
+	 loga("Teste concluído.");
+	}
+	// ------------------------------------------
+	// metodo giraok
+	// ------------------------------------------
+	// verifica se é possível fazer a curva até o ponto destino
+	// sem parar de andar, com base na facing atual, posicao atual
+	// raio de curva minimo pratico = 8.14
+	// eixo Y precisa ser ajustado (comprimido)
+	// considera que bot está sempre se movendo pra frente
+	// retorna true se conseguir girar até o destino
+	// false se for preciso parar pra virar
+	bool podegirar(loc destino)
+	{
+	 const double raio = 8.14; // raio minimo de curva
+	 const double yfix = 1.51; // fator de compressao do eixo Y
+	 const double eps = 1e-6; // margem de erro flutuante
+
+	 double dx = destino.x - me.pos.x; // diferença no X
+	 double dy = (destino.y - me.pos.y) / yfix; // diferença no Y ajustada
+
+	 double dist = Math.Sqrt(dx * dx + dy * dy); // distancia até o destino
+	 if (dist < eps) return true; // se muito perto, considera que vira
+
+	 double ang = (me.facing + 90) % 360; // converte facing do jogo para sistema trigonometrico
+	 double rad = ang * Math.PI / 180.0; // transforma para radianos
+
+	 // rotação reversa do sistema pro referencial do bot
+	 double cos = Math.Cos(-rad);
+	 double sin = Math.Sin(-rad);
+
+	 double localx = dx * cos - dy * sin; // destino.x no sistema do bot
+	 double localy = dx * sin + dy * cos; // destino.y no sistema do bot
+
+	 if (localx < 0) return false; // está atrás, não dá pra virar andando
+	 if (Math.Abs(localy) < eps) return true; // está reto, segue
+
+	 // calcula raio necessário pra tangenciar o ponto
+	 double r = (localx * localx + localy * localy) / (2 * localy);
+
+	 return Math.Abs(r) >= raio; // compara com o raio minimo permitido
 	}
 
 
@@ -5186,20 +5309,33 @@ else
 
 	private void button18_Click(object sender, EventArgs e)
 	{
-	 checkme();
-	 wait(GCD); // espera o GCD
-	 checkme(); // atualiza status do player
-	 string aura_log = "[AURAS] "
- + "crus=" + pala.crusader + "  "
- + "devo=" + pala.devotion + "  "
- + "frost=" + pala.frost + "  "
- + "shadow=" + pala.shadow + "  "
- + "fire=" + pala.fire + "  "
- + "conc=" + pala.concentration + "  "
- + "retri=" + pala.retribution;
+	 loga("Esperando 5 segundos antes de iniciar coleta...");
+	 wait(3000); // tempo pra começar a girar
 
-	 loga(aura_log); // ou tb_debug1.Text = aura_log;
-	 loga(me.classe.ToString()); // mostra a classe do player
+	 //-----------------------------------------------
+	 // INICIALIZAÇÃO
+	 //-----------------------------------------------
+	 checkme();
+	 loc inicio = me.pos;                // salva posição inicial
+	 double ult_dist_logada = 0;         // última distância logada
+	 loga("Iniciando...");
+	 checkme();
+	 //-----------------------------------------------
+	 // LOOP DE MONITORAMENTO DE DISTÂNCIA
+	 //-----------------------------------------------
+	 while (on) // enquanto flag 'on' estiver ativa
+	 {
+		checkme();                            // atualiza posição atual
+		double d_total = dist(inicio, me.pos); // calcula distância desde o início
+
+		if (d_total - ult_dist_logada >= 10)  // andou mais 10 metros?
+		{
+		 ult_dist_logada = Math.Floor(d_total / 10) * 10; // atualiza última logada
+		 loga($"Andou 10 metros. Total: {ult_dist_logada}m"); // loga no painel
+		}
+
+		wait(100); // pequena pausa para evitar spam de CPU
+	 }
 	}
 
 	// ----------------------------------------
@@ -5229,6 +5365,15 @@ else
 	private void label25_Click(object sender, EventArgs e)
 	{
 
+	}
+
+	private void button21_Click(object sender, EventArgs e)
+	{
+	 checkme(); // atualiza posição do player
+	 int x = atoi(tb_debug1); // pega X do campo de debug1
+	 int y = atoi(tb_debug2); // pega Y do campo de debug2
+	 var targ = new  loc(x, y);         // cria e retorna a struct loc
+	 giralvo(targ); // gira o alvo para a nova posição
 	}
 
 

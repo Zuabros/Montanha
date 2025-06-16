@@ -92,6 +92,7 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
+	 this.cb_evis_auto = new System.Windows.Forms.CheckBox();
 	 this.cb_range_pull = new System.Windows.Forms.CheckBox();
 	 this.tb_evasion = new System.Windows.Forms.TextBox();
 	 this.label26 = new System.Windows.Forms.Label();
@@ -220,7 +221,6 @@ namespace Discord
 	 this.tb_debug3 = new System.Windows.Forms.TextBox();
 	 this.bt_debug2 = new System.Windows.Forms.Button();
 	 this.tb_debug4 = new System.Windows.Forms.TextBox();
-	 this.cb_debug = new System.Windows.Forms.CheckBox();
 	 this.cb_log = new System.Windows.Forms.CheckBox();
 	 this.bt_save_cfg = new System.Windows.Forms.Button();
 	 this.tb_debug = new System.Windows.Forms.TextBox();
@@ -234,7 +234,11 @@ namespace Discord
 	 this.button16 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.button19 = new System.Windows.Forms.Button();
-	 this.cb_evis_auto = new System.Windows.Forms.CheckBox();
+	 this.cb_SAD = new System.Windows.Forms.CheckBox();
+	 this.cb_expose_armor = new System.Windows.Forms.CheckBox();
+	 this.label28 = new System.Windows.Forms.Label();
+	 this.button21 = new System.Windows.Forms.Button();
+	 this.cb_humanlike = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -264,6 +268,8 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.button21);
+	 this.tabPage1.Controls.Add(this.label28);
 	 this.tabPage1.Controls.Add(this.tb_mobs);
 	 this.tabPage1.Controls.Add(this.tb_timer_hours);
 	 this.tabPage1.Controls.Add(this.button18);
@@ -908,6 +914,8 @@ namespace Discord
 	 // tabPage4
 	 // 
 	 this.tabPage4.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage4.Controls.Add(this.cb_expose_armor);
+	 this.tabPage4.Controls.Add(this.cb_SAD);
 	 this.tabPage4.Controls.Add(this.cb_evis_auto);
 	 this.tabPage4.Controls.Add(this.cb_range_pull);
 	 this.tabPage4.Controls.Add(this.tb_evasion);
@@ -926,6 +934,18 @@ namespace Discord
 	 this.tabPage4.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage4.TabIndex = 1;
 	 this.tabPage4.Text = "Rogue";
+	 // 
+	 // cb_evis_auto
+	 // 
+	 this.cb_evis_auto.AutoSize = true;
+	 this.cb_evis_auto.Checked = true;
+	 this.cb_evis_auto.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_evis_auto.Location = new System.Drawing.Point(109, 37);
+	 this.cb_evis_auto.Name = "cb_evis_auto";
+	 this.cb_evis_auto.Size = new System.Drawing.Size(48, 17);
+	 this.cb_evis_auto.TabIndex = 11;
+	 this.cb_evis_auto.Text = "Auto";
+	 this.cb_evis_auto.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_range_pull
 	 // 
@@ -2237,18 +2257,6 @@ namespace Discord
 	 this.tb_debug4.TabIndex = 15;
 	 this.tb_debug4.Text = "0";
 	 // 
-	 // cb_debug
-	 // 
-	 this.cb_debug.AutoSize = true;
-	 this.cb_debug.Checked = true;
-	 this.cb_debug.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_debug.Location = new System.Drawing.Point(9, 4);
-	 this.cb_debug.Name = "cb_debug";
-	 this.cb_debug.Size = new System.Drawing.Size(87, 17);
-	 this.cb_debug.TabIndex = 18;
-	 this.cb_debug.Text = "Debug mode";
-	 this.cb_debug.UseVisualStyleBackColor = true;
-	 // 
 	 // cb_log
 	 // 
 	 this.cb_log.AutoSize = true;
@@ -2369,17 +2377,60 @@ namespace Discord
 	 this.button19.UseVisualStyleBackColor = true;
 	 this.button19.Click += new System.EventHandler(this.button19_Click);
 	 // 
-	 // cb_evis_auto
+	 // cb_SAD
 	 // 
-	 this.cb_evis_auto.AutoSize = true;
-	 this.cb_evis_auto.Checked = true;
-	 this.cb_evis_auto.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_evis_auto.Location = new System.Drawing.Point(109, 37);
-	 this.cb_evis_auto.Name = "cb_evis_auto";
-	 this.cb_evis_auto.Size = new System.Drawing.Size(48, 17);
-	 this.cb_evis_auto.TabIndex = 11;
-	 this.cb_evis_auto.Text = "Auto";
-	 this.cb_evis_auto.UseVisualStyleBackColor = true;
+	 this.cb_SAD.AutoSize = true;
+	 this.cb_SAD.Checked = true;
+	 this.cb_SAD.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_SAD.Location = new System.Drawing.Point(10, 100);
+	 this.cb_SAD.Name = "cb_SAD";
+	 this.cb_SAD.Size = new System.Drawing.Size(95, 17);
+	 this.cb_SAD.TabIndex = 12;
+	 this.cb_SAD.Text = "Slice and Dice";
+	 this.cb_SAD.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_expose_armor
+	 // 
+	 this.cb_expose_armor.AutoSize = true;
+	 this.cb_expose_armor.Checked = true;
+	 this.cb_expose_armor.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_expose_armor.Location = new System.Drawing.Point(10, 118);
+	 this.cb_expose_armor.Name = "cb_expose_armor";
+	 this.cb_expose_armor.Size = new System.Drawing.Size(90, 17);
+	 this.cb_expose_armor.TabIndex = 13;
+	 this.cb_expose_armor.Text = "Expose armor";
+	 this.cb_expose_armor.UseVisualStyleBackColor = true;
+	 // 
+	 // label28
+	 // 
+	 this.label28.AutoSize = true;
+	 this.label28.Location = new System.Drawing.Point(501, 265);
+	 this.label28.Name = "label28";
+	 this.label28.Size = new System.Drawing.Size(56, 13);
+	 this.label28.TabIndex = 57;
+	 this.label28.Text = "SPD: 21,6";
+	 // 
+	 // button21
+	 // 
+	 this.button21.Location = new System.Drawing.Point(514, 169);
+	 this.button21.Name = "button21";
+	 this.button21.Size = new System.Drawing.Size(90, 23);
+	 this.button21.TabIndex = 58;
+	 this.button21.Text = "Giralvo";
+	 this.button21.UseVisualStyleBackColor = true;
+	 this.button21.Click += new System.EventHandler(this.button21_Click);
+	 // 
+	 // cb_humanlike
+	 // 
+	 this.cb_humanlike.AutoSize = true;
+	 this.cb_humanlike.Checked = true;
+	 this.cb_humanlike.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_humanlike.Location = new System.Drawing.Point(9, 4);
+	 this.cb_humanlike.Name = "cb_humanlike";
+	 this.cb_humanlike.Size = new System.Drawing.Size(83, 17);
+	 this.cb_humanlike.TabIndex = 66;
+	 this.cb_humanlike.Text = "Human Like";
+	 this.cb_humanlike.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -2387,6 +2438,7 @@ namespace Discord
 	 this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 	 this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 	 this.ClientSize = new System.Drawing.Size(819, 482);
+	 this.Controls.Add(this.cb_humanlike);
 	 this.Controls.Add(this.button19);
 	 this.Controls.Add(this.button9);
 	 this.Controls.Add(this.button16);
@@ -2400,7 +2452,6 @@ namespace Discord
 	 this.Controls.Add(this.tb_debug);
 	 this.Controls.Add(this.bt_save_cfg);
 	 this.Controls.Add(this.cb_log);
-	 this.Controls.Add(this.cb_debug);
 	 this.Controls.Add(this.tb_debug4);
 	 this.Controls.Add(this.bt_debug2);
 	 this.Controls.Add(this.tb_debug3);
@@ -2475,7 +2526,6 @@ namespace Discord
 	private System.Windows.Forms.Button button5;
 	private System.Windows.Forms.Button button6;
 	private System.Windows.Forms.CheckBox cb_nostop;
-	private System.Windows.Forms.CheckBox cb_debug;
 	private System.Windows.Forms.CheckBox cb_log;
 	private System.Windows.Forms.Button button7;
 	private System.Windows.Forms.Button bt_saveWP;
@@ -2651,6 +2701,11 @@ namespace Discord
 	private CheckBox cb_use_bloodrage;
 	private CheckBox cb_range_pull;
 	private CheckBox cb_evis_auto;
+	private CheckBox cb_SAD;
+	private CheckBox cb_expose_armor;
+	private Label label28;
+	private Button button21;
+	private CheckBox cb_humanlike;
  }
 }
 
