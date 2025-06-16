@@ -1381,7 +1381,10 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 if (dist(me.pos, destino) > 100 || Math.Abs(delta(me.pos, destino)) < 150)
 			press(WKEY); // pode andar
 		 else
+		 {
 			solta(WKEY); // ângulo muito grande → para
+			aperta(PULA); // pula para corrigir posição PULANDO
+		 }
 		}
 	 }
 	 else
@@ -1432,11 +1435,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		}
 		temp++;
 		checkme(); // atualiza estado do personagem
-	// -----------------------------
-	// BUFFS OUT OF COMBAT 
-	// -----------------------------
-		// PALADINO
-		if (me.classe==PALADIN) bless(me); // 
+
 		// ROGUE 
 		// ainda não implementado, mas pode ser feito aqui
 //------------------------		
@@ -1503,7 +1502,11 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 oldloc = me.pos; // atualiza posição ao final
 		}
 
-
+		// -----------------------------
+		// BUFFS OUT OF COMBAT 
+		// -----------------------------
+		// PALADINO
+		if (me.classe == PALADIN) bless(me); // 
 
 
 
