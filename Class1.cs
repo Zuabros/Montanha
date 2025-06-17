@@ -81,7 +81,7 @@ namespace Discord
 	public bool demo_up;          // pode usar Demoralizing Shout?  
 	public bool thun_up;          // pode usar Thunder Clap?  
 	public bool hams_up;          // pode usar Hamstring?  
-	public bool retaliate_up;     // pode usar Retaliation?  
+	public bool reataliation_up;     // pode usar Retaliation?  
 	public bool dwish_up;         // pode usar Death Wish?  
 	public bool charge_up;        // pode usar Charge?  
 	public bool throw_up;         // pode tacar throw knife (range, cooldown, etc.)
