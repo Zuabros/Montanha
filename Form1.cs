@@ -284,7 +284,7 @@ namespace Discord
 	// SKILLS EXCLUSIVAS DO WARRIOR
 	// --------------------------------------------
 	public const int HEROICS = N1;              // Heroic Strike
-	public const int SUNDER = N2;          // Sunder Armor
+	public const int OVERPOWER = N2;          // OVERPOWER
 	//public const int THROW = N3;           // Arremesso (Throw) já tem no rogue, usa a mesma
 	public const int HAMSTRING = N4;       // Hamstring
 	public const int BATTLESHOUT = N5;          // Battle Shout
@@ -296,7 +296,7 @@ namespace Discord
 	public const int REND = F3;            // Rend
 	public const int RETALIATION = F4;     // Retaliation
 	public const int CHARGE = F5;     // Charge
-	public const int OVERPOWER = F6;     // Charge
+	
 
 
 	// --------------------------------------------
@@ -674,6 +674,7 @@ namespace Discord
 
 	 // B: bit 0 = hs_casting     (Heroic Strike está enfileirado como autoattack)
 	 // B: bit 1 = has_thunder    (Thunder Clap ativo no target)
+	 // B: bit 2 = overpower_up	(Overpower pronto)
 	 // -------------------------------------------
 
 
@@ -1049,7 +1050,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		war.hs_up = (r10 & 128) != 0; // bit 7 = pode usar Heroic Strike?
 
 		war.has_cleave = (g10 & 1) != 0; // bit 0 = Cleave ativado (modo ao invés de ataque)
-		war.ovp_up = (g10 & 2) != 0; // bit 1 = pode usar Overpower?
+		war.overpower_up = (g10 & 2) != 0; // bit 1 = pode usar Overpower?
 		war.bloodrage_up = (g10 & 4) != 0; // bit 2 = pode usar Bloodrage?
 		war.hams_up = (g10 & 8) != 0; // bit 3 = pode usar Hamstring?
 		war.retaliate_up = (g10 & 16) != 0; // bit 4 = pode usar Retaliation?
@@ -1058,6 +1059,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		war.has_rend = (g10 & 128) != 0; // bit 7 = target has rend
 
 		war.hs_casting = (b10 & 1) != 0; // bit 0 = Heroic Strike enfileirado
+
 	 }
 
 	 
@@ -1693,7 +1695,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 90)); // enquanto ativo e longe (20 se catando)
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 110)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Waypoint atingido. Partindo para proximo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
@@ -1978,7 +1980,8 @@ void andaplanta(loc alvo)
 		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
 		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
-		if ((tar.type == 50 && cb_nohumanoid.Checked) || (tar.type == 230 && cb_nodragonkin.Checked)) return false;
+		if ((tar.type == 50 && cb_nohumanoid.Checked) || (tar.type == 230 && cb_nodragonkin.Checked))
+   	if (tar.type == MECHANICAL && cb_nomech.Checked) return false;
 
 		return true;
 	 }
@@ -2346,7 +2349,7 @@ void andaplanta(loc alvo)
 		decay.Start(me.hp);
 		emCombate = true;
 	 }
-	 int ticker= 0; // contador de ciclos
+	 int ticker = 0; // contador de ciclos
 	 do
 	 {
 		if (!on) return; // se o bot estiver desligado, sai do loop
@@ -2359,7 +2362,7 @@ void andaplanta(loc alvo)
 		{
 		 decay.Update(me.hp);
 		 int curdecay = decay.Current(tracker.Average); // exibe o decay atual em hp/min (sliding window); nos primeiros 10s usa média dos combates anteriores
-		 if (curdecay <  2000)  tbdecay.Text = curdecay.ToString(); // exibe o decay atual no textbox 
+		 if (curdecay < 2000) tbdecay.Text = curdecay.ToString(); // exibe o decay atual no textbox 
 		}
 
 
@@ -2373,7 +2376,7 @@ void andaplanta(loc alvo)
 		//----- HEALTH POTION --------
 		if (me.hp < 30 && me.mana < 40) // Tá no bico do corvo 
 		 aperta(HEALTHPOTION);
-				//-----------------------------------
+		//-----------------------------------
 		// ASSIST NO TANK EM DUNGEON 
 		//-----------------------------------
 		if (dungeon && cb_assist_tank.Checked && !me.hastarget || tar.morreu)
@@ -2442,11 +2445,11 @@ void andaplanta(loc alvo)
 			if (!deucharge)
 			{
 			 aperta(CLEARTGT); // limpa o target
-			 loga("Target não está com aggro em mim. Limpando target.");
+			 //loga("Target não está com aggro em mim. Limpando target.");
 			}
 			else
 			 deucharge = false; // evita perder o target por causa do stun do charge 
-			
+
 			checkme(); // atualiza estado após limpar
 
 			if (!me.combat) break; // combate terminou, sai do loop
@@ -2457,7 +2460,7 @@ void andaplanta(loc alvo)
 
 		{
 		 aperta(INTERACT);               // anda até o alvo se estiver longe
-		 if (ticker%6==0) aperta(PULA); // da uns pulinhos a cada 3 ciclos pra pular a cerca ao ir atras do target 
+		 if (ticker % 6 == 0) aperta(PULA); // da uns pulinhos a cada 3 ciclos pra pular a cerca ao ir atras do target 
 		}
 
 		//---------------------ROTINA EXCLUSIVA PALADINO ---------------------
@@ -2473,7 +2476,7 @@ void andaplanta(loc alvo)
 		 // EXORCISM - Usa em undead/demon se disponível e em alcance
 		 // -------------------------------------
 		 bool pode_exorcism = cb_use_exorcism.Checked
-			&& me.level >= 20 
+			&& me.level >= 20
 			&& (tar.type == 150 || tar.type == 200)  // undead ou demon
 			 && pala.exorcism_up
 			 && mana(8);
@@ -2482,23 +2485,23 @@ void andaplanta(loc alvo)
 
 		 //-----------------SEAL-------------------
 		 aperta(best_seal()); // ativa o melhor seal SE NECESSARIO	
-		
+
 		 //----------------BLESSINGS----------------
-		 bless(me);                      
+		 bless(me);
 		 // aplica blessing se necessário
-																		 
+
 		 //---------------STONEFORM------------------
 
 		 //---------------AURAS------------------
 
 		 // hp < 50% e quer Devotion Aura, mas não está ativa
 		 if (!dungeon && me.hp < 50 && cb_devaura.Checked && !pala.devotion)
-			aperta(DEVAURA,1500); // ativa Devotion para defesa
+			aperta(DEVAURA, 1500); // ativa Devotion para defesa
 
 		 // hp > 50% e quer Retribution Aura, mas não está ativa
 		 else if (!dungeon && me.hp > 50 && cb_retaura.Checked && !pala.retribution)
-			aperta(RETAURA,1500); // ativa Retribution para dano
-														//--------------------------------------
+			aperta(RETAURA, 1500); // ativa Retribution para dano
+														 //--------------------------------------
 
 		 // verifica se pode usar purify
 		 int delay = atoi(tb_purify_delay); // lê delay desejado da toolbox (em segundos)
@@ -2563,30 +2566,31 @@ void andaplanta(loc alvo)
 		 // ------------------------------------------
 		 else if (war.bs_up && !war.has_bs)
 			aperta(BATTLESHOUT);
+
 		 // ------------------------------------------
 		 // APLICA REND SE PERMITIDO E EFICAZ= 10 rage
 		 // ------------------------------------------
-		 else if (cb_use_rend.Checked && war.rend_up  && !war.has_rend  
-  && ( tar.type == HUMANOID                               // sempre aplica em humanóide, pra evitar fugir. 
-     || (
-       (!tar.trivial
-       && tar.type != ELEMENTAL                           // ignora elementais
-       && tar.type != MECHANICAL                          // ignora mecânicos
-       && tar.type != UNDEAD                              // ignora mortos-vivos
-     ))))
-  casta(REND);
+		 else if (cb_use_rend.Checked && war.rend_up && !war.has_rend
+	&& (tar.type == HUMANOID                               // sempre aplica em humanóide, pra evitar fugir. 
+		 || (
+			 (!tar.trivial
+			 && tar.type != ELEMENTAL                           // ignora elementais
+			 && tar.type != MECHANICAL                          // ignora mecânicos
+			 && tar.type != UNDEAD                              // ignora mortos-vivos
+		 ))))
+			casta(REND);
 		 // ------------------------------------------
 		 // HAMSTRING se humanoide e fugindo = 10 rage
 		 // ------------------------------------------
 		 else if (war.hams_up && tar.type == HUMANOID && tar.hp < 35)
 			aperta(HAMSTRING); // impede fuga do mob 
-		 // ------------------------------------------
-		 // THUNDER CLAP  (multi-target) = 20 rage
-		 // ------------------------------------------
-		 else if (cb_use_thunderclap.Checked 	&& war.thun_up      // checkbox ativa, thunderclap pronto e com rage
+												 // ------------------------------------------
+												 // THUNDER CLAP  (multi-target) = 20 rage
+												 // ------------------------------------------
+		 else if (cb_use_thunderclap.Checked && war.thun_up      // checkbox ativa, thunderclap pronto e com rage
 			&& !war.has_thunderclap                                 // target ainda não tem debuff
 			&& me.mobs >= atoi(tb_thunderclap_count))               // tem quantidade mínima de mobs
-			aperta(THUNDERCLAP);                                
+			aperta(THUNDERCLAP);
 		 // ------------------------------------------
 		 // HEROIC STRIKE  fallback (rage dump)
 		 // ------------------------------------------
@@ -2605,7 +2609,7 @@ void andaplanta(loc alvo)
 		 // CLEAVE se mais de 1 mob
 		 // ------------------------------------------
 		 if (war.cleave_up && me.mobs > 1 && !war.has_cleave)
-		 	aperta(CLEAVE); // cleave para hits em área
+			aperta(CLEAVE); // cleave para hits em área
 
 
 
@@ -2621,12 +2625,10 @@ void andaplanta(loc alvo)
 		 if (war.demo_up && me.mobs > 1 && tar.hp > 25 && me.hp < 80)
 			aperta(DEMORALIZING); // reduz dano dos mobs
 
+		 if (war.overpower_up)
+			aperta(OVERPOWER); // usa Overpower se disponível
 
-		 // ------------------------------------------
-		 // OVERPOWER se disponível
-		 // ------------------------------------------
-		 if (war.ovp_up)
-			aperta(OVERPOWER); // ataque gratuito após dodge
+
 
 
 
@@ -2667,16 +2669,16 @@ void andaplanta(loc alvo)
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
 		 if (!me.melee) aperta(INTERACT);                         // tenta chegar no alvo via Interact With
-		 // ------------------------------------------
-		 // AÇÕES VARIADAS
-		 // ------------------------------------------
-		 // KICK
+																															// ------------------------------------------
+																															// AÇÕES VARIADAS
+																															// ------------------------------------------
+																															// KICK
 		 if (tar.castbar > 0)
 		 {
-			loga ("Tentando interromper cast do mob.");
+			loga("Tentando interromper cast do mob.");
 			loga(rog.kick_up.ToString());
 			if (rog.kick_up)
-			casta(KICK); // interrompe cast do mob se possível
+			 casta(KICK); // interrompe cast do mob se possível
 		 }
 
 		 // ------------------------------------------
@@ -2728,7 +2730,7 @@ void andaplanta(loc alvo)
 			// ------------------------------------------					
 			else if (!tar.trivial && (rog.has_SAD || !cb_SAD.Checked) && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70
 				&& cb_expose_armor.Checked)
-			 
+
 			{
 			 loga("Aplicando Expose Armor.");
 			 casta(EXPOSE_ARMOR);
@@ -2757,9 +2759,9 @@ void andaplanta(loc alvo)
 	 pala.defbless = false;    // libera BOK ou BOM de novo
 	 pala.defaura = false;     // pode voltar pra Ret Aura
 	 pala.nomana = false;      // desativa fixação de BOW
-	 //----------------------------------------------------
-	 // ---------------- ROTINAS PÓS COMBATE GENERICAS
-	 // ---- decay --- 
+														 //----------------------------------------------------
+														 // ---------------- ROTINAS PÓS COMBATE GENERICAS
+														 // ---- decay --- 
 	 int final = decay.End(me.hp);
 	 tracker.Add(final);
 	 tbavdecay.Text = tracker.Average.ToString();
@@ -2767,9 +2769,34 @@ void andaplanta(loc alvo)
 	 emCombate = false;
 	 //------Timer de kills 
 	 last_kill_time = Environment.TickCount;
-	 //--------------------------------
+	 //-----------------------------------------
+	 // ROTINA DE DESCANSO PÓS-COMBATE (WARRIOR)
+	 //-----------------------------------------
+	 if (me.classe == WARRIOR)
+	 {
+		int hp_ini = me.hp;                              // salva o HP inicial
+		int limite = atoi(tb_rest_warr);                 // valor de referência para descanso
+
+		if (hp_ini < limite)
+		{
+		 loga($"WARRIOR: HP baixo após combate ({hp_ini}%). Esperando recuperação.");
+		 aperta(F12); // ativa comida
+		 espera(2);
+		 // se começou a comer, espera até 100%; senão, só até o limite normal
+		 if (me.eating)
+		 {
+			while (me.hp < 100 && !me.combat)
+			 espera(1);
+		 }
+		 else
+		 {
+			while (me.hp < limite && !me.combat)
+			 espera(1);
+		 }
+		}
 	 }
 
+	}
 
 	// --------------------------------
 	// MÉTODO DE ESPERA VIGILANTE

@@ -75,7 +75,7 @@ namespace Discord
 	public bool rend_up;          // pode aplicar Rend?  
 	public bool hs_up;            // pode usar Heroic Strike?  
 	public bool cleave_up;        // pode usar Cleave?  
-	public bool ovp_up;           // pode usar Overpower?  
+	public bool overpower_up;           // pode usar Overpower?  
 	public bool bs_up;            // pode usar Battle Shout?  
 	public bool bloodrage_up;     // pode usar Bloodrage?  
 	public bool demo_up;          // pode usar Demoralizing Shout?  
@@ -85,6 +85,7 @@ namespace Discord
 	public bool dwish_up;         // pode usar Death Wish?  
 	public bool charge_up;        // pode usar Charge?  
 	public bool throw_up;         // pode tacar throw knife (range, cooldown, etc.)
+	
 
 	public bool has_rend;         // target tem Rend ativo?  
 	public bool has_thunderclap;  // target tem Thunder Clap ativo?
