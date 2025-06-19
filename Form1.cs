@@ -39,6 +39,10 @@ namespace Discord
 	int stuckcount = 0; // contador de ciclos consecutivos parado
 	loc oldloc;         // última posição registrada pra comparação
 
+	// VARIAVEIS DO MULTITHREAD
+	private Thread updateThread;
+	private volatile bool threadRunning = false;
+
 	// VARIAVEIS DO DECAY
 	DecaySession decay = new DecaySession();
 	DecayTracker tracker = new DecayTracker();
@@ -296,7 +300,8 @@ namespace Discord
 	public const int REND = F3;            // Rend
 	public const int RETALIATION = F4;     // Retaliation
 	public const int CHARGE = F5;     // Charge
-	
+	public const int EXECUTE = F6;     // Charge
+
 
 
 	// --------------------------------------------
@@ -571,22 +576,17 @@ namespace Discord
 
 
 	 // ----------------------------------------
-	 // PIXEL 9 – REAÇÃO E AMEAÇA DO TARGET
+	 // PIXEL 9 – REAÇÃO E AMEAÇA DO TARGET (bitflags)
 	 // ----------------------------------------
-	 // R: 255 se hostil
-	 // G: 255 se amigável
-	 // R+G = 255/255 se neutro
-	 // B: 255 se com ameaça máxima (aggro fixado)
-
-	 // ----------------------------------------
-	 // PIXEL 10 (Paladino) – Judgement e Auras
-	 // ----------------------------------------
-	 // R: 255 se Judgement em alcance
-	 // G: Cooldown restante de Judgement (0–255 proporcional)
-	 // B: Bitflags de auras:
-	 //     2 = Crusader | 4 = Devotion | 8/16/32 = Resistências
-	 //     64 = Concentration | 128 = Retribution
-
+	 // R: bits:
+	 //    +1   = hostil
+	 //    +2   = amigável
+	 //    +4   = neutro
+	 //    +8   = threat leve (t == 1)
+	 //    +16  = threat médio (t == 2)
+	 //    +32  = threat máximo (t == 3)
+	 // G: livre
+	 // B: livre
 
 	 // ----------------------------------------
 	 // PIXEL 11 (Paladino) – Vazio
@@ -1012,24 +1012,29 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 
 	 // -------------------------------------
-	 // NOVO PIXEL 9: REAÇÃO E AMEAÇA DO TARGET (Movido do antigo Pixel 15)
+	 // NOVO PIXEL 9: REAÇÃO E AMEAÇA DO TARGET (com bitflags no R)
 	 // -------------------------------------
 	 if (pixels.Count > 9)
 	 {
-		// mood / reação do target
-		bool hostile = pixels[9].r > 200 && pixels[9].g < 50;  // vermelho puro
-		bool neutral = pixels[9].r > 200 && pixels[9].g > 200; // amarelo
-		bool friendly = pixels[9].r < 50 && pixels[9].g > 200; // verde
+		// lê bitflags da reação
+		bool hostile = (pixels[9].r & 1) != 0;
+		bool friendly = (pixels[9].r & 2) != 0;
+		bool neutral = (pixels[9].r & 4) != 0;
 
-		if (hostile) tar.mood = -1; // hostil 
+		// define mood do target
+		if (hostile) tar.mood = -1; // hostil
 		else if (friendly) tar.mood = 1;
-		else tar.mood = 0; // neutral
+		else tar.mood = 0; // neutro
 
+		// mostra mood no textbox
 		tb_mood.Text = (tar.mood == -1) ? "Hostile" :
-																 (tar.mood == 1) ? "Friendly" : "Neutral";
+										(tar.mood == 1) ? "Friendly" : "Neutral";
 
-		// canal azul = 255 se o mob está me atacando (aggro confirmado)
-		tar.aggroed = (pixels[9].b > 250); // reuse da propriedade para "aggro ativo"
+		// lê threat (aggro level): 0 1 2 3
+		if ((pixels[9].r & 32) != 0) tar.aggro = 3; // threat máximo
+		else if ((pixels[9].r & 16) != 0) tar.aggro = 2; // threat médio
+		else if ((pixels[9].r & 8) != 0) tar.aggro = 1; // threat leve
+		else tar.aggro = 0; // sem threat
 	 }
 
 	 tar.trivial = !tar.iselite && (tar.hp <= 25 || tar.level <= me.level - 3);
@@ -1053,16 +1058,18 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		war.overpower_up = (g10 & 2) != 0; // bit 1 = pode usar Overpower?
 		war.bloodrage_up = (g10 & 4) != 0; // bit 2 = pode usar Bloodrage?
 		war.hams_up = (g10 & 8) != 0; // bit 3 = pode usar Hamstring?
-		war.retaliate_up = (g10 & 16) != 0; // bit 4 = pode usar Retaliation?
+		war.retaliation_up = (g10 & 16) != 0; // bit 4 = pode usar Retaliation?
 		war.dwish_up = (g10 & 32) != 0; // bit 5 = pode usar Death Wish?
 		war.has_bs = (g10 & 64) != 0; // bit 6 = battle shout ativo (buff)
 		war.has_rend = (g10 & 128) != 0; // bit 7 = target has rend
 
 		war.hs_casting = (b10 & 1) != 0; // bit 0 = Heroic Strike enfileirado
+																		 // BIT 1b = vazio (não usado)
+		war.execute_up = (b10 & 4) != 0; // bit 2b = Execute up
 
 	 }
 
-	 
+
 
 	 // ====================================================================
 	 // PIXELS ESPECÍFICOS DE ROGUE (10 a 15)
@@ -1661,15 +1668,15 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		else if (me.classe == WARRIOR)
 		{
 		 // espera recuperar energia
-		 if (me.hp < 80)
+		 if (me.hp < atoi(tb_rest_warr))
 		 {
 			para(); // para de andar se estiver andando
 			loga($"Esperando recuperação de HP: {me.hp}");
 			aperta(F12); // COMIDA 
-			while (me.hp < 80 && !me.combat)
+			while (me.hp < atoi(tb_rest_warr) && !me.combat)
 			{
-			 wait(1000);
-			 checkme();
+			 espera(1);
+			 
 			}
 		 }
 		}
@@ -1687,8 +1694,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 			aperta(F12); // COMIDA 
 			while (me.hp < atoi(tb_rogue_eat_at)  && !me.combat)
 			{
-			 wait(1000);
-			 checkme();
+			 espera(1);
 			}
 		 }
 		}
@@ -2433,14 +2439,14 @@ void andaplanta(loc alvo)
 		}
 
 		// --------------------------------
-		// VERIFICA SE COMBATE TERMINOU
+		// VERIFICA TARGET VALIDO 
 		// --------------------------------
 		//wait(100);
 		checkme();
-		if (!dungeon && !tar.aggroed) // target morto ou aparentemente inválido
+		if (!dungeon && !(tar.aggro > 0)) // target morto ou aparentemente inválido
 		{
 
-		 if (!tar.aggroed) // confirma que ainda está inválido
+		 if (!(tar.aggro > 0)) // confirma que ainda está inválido
 		 {
 			if (!deucharge)
 			{
@@ -2451,6 +2457,10 @@ void andaplanta(loc alvo)
 			 deucharge = false; // evita perder o target por causa do stun do charge 
 
 			checkme(); // atualiza estado após limpar
+
+			// --------------------------------
+			// VERIFICA fim de combate
+			// --------------------------------
 
 			if (!me.combat) break; // combate terminou, sai do loop
 			continue; // ainda em combate, reinicia ciclo
@@ -2546,15 +2556,23 @@ void andaplanta(loc alvo)
 		 if (tar.mood != 1 && !me.autoattack) aperta(AUTOATTACK); // garante autoattack se mob hostil
 		 if (ticker % 6 == 0) aperta(PULA);                        // pulo human-like
 
-		 // ------------------------------------------
+		 // -----------------------------------------------
 		 // DEFESA: RETALIATION E POTION
-		 // ------------------------------------------
-		 if ((me.hp < 35 || (me.mobs >= 3 && me.hp < 65)) && war.retaliate_up)
-			aperta(RETALIATION); // usa Retaliation se em perigo
+		 // -----------------------------------------------
+		 if ((!me.hp_potion_rdy && war.retaliation_up) && // sem potion e skill pronta
+			 	((me.hp < 50 && me.mobs >= 2) ||   // vida < 50 e 2+ mobs
+				 (me.hp < 65 && me.mobs >= 3) ||   // vida < 65 e 3+ mobs
+				 (me.hp < 40 && me.mobs == 1)))      // vida < 30 com 1 mob
+			 casta(RETALIATION);                  // aciona Retaliation
+
 
 		 if (me.hp < 20 && me.hp_potion_rdy)
 			aperta(HEALTHPOTION); // poção se vida muito baixa
-
+// ------------------------------------------
+// EXECUTE
+// ------------------------------------------
+else if (war.execute_up && tar.hp <= 20)
+    casta(EXECUTE);
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
@@ -2592,10 +2610,16 @@ void andaplanta(loc alvo)
 			&& me.mobs >= atoi(tb_thunderclap_count))               // tem quantidade mínima de mobs
 			aperta(THUNDERCLAP);
 		 // ------------------------------------------
-		 // HEROIC STRIKE  fallback (rage dump)
+		 // CLEAVE se mais de 1 mob
 		 // ------------------------------------------
-		 else if (war.hs_up && tar.hp > 20 && !war.hs_casting && me.mana >= atoi(tb_heroic_strike_rage))
-			aperta(HEROICS); // se for menor que 20 nunca ia castar thunderclap 
+		 else if (war.cleave_up && me.mobs > 1 && !war.has_cleave)
+			aperta(CLEAVE); // cleave para hits em área
+											// ------------------------------------------
+											// HEROIC STRIKE  fallback (rage dump)
+											// ------------------------------------------
+		 else if (war.hs_up && !war.hs_casting && me.mana >= atoi(tb_heroic_strike_rage) &&
+							!(tar.hp < 30 && war.execute_up)) // NÃO usa HS se mob < 28% HP e Execute disponível
+			aperta(HEROICS);
 
 		 // ------------------------------------------
 		 // BLOODRAGE  
@@ -2605,11 +2629,7 @@ void andaplanta(loc alvo)
 
 
 		 //-------------------AGUARDANDO IMPLEMENTAÇÃO-------------------
-		 // ------------------------------------------
-		 // CLEAVE se mais de 1 mob
-		 // ------------------------------------------
-		 if (war.cleave_up && me.mobs > 1 && !war.has_cleave)
-			aperta(CLEAVE); // cleave para hits em área
+
 
 
 
@@ -2770,10 +2790,35 @@ void andaplanta(loc alvo)
 	 //------Timer de kills 
 	 last_kill_time = Environment.TickCount;
 	 //-----------------------------------------
+	 // ROTINA PÓS-COMBATE (ROGUE)
+	 //-----------------------------------------
+	 if (me.classe == ROGUE)
+	 {
+		if (cb_randomize_rogue.Checked) //  RANDOMIZA TIPO DE PULL
+		{
+		 Random random = new Random();
+
+		 // 50% de chance para cb_range_pull
+		 cb_range_pull.Checked = random.Next(0, 2) == 1;
+
+		 // 50% de chance para cb_stealth_pull
+		 cb_stealth_pull.Checked = random.Next(0, 2) == 1;
+		}
+	 }
+	 //-----------------------------------------
 	 // ROTINA DE DESCANSO PÓS-COMBATE (WARRIOR)
 	 //-----------------------------------------
-	 if (me.classe == WARRIOR)
+	 else if (me.classe == WARRIOR)
 	 {
+		if (cb_random_pull_warrior.Checked) //  RANDOMIZA TIPO DE PULL (Charge / ranged)
+		{
+		 Random random = new Random();
+
+		 // 50% de chance para cb_range_pull
+		 cb_war_rangepull.Checked = random.Next(0, 2) == 1;
+
+		}
+
 		int hp_ini = me.hp;                              // salva o HP inicial
 		int limite = atoi(tb_rest_warr);                 // valor de referência para descanso
 
@@ -3321,6 +3366,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 		{
 		 solta(WKEY);
 		 logar = false;
+		 aperta(PULA, 10);
 		 if (cb_log.Checked) loga("Curva impossível em movimento – parando para girar..");
 		}
 	 }
@@ -3330,8 +3376,8 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 		{
 		 solta(WKEY);
 		 logar = false;
-		
-			loga("Curva abrupta – parando para girar. (no giralvo)");
+		 aperta(PULA, 10);
+		 loga("Curva abrupta – parando para girar. (no giralvo)");
 		 loga($"Distância: {d}m - Tempo: {tempo}ms - Delta: {delta}°"); // loga detalhes da curva
 		}
 	 }
@@ -3824,9 +3870,12 @@ loga($"Moving to: Target.x = {target.x}  Target.y = {target.y}");
 
 private void button1_Click(object sender, EventArgs e)
 {
+	 
 	 wait(1000);
 on = false;
 	 wait(1000);
+	 // ENCERRA LEITURA EM BACKGROUND DOS STATS 
+	 StopBackgroundUpdates(); // <- ADICIONAR AQUI
 	}
 
 private void button4_Click(object sender, EventArgs e)
@@ -3838,7 +3887,6 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 
 	// --------------------------------  
 	// MÉTODO UNSTUCK  
-	// tenta pulo, testa se funcionou, senão gira e anda  
 	// --------------------------------  
 	void unstuck()
 	{
@@ -3883,9 +3931,12 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	// -------------------------------------------------------
 	private void button1_Click_1(object sender, EventArgs e)
 	{
-	// TIMERS 
+	 {
+		// ATUALIZADOR EM BACKGROUND DOS STATS 
+		//StartBackgroundUpdates(); // <- ADICIONAR AQUI
+															
 
-	 int hs_tick = 0; // guarda o último tick registrado (global ou da classe)
+		int hs_tick = 0; // guarda o último tick registrado (global ou da classe)
 
 	 if (cb_HS_timer.Checked && hs_tick == 0) // só na primeira vez
 	 {
@@ -3973,6 +4024,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		 else break;                       // modo sem nostop → encerra
 		}
 	 }
+	}
 	}
 
 
@@ -5397,13 +5449,204 @@ else
 
 	}
 
+	// --------------------------------
+	// MÉTODO MOVETO_CLAUDE V2 - NAVEGAÇÃO ORBITAL RECURSIVA
+	// --------------------------------
+	void moveto_claude(loc dest, loc next)
+	{
+	 loga($"Claude V2: dest=({dest.x},{dest.y}) next=({next.x},{next.y})");
+
+	 checkme(); // atualiza posição atual
+
+	 const double RAIO_CURVA = 6.84;
+	 bool chegou_no_destino = false;
+
+	 // --------------------------------
+	 // LOOP PRINCIPAL RECURSIVO
+	 // --------------------------------
+	 while (!chegou_no_destino && on)
+	 {
+		checkme(); // atualiza posição a cada ciclo
+
+		// --------------------------------
+		// CLASSIFICAÇÃO DA CURVA
+		// --------------------------------
+		int yaw1 = getyaw(me.pos, dest);
+		int yaw2 = getyaw(dest, next);
+		int diferenca = Math.Abs(yaw1 - yaw2);
+		if (diferenca > 180) diferenca = 360 - diferenca;
+		int angulo_curva = 180 - diferenca;
+
+		string tipo_curva;
+		if (angulo_curva < 45) tipo_curva = "FECHADA";
+		else if (angulo_curva < 135) tipo_curva = "MODERADA";
+		else tipo_curva = "SUAVE";
+
+		// --------------------------------
+		// CALCULA DIREÇÃO DA CURVA
+		// --------------------------------
+		double dx1 = dest.x - me.pos.x;
+		double dy1 = dest.y - me.pos.y;
+		double dx2 = next.x - dest.x;
+		double dy2 = next.y - dest.y;
+
+		double produto_vet = dx1 * dy2 - dy1 * dx2;
+		bool curva_esquerda = produto_vet > 0;
+
+		// --------------------------------
+		// DEFINE OBJETIVO BASEADO NO TIPO
+		// --------------------------------
+		loc objetivo;
+
+		if (tipo_curva == "SUAVE")
+		{
+		 objetivo = dest; // vai direto para o centro
+		}
+		else // MODERADA ou FECHADA
+		{
+		 // calcula ponto de tangência
+		 double offset = curva_esquerda ? RAIO_CURVA : -RAIO_CURVA;
+		 double dist_atual_dest = Math.Sqrt(dx1 * dx1 + dy1 * dy1);
+
+		 if (dist_atual_dest > 0) // evita divisão por zero
+		 {
+			double perp_x = -dy1 / dist_atual_dest * offset;
+			double perp_y = dx1 / dist_atual_dest * offset;
+
+			objetivo = new loc(
+					(int)(dest.x + perp_x),
+					(int)(dest.y + perp_y)
+			);
+		 }
+		 else
+		 {
+			objetivo = dest; // fallback
+		 }
+		}
+
+		loga($"Curva {tipo_curva} para {(curva_esquerda ? "ESQUERDA" : "DIREITA")}");
+		loga($"Objetivo: ({objetivo.x},{objetivo.y})");
+
+		// --------------------------------
+		// NAVEGA ATÉ O OBJETIVO
+		// --------------------------------
+		press(ANDA); // inicia movimento
+
+		while (dist(me.pos, objetivo) > 10 && on)
+		{
+		 checkme();
+		 giralvo(objetivo); // mira no objetivo
+		 wait(100);
+
+		 // verifica se chegou no destino final
+		 if (dist(me.pos, dest) <= 10)
+		 {
+			chegou_no_destino = true;
+			break;
+		 }
+		}
+
+		// --------------------------------
+		// FASE ORBITAL (se não for curva suave)
+		// --------------------------------
+		if (!chegou_no_destino && tipo_curva != "SUAVE" && dist(me.pos, dest) < 200)
+		{
+		 loga("Iniciando FASE ORBITAL");
+
+		 checkme(); // atualiza facing atual
+		 int facing_atual = me.facing;
+		 int yaw_para_next = getyaw(me.pos, next);
+		 int delta_angular = facing_atual - yaw_para_next;
+
+		 // normaliza para -180 a +180
+		 if (delta_angular > 180) delta_angular -= 360;
+		 if (delta_angular < -180) delta_angular += 360;
+
+		 // calcula tempo com fator de drift
+		 int tempo_base = (int)(Math.Abs(delta_angular) * 5.55);
+		 int dist_ao_centro = dist(me.pos, dest);
+
+		 if (dist_ao_centro < 200)
+			tempo_base = (int)(tempo_base * 1.25); // aplica drift
+
+		 loga($"Delta angular: {delta_angular}°, Tempo: {tempo_base}ms");
+
+		 // executa o giro orbital
+		 if (delta_angular > 0)
+			aperta(AKEY, tempo_base); // gira esquerda
+		 else if (delta_angular < 0)
+			aperta(DKEY, tempo_base); // gira direita
+
+		 loga("FASE ORBITAL concluída");
+		}
+
+		solta(ANDA); // para movimento
+
+		// --------------------------------
+		// VERIFICA SE CHEGOU NO DESTINO FINAL
+		// --------------------------------
+		checkme();
+		if (dist(me.pos, dest) <= 10)
+		{
+		 chegou_no_destino = true;
+		 loga("✅ CHEGOU NO DESTINO FINAL!");
+		}
+		else
+		{
+		 loga("🔄 RECALCULANDO próximo objetivo...");
+		 wait(200); // pequena pausa antes do próximo ciclo
+		}
+	 }
+
+	 solta(ANDA); // garantia final
+	 loga("Claude V2 navegação concluída!");
+	}
+	// --------------------------------
+	// MÉTODO ARRASTA_MOUSE_SUAVE
+	// Movimento suave de arraste
+	// --------------------------------
+ void arrasta_mouse_suave()
+	{
+	 // --------------------------------
+	 // PARÂMETROS DA TELA
+	 // --------------------------------
+	 int tela_w = Screen.PrimaryScreen.Bounds.Width;
+	 int tela_h = Screen.PrimaryScreen.Bounds.Height;
+
+	 int centro_x = tela_w / 2;
+	 int centro_y = tela_h / 2;
+
+	 // --------------------------------
+	 // LÊ DESLOCAMENTO DA TEXTBOX
+	 // --------------------------------
+	 int pixels_total = int.Parse(tb_mouse_drag.Text);
+
+	 // --------------------------------
+	 // ARRASTE RÁPIDO EM STEPS
+	 // --------------------------------
+	 focawow();
+	 mousemove(centro_x, centro_y);                    // posição inicial
+	 mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);   // BOTÃO ESQUERDO
+
+	 int steps = 10;                                   // MENOS steps = mais rápido
+	 int step_size = pixels_total / steps;
+
+	 for (int i = 1; i <= steps; i++)
+	 {
+		int nova_pos_x = centro_x + (step_size * i);
+		mousemove(nova_pos_x, centro_y);
+		wait(10);                                     // 10ms = BEM mais rápido!
+	 }
+
+	 mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);     // solta botão esquerdo
+
+	 loga($"Arraste rápido: {pixels_total}px em {steps} steps");
+	}
+
+	// BOTAO 21
 	private void button21_Click(object sender, EventArgs e)
 	{
-	 checkme(); // atualiza posição do player
-	 int x = atoi(tb_debug1); // pega X do campo de debug1
-	 int y = atoi(tb_debug2); // pega Y do campo de debug2
-	 var targ = new  loc(x, y);         // cria e retorna a struct loc
-	 giralvo(targ); // gira o alvo para a nova posição
+	 arrasta_mouse_suave(); // chama o método de arraste
 	}
 
 
@@ -5550,5 +5793,122 @@ else
 	{
 	 stopscan = true;
 	}
+
+	// MULTI THREAD DE ATUALIZAÇÃO DAS STATS NO BACKGROUND 
+
+	// --------------------------------
+	// MÉTODO STARTBACKGROUNDUPDATES
+	// Inicia thread para atualização contínua dos dados do drone a 10 FPS
+	// --------------------------------
+	private void StartBackgroundUpdates()
+	{
+	 if (threadRunning) return; // evita duplicar thread
+
+	 threadRunning = true;
+	 updateThread = new Thread(() =>
+	 {
+		while (threadRunning && on)
+		{
+		 try
+		 {
+			getstats(ref me);    // atualiza dados sem delays
+			Thread.Sleep(100);   // 10 FPS sincronizado com addon
+		 }
+		 catch
+		 {
+			// proteção contra erros na thread
+		 }
+		}
+	 });
+
+	 updateThread.IsBackground = true; // morre com o programa
+	 updateThread.Start();
+	}
+
+	// --------------------------------
+	// MÉTODO STOPBACKGROUNDUPDATES  
+	// Para a thread de atualização contínua de forma segura
+	// --------------------------------
+	private void StopBackgroundUpdates()
+	{
+	 threadRunning = false;              // sinaliza parada
+	 updateThread?.Join(500);            // espera encerrar até 500ms
+	}
+
+	//------------------------
+	/// INICIO METODOS CLAUDE 
+	//-----------------------
+
+	
+
+	// --------------------------------
+	// MÉTODO CALCULA_MEDIATRIZ  
+	// Determina linha de simetria para curva suave
+	// --------------------------------
+	private (loc ponto_inicio_curva, double angulo_mediatriz) calcula_mediatriz(loc atual, loc dest, loc next)
+	{
+	 // --------------------------------
+	 // VETORES DO TRIÂNGULO "BICO DE PATO"
+	 // --------------------------------
+	 double dx1 = dest.x - atual.x;     // vetor atual → dest
+	 double dy1 = dest.y - atual.y;
+	 double dx2 = next.x - dest.x;      // vetor dest → next  
+	 double dy2 = next.y - dest.y;
+
+	 // --------------------------------
+	 // CORREÇÃO DO EIXO Y COMPRIMIDO
+	 // --------------------------------
+	 dy1 /= 1.515;  // aplica fator de correção
+	 dy2 /= 1.515;
+
+	 // --------------------------------
+	 // CÁLCULO DOS ÂNGULOS E MEDIATRIZ
+	 // --------------------------------
+	 double angulo1 = Math.Atan2(dy1, dx1);        // direção atual → dest
+	 double angulo2 = Math.Atan2(dy2, dx2);        // direção dest → next
+	 double mediatriz = (angulo1 + angulo2) / 2;   // bissetriz
+
+	 // --------------------------------
+	 // PONTO DE INÍCIO DA CURVA
+	 // --------------------------------
+	 const double RAIO = 6.84;
+	 double dist_antecipacao = RAIO * 1.5;         // margem de segurança
+
+	 loc inicio_curva = new loc(
+			 (int)(dest.x - Math.Cos(angulo1) * dist_antecipacao),
+			 (int)(dest.y - Math.Sin(angulo1) * dist_antecipacao * 1.515) // reverte correção Y
+	 );
+
+	 // --------------------------------
+	 // LOGS DETALHADOS PARA VALIDAÇÃO
+	 // --------------------------------
+	 loga("=== CÁLCULO MEDIATRIZ ===");
+	 loga($"Atual: ({atual.x},{atual.y})");
+	 loga($"Dest: ({dest.x},{dest.y})");
+	 loga($"Next: ({next.x},{next.y})");
+	 loga($"Vetor1: dx={dx1:F2}, dy={dy1:F2}");
+	 loga($"Vetor2: dx={dx2:F2}, dy={dy2:F2}");
+	 loga($"Ângulo1: {angulo1 * 180 / Math.PI:F1}°");
+	 loga($"Ângulo2: {angulo2 * 180 / Math.PI:F1}°");
+	 loga($"Mediatriz: {mediatriz * 180 / Math.PI:F1}°");
+	 loga($"Início curva: ({inicio_curva.x},{inicio_curva.y})");
+	 loga($"Distância antecipação: {dist_antecipacao:F2}");
+
+	 return (inicio_curva, mediatriz);
+	}
+
+
+
+
+
+
+
+
  }
+
+
+
+
+
+
 }

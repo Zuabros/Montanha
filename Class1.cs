@@ -50,7 +50,7 @@ namespace Discord
 	public bool ready;    // GCD pronto (Global Cooldown)
 
 	// ----------- específicos do target (tar) -----------
-	public bool aggroed;         // tem aggro em mim
+	public int aggro;         // >= 2 me atacando, 1 agro secundario, 0 nao estou em combate com mob 
 	public bool israre;          // criatura rara (bit 64 no 7G)
 	public bool iselite;         // criatura elite (bit 32 no 7G)
 	public bool trivial;        // criatura trivial  
@@ -81,11 +81,11 @@ namespace Discord
 	public bool demo_up;          // pode usar Demoralizing Shout?  
 	public bool thun_up;          // pode usar Thunder Clap?  
 	public bool hams_up;          // pode usar Hamstring?  
-	public bool reataliation_up;     // pode usar Retaliation?  
+	public bool retaliation_up;     // pode usar Retaliation?  
 	public bool dwish_up;         // pode usar Death Wish?  
 	public bool charge_up;        // pode usar Charge?  
 	public bool throw_up;         // pode tacar throw knife (range, cooldown, etc.)
-	
+	public bool execute_up;        // pode usar Execute?
 
 	public bool has_rend;         // target tem Rend ativo?  
 	public bool has_thunderclap;  // target tem Thunder Clap ativo?
