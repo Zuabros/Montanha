@@ -135,6 +135,7 @@ namespace Discord
 
 	public bool has_rend;         // target tem Rend ativo?  
 	public bool has_thunderclap;  // target tem Thunder Clap ativo?
+	public bool has_demoralizing; // tem debuff 
 
 	public bool has_cleave;       // Cleave ativado?  
 	public bool has_bs;           // Battle Shout ativo?

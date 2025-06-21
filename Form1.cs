@@ -733,8 +733,9 @@ namespace Discord
 	 // G: bit 7 = has_rend       (Rend ativo no target)
 
 	 // B: bit 0 = hs_casting     (Heroic Strike está enfileirado como autoattack)
-	 // B: bit 1 = has_thunder    (Thunder Clap ativo no target)
+	 // B: bit 1 = vazio
 	 // B: bit 2 = overpower_up	(Overpower pronto)
+	 // B: bit 3 = target has demoralizing shout  
 	 // -------------------------------------------
 
 
@@ -1145,6 +1146,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		war.hs_casting = (b10 & 1) != 0; // bit 0 = Heroic Strike enfileirado
 																		 // BIT 1b = vazio (não usado)
 		war.execute_up = (b10 & 4) != 0; // bit 2b = Execute up
+		war.has_demoralizing = (b10 & 8) != 0; // bit 3b = has demo shout
 
 	 }
 
@@ -2767,7 +2769,7 @@ void andaplanta(loc alvo)
 	private void rastreia_mob_combate()
 	{
 	 // só adiciona se target válido, com aggro, e levou porrada significativa
-	 if (me.hastarget && tar.aggro > 0 && tar.hp < 50)
+	 if (me.hastarget && (tar.aggro > 0 || tar.pet_aggro > 0) && tar.hp < 50)
 	 {
 		// verifica se é mob skinnable
 		if (tar.type == HUMANOID || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
@@ -3144,7 +3146,7 @@ else if (war.execute_up && tar.hp <= 20)
 		 // ------------------------------------------
 		 // DEMORALIZING SHOUT  
 		 // ------------------------------------------
-		 if (war.demo_up && me.mobs > 1 && tar.hp > 25 && me.hp < 80)
+		 if ((!tar.trivial || me.mobs > 1 ) && war.demo_up && tar.hp > 25 && !war.has_demoralizing)
 			aperta(DEMORALIZING); // reduz dano dos mobs
 
 		 if (war.overpower_up)
@@ -3161,20 +3163,37 @@ else if (war.execute_up && tar.hp <= 20)
 		 // DESLIGA WAND PRA PERMITIR CAST 
 		 void viramob()
 		 {
-			aperta(INTERACT);
+			aperta(INTERACT,500);
 			para(); // para de andar antes de castar
+			//wait(100); // espera 100ms para garantir que parou
 		 }
 
-		 wait_cast(); // espera fim de cast se tiver algum
+		 void castacurse()
+		 {
+			if (wlock.has_curse_agony || wlock.has_curse_weakness) return;
+
+			if (cb_autocurse.Checked)
+			{
+			 if (!tar.trivial) casta(CURSEWEAKNESS);
+			 else
+				if (tar.hp > 25) casta(CURSEAGONY);
+			}
+			else if (cb_COW.Checked && wlock.curse_weakness_up && !wlock.has_curse_weakness)
+			{
+			 loga("Aplicando Curse of Weakness.");
+			 casta(CURSEWEAKNESS);
+			}
+			else if (cb_COA.Checked && wlock.curse_agony_up && !wlock.has_curse_agony)
+			{
+			 loga("Aplicando Curse of Agony.");
+			 casta(CURSEAGONY);
+			}
+		 }
+		 //wait_cast(); // espera fim de cast se tiver algum
 		 //-----------------------
 		 // ESCOLHE O CURSE AUTOMATICO
 		 //-----------------------
-if (cb_autocurse.Checked)
-		 { 
-		 if (!tar.trivial) cb_COW.Checked = true; // se não for trivial, ativa Curse of Weakness
-		 else
-			cb_COA.Checked=true; // se for trivial, ativa Curse of Agony
-		 }
+     
 			//---------------------------
 			// FACE NO TARGET 
 			//------------------------------
@@ -3198,7 +3217,23 @@ if (cb_autocurse.Checked)
 		 // ================================
 		 // EMERGÊNCIA: HEALTHSTONE OU POÇÃO
 		 // ================================
-		 if (me.hp < 30)
+		 // ================================
+		 // CURA DO PET (HEALTH FUNNEL)
+		 // ================================
+		 if (me.hp > 60 && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 40)
+		 {
+			loga("Pet com HP baixo. Usando Health Funnel.");
+			casta(HEALTHFUNNEL);
+			do
+			{
+			 checkme();
+			 wait(1000); // espera 1 segundo para não spam
+			} while (me.casting && me.hp > 60)
+;
+			 // espera terminar o cast
+		 }
+
+			if (me.hp < 30)
 		 {
 			// Usa Healthstone primeiro, se tiver e pronta
 			if (wlock.healthstone_up)
@@ -3230,33 +3265,21 @@ if (cb_autocurse.Checked)
 		 // APLICAR DEBUFFS (PRIORIDADE MÁXIMA)
 		 // ================================
 
-		 // Immolate (se não tiver ou acabando)
+		 castacurse();
 		 checkme();
-		 if (me.mana > 50 && tar.hp > 30 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate && !tar.trivial)
+		 // Corruption (se não tiver)
+		 if (tar.hp > 15 && cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
+		 {
+			loga("Aplicando Corruption.");
+
+			casta(CORRUPTION);
+		 }
+		 else if (me.mana > 30 && tar.hp > 20 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
 		 {
 			loga($"Status Immolate: immolate_up={wlock.immolate_up} / has_immolate={wlock.has_immolate}");
 			loga("Aplicando Immolate.");
 			viramob();
-		 }
-		 // Curse of Weakness (se não tiver)
-		 else if (cb_COW.Checked && wlock.curse_weakness_up && !wlock.has_curse_weakness)
-		 {
-			loga("Aplicando Curse of Weakness.");
-				casta(CURSEWEAKNESS);
-		 }
-		 // Corruption (se não tiver)
-		 else if (tar.hp > 25 && cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
-		 {
-			loga("Aplicando Corruption.");
-			
-			casta(CORRUPTION);
-		 }
-		 // Curse of Agony (se não tiver)
-		 else if (tar.hp > 25 && !cb_COW.Checked && wlock.curse_agony_up && !wlock.has_curse_agony)
-		 {
-			loga("Aplicando Curse of Agony.");
-			
-			casta(CURSEAGONY);
+			casta(IMMOLATE);
 		 }
 
 		 // Siphon Life (se não tiver)
@@ -3278,25 +3301,15 @@ if (cb_autocurse.Checked)
 		 else if (me.hp < 60 && wlock.drain_life_up && !wlock.has_drain_life)
 		 {
 			loga("HP baixo. Usando Drain Life.");
-			
 			casta(DRAINLIFE);
 		 }
-		 // ================================
-		 // CURA DO PET (HEALTH FUNNEL)
-		 // ================================
-		 else if (me.hp > 60 && me.combat && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 40)
-		 {
-			loga("Pet com HP baixo. Usando Health Funnel.");
-			casta(HEALTHFUNNEL);
-			wait_cast(); // espera o canalizar
-			checkme();
-		 }
+		 
 		 // Drain Soul (se target com HP baixo)
 		 else if ((tar.hp < 30 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul &&
 			(wlock.shards < 3 || cb_drain_soul.Checked))
 		 {
 			loga("Target baixo. Usando Drain Soul.");
-			
+
 			casta(DRAINSOUL);
 		 }
 
@@ -3307,7 +3320,7 @@ if (cb_autocurse.Checked)
 		 // Shadow Bolt (filler principal)
 		 else if (cb_use_shadowbolt.Checked && me.mana > atoi(tb_shadowbolt_mana) && wlock.shadowbolt_up && me.mobs < 2)
 		 {
-			
+
 			casta(SHADOWBOLT);
 			//wait_cast(); // espera fim do cast pode dar backpedal
 		 }
@@ -3321,12 +3334,12 @@ if (cb_autocurse.Checked)
 			if (!me.wandon && cb_wand.Checked && !me.casting)
 			{
 			 viramob();
-			 aperta(WAND,1000); // garante que está com wand ligada 
+			 aperta(WAND, 500); // garante que está com wand ligada 
 			 aperta(STOPCAST); // uma wandada só 
-			 wait(600); // espera 1 segundo para não spam
+												 //wait(600); // espera 1 segundo para não spam
 			}
-			
-			
+
+
 		 }
 		}
 
