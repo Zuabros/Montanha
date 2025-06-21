@@ -87,6 +87,12 @@ namespace Discord
 	public bool siphon_life_up;      // Siphon Life pronta para usar
 	public bool lifetap_up;   // life tap pronto 
 	public bool shadowbolt_up; // Shadow Bolt pronto para usar
+	public int shards;          // número de soul shards disponíveis (0–3+)
+	public bool healhfunnel_up; // Heal ou Health Funnel pronto para usar
+	public bool healthstone_up; // Healthstone pronto para usar
+	public bool has_healthstone; // Healthstone pronto para usar
+	public bool create_healthstone_up; // Create Healthstone pronto para usar
+	
 
 
 	// DEBUFFS NO TARGET (true se ativo)
@@ -100,6 +106,7 @@ namespace Discord
 
 	// PET STATUS
 	public bool has_pet;             // Pet vivo e ativo
+	public int pet_hp; // HP do pet (0–100%)
 
 	// AURAS
 	public bool has_demon_skin;      // bit 0 - Demon Skin ativo

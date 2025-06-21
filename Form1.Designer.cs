@@ -167,6 +167,22 @@ namespace Discord
 	 this.cb_use_thunderclap = new System.Windows.Forms.CheckBox();
 	 this.cb_war_rangepull = new System.Windows.Forms.CheckBox();
 	 this.cb_bersek = new System.Windows.Forms.CheckBox();
+	 this.tabPage6 = new System.Windows.Forms.TabPage();
+	 this.cb_wand = new System.Windows.Forms.CheckBox();
+	 this.cb_drain_soul = new System.Windows.Forms.CheckBox();
+	 this.cb_COA = new System.Windows.Forms.CheckBox();
+	 this.label32 = new System.Windows.Forms.Label();
+	 this.tb_pull_hp_lock = new System.Windows.Forms.TextBox();
+	 this.cb_lifetap_auto = new System.Windows.Forms.CheckBox();
+	 this.tb_lifetap_hp = new System.Windows.Forms.TextBox();
+	 this.label31 = new System.Windows.Forms.Label();
+	 this.tb_lifetap_mana = new System.Windows.Forms.TextBox();
+	 this.label30 = new System.Windows.Forms.Label();
+	 this.cb_use_immolate = new System.Windows.Forms.CheckBox();
+	 this.cb_use_corruption = new System.Windows.Forms.CheckBox();
+	 this.cb_COW = new System.Windows.Forms.CheckBox();
+	 this.tb_shadowbolt_mana = new System.Windows.Forms.TextBox();
+	 this.cb_use_shadowbolt = new System.Windows.Forms.CheckBox();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
 	 this.textBox1 = new System.Windows.Forms.TextBox();
@@ -243,20 +259,8 @@ namespace Discord
 	 this.button19 = new System.Windows.Forms.Button();
 	 this.cb_humanlike = new System.Windows.Forms.CheckBox();
 	 this.cb_cloudemove = new System.Windows.Forms.CheckBox();
-	 this.tabPage6 = new System.Windows.Forms.TabPage();
-	 this.cb_use_shadowbolt = new System.Windows.Forms.CheckBox();
-	 this.tb_shadowbolt_mana = new System.Windows.Forms.TextBox();
-	 this.cb_COW = new System.Windows.Forms.CheckBox();
-	 this.cb_use_corruption = new System.Windows.Forms.CheckBox();
-	 this.cb_use_immolate = new System.Windows.Forms.CheckBox();
-	 this.label30 = new System.Windows.Forms.Label();
-	 this.tb_lifetap_mana = new System.Windows.Forms.TextBox();
-	 this.tb_lifetap_hp = new System.Windows.Forms.TextBox();
-	 this.label31 = new System.Windows.Forms.Label();
-	 this.cb_lifetap_auto = new System.Windows.Forms.CheckBox();
-	 this.tb_pull_hp_lock = new System.Windows.Forms.TextBox();
-	 this.label32 = new System.Windows.Forms.Label();
-	 this.cb_COA = new System.Windows.Forms.CheckBox();
+	 this.cb_sendpet = new System.Windows.Forms.CheckBox();
+	 this.cb_autocurse = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -266,10 +270,10 @@ namespace Discord
 	 this.tabPage4.SuspendLayout();
 	 this.Paladin.SuspendLayout();
 	 this.tabPage5.SuspendLayout();
+	 this.tabPage6.SuspendLayout();
 	 this.pan_tar.SuspendLayout();
 	 this.pan_me.SuspendLayout();
 	 this.tabPage3.SuspendLayout();
-	 this.tabPage6.SuspendLayout();
 	 this.SuspendLayout();
 	 // 
 	 // tab_nav
@@ -885,6 +889,8 @@ namespace Discord
 	 // cb_wrong_gira
 	 // 
 	 this.cb_wrong_gira.AutoSize = true;
+	 this.cb_wrong_gira.Checked = true;
+	 this.cb_wrong_gira.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cb_wrong_gira.Enabled = false;
 	 this.cb_wrong_gira.Location = new System.Drawing.Point(532, 9);
 	 this.cb_wrong_gira.Name = "cb_wrong_gira";
@@ -1771,6 +1777,178 @@ namespace Discord
 	 this.cb_bersek.Text = "Bersek Mode";
 	 this.cb_bersek.UseVisualStyleBackColor = true;
 	 // 
+	 // tabPage6
+	 // 
+	 this.tabPage6.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage6.Controls.Add(this.cb_autocurse);
+	 this.tabPage6.Controls.Add(this.cb_sendpet);
+	 this.tabPage6.Controls.Add(this.cb_wand);
+	 this.tabPage6.Controls.Add(this.cb_drain_soul);
+	 this.tabPage6.Controls.Add(this.cb_COA);
+	 this.tabPage6.Controls.Add(this.label32);
+	 this.tabPage6.Controls.Add(this.tb_pull_hp_lock);
+	 this.tabPage6.Controls.Add(this.cb_lifetap_auto);
+	 this.tabPage6.Controls.Add(this.tb_lifetap_hp);
+	 this.tabPage6.Controls.Add(this.label31);
+	 this.tabPage6.Controls.Add(this.tb_lifetap_mana);
+	 this.tabPage6.Controls.Add(this.label30);
+	 this.tabPage6.Controls.Add(this.cb_use_immolate);
+	 this.tabPage6.Controls.Add(this.cb_use_corruption);
+	 this.tabPage6.Controls.Add(this.cb_COW);
+	 this.tabPage6.Controls.Add(this.tb_shadowbolt_mana);
+	 this.tabPage6.Controls.Add(this.cb_use_shadowbolt);
+	 this.tabPage6.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage6.Name = "tabPage6";
+	 this.tabPage6.Size = new System.Drawing.Size(351, 347);
+	 this.tabPage6.TabIndex = 3;
+	 this.tabPage6.Text = "Warlock";
+	 // 
+	 // cb_wand
+	 // 
+	 this.cb_wand.AutoSize = true;
+	 this.cb_wand.Location = new System.Drawing.Point(7, 190);
+	 this.cb_wand.Name = "cb_wand";
+	 this.cb_wand.Size = new System.Drawing.Size(77, 17);
+	 this.cb_wand.TabIndex = 14;
+	 this.cb_wand.Text = "Use Wand";
+	 this.cb_wand.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_drain_soul
+	 // 
+	 this.cb_drain_soul.AutoSize = true;
+	 this.cb_drain_soul.Checked = true;
+	 this.cb_drain_soul.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_drain_soul.Location = new System.Drawing.Point(7, 166);
+	 this.cb_drain_soul.Name = "cb_drain_soul";
+	 this.cb_drain_soul.Size = new System.Drawing.Size(75, 17);
+	 this.cb_drain_soul.TabIndex = 13;
+	 this.cb_drain_soul.Text = "Drain Soul";
+	 this.cb_drain_soul.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_COA
+	 // 
+	 this.cb_COA.AutoSize = true;
+	 this.cb_COA.Location = new System.Drawing.Point(62, 53);
+	 this.cb_COA.Name = "cb_COA";
+	 this.cb_COA.Size = new System.Drawing.Size(48, 17);
+	 this.cb_COA.TabIndex = 12;
+	 this.cb_COA.Text = "COA";
+	 this.cb_COA.UseVisualStyleBackColor = true;
+	 this.cb_COA.CheckedChanged += new System.EventHandler(this.cb_COA_CheckedChanged);
+	 // 
+	 // label32
+	 // 
+	 this.label32.AutoSize = true;
+	 this.label32.Location = new System.Drawing.Point(28, 144);
+	 this.label32.Name = "label32";
+	 this.label32.Size = new System.Drawing.Size(42, 13);
+	 this.label32.TabIndex = 11;
+	 this.label32.Text = "Pull HP";
+	 this.label32.Click += new System.EventHandler(this.label32_Click);
+	 // 
+	 // tb_pull_hp_lock
+	 // 
+	 this.tb_pull_hp_lock.Location = new System.Drawing.Point(76, 141);
+	 this.tb_pull_hp_lock.Name = "tb_pull_hp_lock";
+	 this.tb_pull_hp_lock.Size = new System.Drawing.Size(24, 20);
+	 this.tb_pull_hp_lock.TabIndex = 10;
+	 this.tb_pull_hp_lock.Text = "70";
+	 // 
+	 // cb_lifetap_auto
+	 // 
+	 this.cb_lifetap_auto.AutoSize = true;
+	 this.cb_lifetap_auto.Location = new System.Drawing.Point(214, 117);
+	 this.cb_lifetap_auto.Name = "cb_lifetap_auto";
+	 this.cb_lifetap_auto.Size = new System.Drawing.Size(48, 17);
+	 this.cb_lifetap_auto.TabIndex = 9;
+	 this.cb_lifetap_auto.Text = "Auto";
+	 this.cb_lifetap_auto.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_lifetap_hp
+	 // 
+	 this.tb_lifetap_hp.Location = new System.Drawing.Point(175, 114);
+	 this.tb_lifetap_hp.Name = "tb_lifetap_hp";
+	 this.tb_lifetap_hp.Size = new System.Drawing.Size(24, 20);
+	 this.tb_lifetap_hp.TabIndex = 8;
+	 this.tb_lifetap_hp.Text = "70";
+	 // 
+	 // label31
+	 // 
+	 this.label31.AutoSize = true;
+	 this.label31.Location = new System.Drawing.Point(106, 118);
+	 this.label31.Name = "label31";
+	 this.label31.Size = new System.Drawing.Size(63, 13);
+	 this.label31.TabIndex = 7;
+	 this.label31.Text = "Life tap HP:";
+	 // 
+	 // tb_lifetap_mana
+	 // 
+	 this.tb_lifetap_mana.Location = new System.Drawing.Point(76, 114);
+	 this.tb_lifetap_mana.Name = "tb_lifetap_mana";
+	 this.tb_lifetap_mana.Size = new System.Drawing.Size(24, 20);
+	 this.tb_lifetap_mana.TabIndex = 6;
+	 this.tb_lifetap_mana.Text = "40";
+	 // 
+	 // label30
+	 // 
+	 this.label30.AutoSize = true;
+	 this.label30.Location = new System.Drawing.Point(4, 117);
+	 this.label30.Name = "label30";
+	 this.label30.Size = new System.Drawing.Size(77, 13);
+	 this.label30.TabIndex = 5;
+	 this.label30.Text = "Life tap mana: ";
+	 // 
+	 // cb_use_immolate
+	 // 
+	 this.cb_use_immolate.AutoSize = true;
+	 this.cb_use_immolate.Location = new System.Drawing.Point(4, 94);
+	 this.cb_use_immolate.Name = "cb_use_immolate";
+	 this.cb_use_immolate.Size = new System.Drawing.Size(90, 17);
+	 this.cb_use_immolate.TabIndex = 4;
+	 this.cb_use_immolate.Text = "Use Immolate";
+	 this.cb_use_immolate.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_use_corruption
+	 // 
+	 this.cb_use_corruption.AutoSize = true;
+	 this.cb_use_corruption.Location = new System.Drawing.Point(4, 71);
+	 this.cb_use_corruption.Name = "cb_use_corruption";
+	 this.cb_use_corruption.Size = new System.Drawing.Size(96, 17);
+	 this.cb_use_corruption.TabIndex = 3;
+	 this.cb_use_corruption.Text = "Use Corruption";
+	 this.cb_use_corruption.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_COW
+	 // 
+	 this.cb_COW.AutoSize = true;
+	 this.cb_COW.Checked = true;
+	 this.cb_COW.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_COW.Location = new System.Drawing.Point(4, 53);
+	 this.cb_COW.Name = "cb_COW";
+	 this.cb_COW.Size = new System.Drawing.Size(52, 17);
+	 this.cb_COW.TabIndex = 2;
+	 this.cb_COW.Text = "COW";
+	 this.cb_COW.UseVisualStyleBackColor = true;
+	 this.cb_COW.CheckedChanged += new System.EventHandler(this.cb_COW_CheckedChanged);
+	 // 
+	 // tb_shadowbolt_mana
+	 // 
+	 this.tb_shadowbolt_mana.Location = new System.Drawing.Point(130, 27);
+	 this.tb_shadowbolt_mana.Name = "tb_shadowbolt_mana";
+	 this.tb_shadowbolt_mana.Size = new System.Drawing.Size(32, 20);
+	 this.tb_shadowbolt_mana.TabIndex = 1;
+	 this.tb_shadowbolt_mana.Text = "40";
+	 // 
+	 // cb_use_shadowbolt
+	 // 
+	 this.cb_use_shadowbolt.AutoSize = true;
+	 this.cb_use_shadowbolt.Location = new System.Drawing.Point(4, 29);
+	 this.cb_use_shadowbolt.Name = "cb_use_shadowbolt";
+	 this.cb_use_shadowbolt.Size = new System.Drawing.Size(120, 17);
+	 this.cb_use_shadowbolt.TabIndex = 0;
+	 this.cb_use_shadowbolt.Text = "Use Shadow Bolt at";
+	 this.cb_use_shadowbolt.UseVisualStyleBackColor = true;
+	 // 
 	 // pan_tar
 	 // 
 	 this.pan_tar.Controls.Add(this.cb_killgray);
@@ -2508,151 +2686,27 @@ namespace Discord
 	 this.cb_cloudemove.Text = "Claude";
 	 this.cb_cloudemove.UseVisualStyleBackColor = true;
 	 // 
-	 // tabPage6
+	 // cb_sendpet
 	 // 
-	 this.tabPage6.BackColor = System.Drawing.Color.Gray;
-	 this.tabPage6.Controls.Add(this.cb_COA);
-	 this.tabPage6.Controls.Add(this.label32);
-	 this.tabPage6.Controls.Add(this.tb_pull_hp_lock);
-	 this.tabPage6.Controls.Add(this.cb_lifetap_auto);
-	 this.tabPage6.Controls.Add(this.tb_lifetap_hp);
-	 this.tabPage6.Controls.Add(this.label31);
-	 this.tabPage6.Controls.Add(this.tb_lifetap_mana);
-	 this.tabPage6.Controls.Add(this.label30);
-	 this.tabPage6.Controls.Add(this.cb_use_immolate);
-	 this.tabPage6.Controls.Add(this.cb_use_corruption);
-	 this.tabPage6.Controls.Add(this.cb_COW);
-	 this.tabPage6.Controls.Add(this.tb_shadowbolt_mana);
-	 this.tabPage6.Controls.Add(this.cb_use_shadowbolt);
-	 this.tabPage6.Location = new System.Drawing.Point(4, 22);
-	 this.tabPage6.Name = "tabPage6";
-	 this.tabPage6.Size = new System.Drawing.Size(351, 347);
-	 this.tabPage6.TabIndex = 3;
-	 this.tabPage6.Text = "Warlock";
+	 this.cb_sendpet.AutoSize = true;
+	 this.cb_sendpet.Location = new System.Drawing.Point(7, 209);
+	 this.cb_sendpet.Name = "cb_sendpet";
+	 this.cb_sendpet.Size = new System.Drawing.Size(70, 17);
+	 this.cb_sendpet.TabIndex = 15;
+	 this.cb_sendpet.Text = "Send Pet";
+	 this.cb_sendpet.UseVisualStyleBackColor = true;
 	 // 
-	 // cb_use_shadowbolt
+	 // cb_autocurse
 	 // 
-	 this.cb_use_shadowbolt.AutoSize = true;
-	 this.cb_use_shadowbolt.Location = new System.Drawing.Point(4, 29);
-	 this.cb_use_shadowbolt.Name = "cb_use_shadowbolt";
-	 this.cb_use_shadowbolt.Size = new System.Drawing.Size(120, 17);
-	 this.cb_use_shadowbolt.TabIndex = 0;
-	 this.cb_use_shadowbolt.Text = "Use Shadow Bolt at";
-	 this.cb_use_shadowbolt.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_shadowbolt_mana
-	 // 
-	 this.tb_shadowbolt_mana.Location = new System.Drawing.Point(130, 27);
-	 this.tb_shadowbolt_mana.Name = "tb_shadowbolt_mana";
-	 this.tb_shadowbolt_mana.Size = new System.Drawing.Size(32, 20);
-	 this.tb_shadowbolt_mana.TabIndex = 1;
-	 this.tb_shadowbolt_mana.Text = "40";
-	 // 
-	 // cb_COW
-	 // 
-	 this.cb_COW.AutoSize = true;
-	 this.cb_COW.Checked = true;
-	 this.cb_COW.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_COW.Location = new System.Drawing.Point(4, 53);
-	 this.cb_COW.Name = "cb_COW";
-	 this.cb_COW.Size = new System.Drawing.Size(52, 17);
-	 this.cb_COW.TabIndex = 2;
-	 this.cb_COW.Text = "COW";
-	 this.cb_COW.UseVisualStyleBackColor = true;
-	 this.cb_COW.CheckedChanged += new System.EventHandler(this.cb_COW_CheckedChanged);
-	 // 
-	 // cb_use_corruption
-	 // 
-	 this.cb_use_corruption.AutoSize = true;
-	 this.cb_use_corruption.Location = new System.Drawing.Point(4, 71);
-	 this.cb_use_corruption.Name = "cb_use_corruption";
-	 this.cb_use_corruption.Size = new System.Drawing.Size(96, 17);
-	 this.cb_use_corruption.TabIndex = 3;
-	 this.cb_use_corruption.Text = "Use Corruption";
-	 this.cb_use_corruption.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_use_immolate
-	 // 
-	 this.cb_use_immolate.AutoSize = true;
-	 this.cb_use_immolate.Location = new System.Drawing.Point(4, 94);
-	 this.cb_use_immolate.Name = "cb_use_immolate";
-	 this.cb_use_immolate.Size = new System.Drawing.Size(90, 17);
-	 this.cb_use_immolate.TabIndex = 4;
-	 this.cb_use_immolate.Text = "Use Immolate";
-	 this.cb_use_immolate.UseVisualStyleBackColor = true;
-	 // 
-	 // label30
-	 // 
-	 this.label30.AutoSize = true;
-	 this.label30.Location = new System.Drawing.Point(4, 117);
-	 this.label30.Name = "label30";
-	 this.label30.Size = new System.Drawing.Size(77, 13);
-	 this.label30.TabIndex = 5;
-	 this.label30.Text = "Life tap mana: ";
-	 // 
-	 // tb_lifetap_mana
-	 // 
-	 this.tb_lifetap_mana.Location = new System.Drawing.Point(76, 114);
-	 this.tb_lifetap_mana.Name = "tb_lifetap_mana";
-	 this.tb_lifetap_mana.Size = new System.Drawing.Size(24, 20);
-	 this.tb_lifetap_mana.TabIndex = 6;
-	 this.tb_lifetap_mana.Text = "40";
-	 // 
-	 // tb_lifetap_hp
-	 // 
-	 this.tb_lifetap_hp.Location = new System.Drawing.Point(175, 114);
-	 this.tb_lifetap_hp.Name = "tb_lifetap_hp";
-	 this.tb_lifetap_hp.Size = new System.Drawing.Size(24, 20);
-	 this.tb_lifetap_hp.TabIndex = 8;
-	 this.tb_lifetap_hp.Text = "70";
-	 // 
-	 // label31
-	 // 
-	 this.label31.AutoSize = true;
-	 this.label31.Location = new System.Drawing.Point(106, 118);
-	 this.label31.Name = "label31";
-	 this.label31.Size = new System.Drawing.Size(63, 13);
-	 this.label31.TabIndex = 7;
-	 this.label31.Text = "Life tap HP:";
-	 // 
-	 // cb_lifetap_auto
-	 // 
-	 this.cb_lifetap_auto.AutoSize = true;
-	 this.cb_lifetap_auto.Location = new System.Drawing.Point(214, 117);
-	 this.cb_lifetap_auto.Name = "cb_lifetap_auto";
-	 this.cb_lifetap_auto.Size = new System.Drawing.Size(48, 17);
-	 this.cb_lifetap_auto.TabIndex = 9;
-	 this.cb_lifetap_auto.Text = "Auto";
-	 this.cb_lifetap_auto.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_pull_hp_lock
-	 // 
-	 this.tb_pull_hp_lock.Location = new System.Drawing.Point(76, 141);
-	 this.tb_pull_hp_lock.Name = "tb_pull_hp_lock";
-	 this.tb_pull_hp_lock.Size = new System.Drawing.Size(24, 20);
-	 this.tb_pull_hp_lock.TabIndex = 10;
-	 this.tb_pull_hp_lock.Text = "70";
-	 // 
-	 // label32
-	 // 
-	 this.label32.AutoSize = true;
-	 this.label32.Location = new System.Drawing.Point(28, 144);
-	 this.label32.Name = "label32";
-	 this.label32.Size = new System.Drawing.Size(42, 13);
-	 this.label32.TabIndex = 11;
-	 this.label32.Text = "Pull HP";
-	 this.label32.Click += new System.EventHandler(this.label32_Click);
-	 // 
-	 // cb_COA
-	 // 
-	 this.cb_COA.AutoSize = true;
-	 this.cb_COA.Location = new System.Drawing.Point(62, 53);
-	 this.cb_COA.Name = "cb_COA";
-	 this.cb_COA.Size = new System.Drawing.Size(48, 17);
-	 this.cb_COA.TabIndex = 12;
-	 this.cb_COA.Text = "COA";
-	 this.cb_COA.UseVisualStyleBackColor = true;
-	 this.cb_COA.CheckedChanged += new System.EventHandler(this.cb_COA_CheckedChanged);
+	 this.cb_autocurse.AutoSize = true;
+	 this.cb_autocurse.Checked = true;
+	 this.cb_autocurse.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_autocurse.Location = new System.Drawing.Point(117, 53);
+	 this.cb_autocurse.Name = "cb_autocurse";
+	 this.cb_autocurse.Size = new System.Drawing.Size(48, 17);
+	 this.cb_autocurse.TabIndex = 16;
+	 this.cb_autocurse.Text = "Auto";
+	 this.cb_autocurse.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -2702,14 +2756,14 @@ namespace Discord
 	 this.Paladin.PerformLayout();
 	 this.tabPage5.ResumeLayout(false);
 	 this.tabPage5.PerformLayout();
+	 this.tabPage6.ResumeLayout(false);
+	 this.tabPage6.PerformLayout();
 	 this.pan_tar.ResumeLayout(false);
 	 this.pan_tar.PerformLayout();
 	 this.pan_me.ResumeLayout(false);
 	 this.pan_me.PerformLayout();
 	 this.tabPage3.ResumeLayout(false);
 	 this.tabPage3.PerformLayout();
-	 this.tabPage6.ResumeLayout(false);
-	 this.tabPage6.PerformLayout();
 	 this.ResumeLayout(false);
 	 this.PerformLayout();
 
@@ -2944,6 +2998,10 @@ namespace Discord
 	private Label label32;
 	private TextBox tb_pull_hp_lock;
 	private CheckBox cb_COA;
+	private CheckBox cb_drain_soul;
+	private CheckBox cb_wand;
+	private CheckBox cb_sendpet;
+	private CheckBox cb_autocurse;
  }
 }
 

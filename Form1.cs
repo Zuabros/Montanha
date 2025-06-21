@@ -323,6 +323,8 @@ namespace Discord
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO WARLOCK
 	// --------------------------------------------
+	public const int CREATE_HEALTHSTONE = DOIS; // Create Healthstone (cria pedra de saúde)
+
 	public const int SHADOWBOLT = N1;        // Shadow Bolt (spell principal)
 	public const int IMMOLATE = N2;          // Immolate (DoT + dano inicial)
 	public const int CORRUPTION = N3;        // Corruption (DoT puro)
@@ -330,15 +332,19 @@ namespace Discord
 	public const int CURSEAGONY = N5;        // Curse of Agony (DoT crescente)
 	public const int DRAINSOUL = N6;         // Drain Soul (channel + soul shard)
 	public const int DRAINLIFE = N7;         // Drain Life (channel + cura)
+	public const int STOPCAST = IGUAL;       // Stop Cast (para de lançar feitiço)
+	public const int HEALTHFUNNEL = N0;       // Stop Cast (para de lançar feitiço)
+
 
 	
-	public const int SUMMONVOIDWALKER = N0;  // Summon Voidwalker
 
-	public const int PETTATACK = F1;         // Summon Imp
-	public const int SUMMONIMP = F2;         // Summon Imp
+	public const int PETATTACK = F1;         // Summon Imp
+	public const int SUMMONPET = F2;         // Summon Imp
 	public const int DEMONSKIN = F3;         // Summon Imp
 	public const int WAND = F4;         // Summon Imp
 	public const int LIFETAP = F5;         // Summon Imp
+	// F6 = Assist (pet) 
+ public const int HEALTHSTONE = F7;         // Summon Imp
 	public const int SIPHONLIFE = N8;        // Siphon Life (DoT + cura)
 
 
@@ -731,32 +737,7 @@ namespace Discord
 	 // B: bit 2 = overpower_up	(Overpower pronto)
 	 // -------------------------------------------
 
-	 // -------------------------------------------
-	 // PIXEL 10 – WARLOCK
-	 // -------------------------------------------
-	 // R: bit 0     = immolate_up (spell pronta + range + mana)
-	 // R: bit 1     = corruption_up (spell pronta + range + mana)
-	 // R: bit 2     = curse_weakness_up (spell pronta + range + mana)
-	 // R: bit 3     = curse_agony_up (spell pronta + range + mana)
-	 // R: bit 4     = drain_soul_up (spell pronta + range + mana)
-	 // R: bit 5     = drain_life_up (spell pronta + range + mana)
-	 // R: bit 6     = siphon_life_up (spell pronta + range + mana)
-	 // R: bit 7     = shadowbolt_up (spell pronta + range + mana)
-	 //
-	 // G: bit 0     = has_immolate (>1 segundo restante no target)
-	 // G: bit 1     = has_corruption (>1 segundo restante no target)
-	 // G: bit 2     = has_curse_weakness (ativo no target)
-	 // G: bit 3     = has_curse_agony (ativo no target)
-	 // G: bit 4     = has_drain_soul (channeling ativo)
-	 // G: bit 5     = has_drain_life (channeling ativo)
-	 // G: bit 6     = has_siphon_life (ativo no target)
-	 // G: bit 7     = LIVRE
-	 //
-	 // B: bit 0     = has_demon_skin (aura ativa)
-	 // B: bit 1     = has_pet (pet vivo e ativo)
-	 // B: bit 2     = life tap up
-	 // B: bits 3–7  = LIVRES (reservados para expansões)
-	 //
+
 	 // -------------------------------------------
 
 
@@ -952,8 +933,12 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 	 // ERROS DE COMBATE (bitmask no canal G)
 	 int g_erro = pixels[1].g;                            // canal G codifica erros combinados
-	 e.wrongway = (g_erro & 128) != 0;                    // 128 = "You are facing the wrong way!"
-	 e.outofrange = (g_erro & 64) != 0;                   //  64 = "Out of range" ou "You are too far away!"
+	 me.wrongway = (g_erro & 128) != 0;                    // 128 = "You are facing the wrong way!"
+	 me.outofrange = (g_erro & 64) != 0;                   //  64 = "Out of range" ou "You are too far away!"
+	 if (me.wrongway == true)
+		loga($"Wrong way!");
+	 if (me.outofrange == true)
+		loga($"Out of range!");
 
 
 	 // ------------------------------------------
@@ -1163,42 +1148,90 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 	 }
 
-	 // -------------------------------------
+	 // -------------------------------------------
+	 // PIXEL 10 – WARLOCK
+	 // -------------------------------------------
+	 // R: bit 0     = immolate_up             (spell pronta + range + mana)
+	 // R: bit 1     = corruption_up           (spell pronta + range + mana)
+	 // R: bit 2     = curse_weakness_up       (spell pronta + range + mana)
+	 // R: bit 3     = curse_agony_up          (spell pronta + range + mana)
+	 // R: bit 4     = drain_soul_up           (spell pronta + range + mana)
+	 // R: bit 5     = drain_life_up           (spell pronta + range + mana)
+	 // R: bit 6     = siphon_life_up          (spell pronta + range + mana)
+	 // R: bit 7     = shadowbolt_up           (spell pronta + range + mana)
+	 //
+	 // G: bit 0     = has_immolate            (>1 seg restante no target)
+	 // G: bit 1     = has_corruption          (>1 seg restante no target)
+	 // G: bit 2     = has_curse_weakness      (ativo no target)
+	 // G: bit 3     = has_curse_agony         (ativo no target)
+	 // G: bit 4     = has_drain_soul          (channeling ativo)
+	 // G: bit 5     = has_drain_life          (channeling ativo)
+	 // G: bit 6     = has_siphon_life         (ativo no target)
+	 // G: bit 7     = healthstone usable      (Healthstone na bag e cooldown == 0)
+	 //
+	 // B: bit 0     = has_demon_skin/armor    (aura ativa)
+	 // B: bit 1     = has_pet                 (pet vivo e ativo)
+	 // B: bit 2     = life_tap_up             (spell pronta + range + mana)
+	 // B: bits 3-4  = número de Soul Shards   (0..3 shards)
+	 // B: bit 5     = has_healthstone         (tem Healthstone na bag)
+	 // B: bit 6     = create_healthstone_up   (spell up + shard ≥ 1)
+	 // B: bit 7     = health funnel up        (spell pronta + range + mana)
+	 // -------------------------------------------
+	 //
+	 // PIXEL 11 – WARLOCK
+	 // -------------------------------------------
+	 // R: bits 0-6  = pet.hp % (proporcional base 127 → 0..127)
+	 // R: bit 7     = LIVRE
+	 // G: LIVRE
+	 // B: LIVRE
+	 // -------------------------------------------
+
+
+	 // -------------------------------------------
+
+	 // -------------------------------------------
 	 // PIXEL 10 (Warlock) – SPELLS, DEBUFFS, PET STATUS
-	 // -------------------------------------
-	 else if ( me.classe == WARLOCK)
+	 // -------------------------------------------
+	 else if (me.classe == WARLOCK)
 	 {
-		int ar10 = pixels[10].r; // R = spells prontas (cooldown + range + mana)
-		int ag10 = pixels[10].g; // G = debuffs no target
-		int ab10 = pixels[10].b; // B = pet status
+		int ar10 = pixels[10].r;  // R = spells prontas (cooldown + range + mana)
+		int ag10 = pixels[10].g;  // G = debuffs no target
+		int ab10 = pixels[10].b;  // B = pet status
 
-		// SPELLS PRONTAS (Canal R)
-		wlock.immolate_up = (ar10 & 1) != 0;         // bit 0
-		wlock.corruption_up = (ar10 & 2) != 0;       // bit 1
-		wlock.curse_weakness_up = (ar10 & 4) != 0;   // bit 2
-		wlock.curse_agony_up = (ar10 & 8) != 0;      // bit 3
-		wlock.drain_soul_up = (ar10 & 16) != 0;      // bit 4
-		wlock.drain_life_up = (ar10 & 32) != 0;      // bit 5
-		wlock.siphon_life_up = (ar10 & 64) != 0;     // bit 6
-wlock.shadowbolt_up = (ar10 & 128) != 0;     // bit 7  
+		wlock.immolate_up = (ar10 & 1) != 0;
+		wlock.corruption_up = (ar10 & 2) != 0;
+		wlock.curse_weakness_up = (ar10 & 4) != 0;
+		wlock.curse_agony_up = (ar10 & 8) != 0;
+		wlock.drain_soul_up = (ar10 & 16) != 0;
+		wlock.drain_life_up = (ar10 & 32) != 0;
+		wlock.siphon_life_up = (ar10 & 64) != 0;
+		wlock.shadowbolt_up = (ar10 & 128) != 0;
 
-		// DEBUFFS NO TARGET (Canal G)
-		wlock.has_immolate = (ag10 & 1) != 0;        // bit 0
-		wlock.has_corruption = (ag10 & 2) != 0;      // bit 1
-		wlock.has_curse_weakness = (ag10 & 4) != 0;  // bit 2
-		wlock.has_curse_agony = (ag10 & 8) != 0;     // bit 3
-		wlock.has_drain_soul = (ag10 & 16) != 0;     // bit 4
-		wlock.has_drain_life = (ag10 & 32) != 0;     // bit 5
-		wlock.has_siphon_life = (ag10 & 64) != 0;    // bit 6
-																								 // bit 7 = LIVRE
+		wlock.has_immolate = (ag10 & 1) != 0;
+		wlock.has_corruption = (ag10 & 2) != 0;
+		wlock.has_curse_weakness = (ag10 & 4) != 0;
+		wlock.has_curse_agony = (ag10 & 8) != 0;
+		wlock.has_drain_soul = (ag10 & 16) != 0;
+		wlock.has_drain_life = (ag10 & 32) != 0;
+		wlock.has_siphon_life = (ag10 & 64) != 0;
+		wlock.healthstone_up = (ag10 & 128) != 0;   // G7 → usable
 
-		// PET STATUS (Canal B)
-		
-		wlock.has_demon_skin = (ab10 & 1) != 0;     // bit 0
-		wlock.has_pet = (ab10 & 2) != 0;            // bit 1
-		wlock.lifetap_up = (ab10 & 4) != 0;   // bit 2
-																								 // bits 3-7 = LIVRES
+		wlock.has_demon_skin = (ab10 & 1) != 0;
+		wlock.has_pet = (ab10 & 2) != 0;
+		wlock.lifetap_up = (ab10 & 4) != 0;
+		wlock.shards = (ab10 >> 3) & 0b11;  // bits 3-4
+		wlock.has_healthstone = (ab10 & 32) != 0;
+		wlock.create_healthstone_up = (ab10 & 64) != 0;
+		wlock.healhfunnel_up = (ab10 & 128) != 0;
+
+		// -------------------------------------------
+		// PIXEL 11 (Warlock) – PET HP (%)
+		// -------------------------------------------
+		int ar11 = pixels[11].r;   // R = pet.hp % (base 127 → 0..127)
+
+		wlock.pet_hp = (int)(ar11 * 100.0 / 127.0);   // pet.hp % (0..100)
 	 }
+
 
 	 // ====================================================================
 	 // PIXELS ESPECÍFICOS DE ROGUE (10 a 15)
@@ -1719,7 +1752,13 @@ public element tar;
 		 
 		 scan_elites(); // verifica se tem elite no mapa antes de clicar na tela 
 
-		 if (cb_apagacinza.Checked) clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
+		 if (cb_apagacinza.Checked)
+		 {
+			clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
+			wait(50); // espera 10ms para evitar spam
+			clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
+		 
+		 }
 		 if (has(me.freeslots) || cb_loot_cloth.Checked) // só loota se estiver ativado, e se tiver espaço ou for loot de pano
 
 		 {
@@ -1846,8 +1885,8 @@ public element tar;
 		 {
 			loga("Invocando Imp.");
 			para(); // para de andar para invocar
-			casta(SUMMONIMP);
-			espera(11); // espera invocar (10s + margem)
+			casta(SUMMONPET);
+			wait_cast(); // espera o cast terminar
 			checkme();
 			if (!wlock.has_pet)
 			{
@@ -1863,6 +1902,21 @@ public element tar;
 			checkme();
 		 }
 
+		 // CRIAR HEALTHSTONE SE NÃO TIVER
+		 if (!wlock.has_healthstone && wlock.create_healthstone_up && wlock.shards >= 1)
+		 {
+			loga("Criando Healthstone.");
+			para(); // para de andar
+			casta(CREATE_HEALTHSTONE);
+			wait_cast(); // espera o cast terminar
+			checkme();
+
+			if (!wlock.has_healthstone)
+			{
+			 loga("Falha ao criar Healthstone.");
+			}
+		 }
+
 		 // LIFE TAP SE MANA BAIXA 
 		 if (!cb_lifetap_auto.Checked)
 		 {
@@ -1872,9 +1926,9 @@ public element tar;
 			 checkme(); // atualiza status
 			}
 		 }
-		 else
+		 else // auto
 		 {
-			while (me.hp>me.mana && me.hp >= atoi(tb_pull_hp_lock) && !me.combat)
+			while (me.mana < 85 && me.hp>me.mana && me.hp >= atoi(tb_pull_hp_lock) && !me.combat)
 			{
 			 casta(LIFETAP); // ativa Life Tap
 			 checkme(); // atualiza status
@@ -2603,11 +2657,13 @@ void andaplanta(loc alvo)
 			 }
 			 else if (!usar_wand) // Spells normais
 			 {
+				if (cb_sendpet.Checked) aperta(PETATTACK);// MANDA O PET
 				aperta((byte)myskill, 2000); // usa spell
 				checkme(); // atualiza status após o cast
 
 				if (me.wrongway)
 				{
+				 
 				 aperta(INTERACT, 200);
 				 para(); // para de andar após o cast
 				 aperta((byte)myskill, 2000); // tenta novamente se andou errado
@@ -2630,7 +2686,9 @@ void andaplanta(loc alvo)
 			 }
 			 else // Usar Wand
 			 {
+				if (cb_sendpet.Checked) aperta(PETATTACK);// MANDA O PET
 				casta(WAND); // ativa wand
+
 				loga("Wand ativada para pull.");
 
 				checkme();
@@ -2858,11 +2916,12 @@ void andaplanta(loc alvo)
 		// -----------------------------------------
 		// GIRA PARA O ALVO SE ESTIVER APANHANDO DE COSTAS
 		// -----------------------------------------
-		if (false && !dungeon && me.wrongway && cb_wrong_gira.Checked)
+		if (!dungeon && me.wrongway && cb_wrong_gira.Checked)
 		{
-		 roda(25); // gira pra manter face no inimigo
+		 aperta(INTERACT);
+		 //roda(25); // gira pra manter face no inimigo
 		 loga("De costas para o alvo! Ativando correção.");
-		 wait(2000); // espera 2s para não ficar girando muito
+		// wait(2000); // espera 2s para não ficar girando muito
 		 checkme(); // atualiza status após girar
 		}
 
@@ -2881,6 +2940,7 @@ void andaplanta(loc alvo)
 // --------------------------------
 
 // Define se target tem aggro válido (em mim ou no pet)
+checkme();
 bool tem_aggro_valido = (tar.aggro > 0) || (tar.pet_aggro > 0);
 
 // Define se deve preservar target mesmo sem aggro
@@ -2911,11 +2971,11 @@ if (tem_aggro_valido || deve_preservar)
 		if (me.classe == PALADIN)           //  
 		{
 		 wait_cast();                    // espera fim de cast se tiver algum
-		 // ------------------------------------------
-		 // MOVIMENTO: aproximação se fora de melee
-		 // ------------------------------------------
-		 if (!me.melee) aperta(INTERACT); // aproxima se fora de alcance
-		 //-----
+																		 // ------------------------------------------
+																		 // MOVIMENTO: aproximação se fora de melee
+																		 // ------------------------------------------
+		 getnear(); // aproxima o target se estiver fora de alcance de melee
+								//-----
 		 if (tar.mood != 1 && !me.autoattack) // se mob não é amigável e não estou  atacando ele
 			aperta(AUTOATTACK);         // inicia ataque automático
 		 tenta_curar();                  // verifica se precisa curar e executa se necessário
@@ -3014,6 +3074,7 @@ else if (war.execute_up && tar.hp <= 20)
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
+		 getnear(); // se aproxima do target se estiver fora de alcance de melee
 		 if (tar.aggro > 0 && !me.melee) aperta(INTERACT); // aproxima se fora de alcance
 		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
 			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
@@ -3094,19 +3155,32 @@ else if (war.execute_up && tar.hp <= 20)
 		//----------------------------------
 		// ROTINA DE COMBATE WARLOCK
 		//----------------------------------
-		// DESLIGA WAND PRA PERMITIR CAST 
+
 		else if (me.classe == WARLOCK)
 		{
-		 void cancelwand()
-		 { 			 if (me.wandon) // se está com wand ligada
-			 {
-				aperta(WAND); // desliga a wand
-				loga("Desligando Wand.");
-			 }
+		 // DESLIGA WAND PRA PERMITIR CAST 
+		 void viramob()
+		 {
+			aperta(INTERACT);
+			para(); // para de andar antes de castar
 		 }
 
 		 wait_cast(); // espera fim de cast se tiver algum
-
+		 //-----------------------
+		 // ESCOLHE O CURSE AUTOMATICO
+		 //-----------------------
+if (cb_autocurse.Checked)
+		 { 
+		 if (!tar.trivial) cb_COW.Checked = true; // se não for trivial, ativa Curse of Weakness
+		 else
+			cb_COA.Checked=true; // se for trivial, ativa Curse of Agony
+		 }
+			//---------------------------
+			// FACE NO TARGET 
+			//------------------------------
+			getnear(false); // se aproxima do target se estiver fora de alcance de melee
+		 if (me.wrongway)
+			casta(INTERACT); // gira para corrigir facing se necessário
 		 // ASSIST NO PET 
 		 //------------------------------
 		 if (!me.hastarget && wlock.has_pet && me.combat)
@@ -3120,22 +3194,28 @@ else if (war.execute_up && tar.hp <= 20)
 			casta(DEMONSKIN);
 			checkme();
 		 }
-		 // OLHANDO PRO LADO ERRADO
+
 		 // ================================
-		 if (!me.casting || me.wrongway)
+		 // EMERGÊNCIA: HEALTHSTONE OU POÇÃO
+		 // ================================
+		 if (me.hp < 30)
 		 {
-			aperta(INTERACT,70); // gira para corrigir facing
-			para(); // para de andar
+			// Usa Healthstone primeiro, se tiver e pronta
+			if (wlock.healthstone_up)
+			{
+			 loga("HP crítico! Usando Healthstone.");
+			 aperta(HEALTHSTONE);
+			}
+
+			// Se não tem Healthstone ou cooldown, tenta potion
+			else if (me.hp_potion_rdy)
+			{
+			 loga("HP crítico! Usando poção.");
+			 aperta(HEALTHPOTION);
+			 wait(500);
+			}
 		 }
-		 // ================================
-		 // EMERGÊNCIA: POÇÃO DE VIDA
-		 // ================================
-		 if (me.hp < 30 && me.hp_potion_rdy)
-		 {
-			cancelwand(); // desliga wand para usar poção
-			loga("HP crítico! Usando poção.");
-			aperta(HEALTHPOTION);
-		 }
+
 
 		 // ================================
 		 // SACRIFÍCIO DO PET (EMERGÊNCIA)
@@ -3151,63 +3231,72 @@ else if (war.execute_up && tar.hp <= 20)
 		 // ================================
 
 		 // Immolate (se não tiver ou acabando)
-		 if (me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate && !tar.trivial)
+		 checkme();
+		 if (me.mana > 50 && tar.hp > 30 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate && !tar.trivial)
 		 {
 			loga($"Status Immolate: immolate_up={wlock.immolate_up} / has_immolate={wlock.has_immolate}");
 			loga("Aplicando Immolate.");
-			cancelwand(); // desliga wand para usar poção
-			casta(IMMOLATE);
+			viramob();
 		 }
-
-		 // Corruption (se não tiver)
-		 else if (cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
-		 {
-			loga("Aplicando Corruption.");
-			cancelwand(); // desliga wand para usar poção
-			casta(CORRUPTION);
-		 }
-
 		 // Curse of Weakness (se não tiver)
-		 else if (cb_COW.Checked &&  wlock.curse_weakness_up && !wlock.has_curse_weakness)
+		 else if (cb_COW.Checked && wlock.curse_weakness_up && !wlock.has_curse_weakness)
 		 {
 			loga("Aplicando Curse of Weakness.");
-			cancelwand(); // desliga wand para usar poção
-			aperta(CURSEWEAKNESS);
+				casta(CURSEWEAKNESS);
 		 }
-
+		 // Corruption (se não tiver)
+		 else if (tar.hp > 25 && cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
+		 {
+			loga("Aplicando Corruption.");
+			
+			casta(CORRUPTION);
+		 }
 		 // Curse of Agony (se não tiver)
-		 else if (!cb_COW.Checked && wlock.curse_agony_up && !wlock.has_curse_agony)
+		 else if (tar.hp > 25 && !cb_COW.Checked && wlock.curse_agony_up && !wlock.has_curse_agony)
 		 {
 			loga("Aplicando Curse of Agony.");
-			cancelwand(); // desliga wand para usar poção
-			aperta(CURSEAGONY);
+			
+			casta(CURSEAGONY);
 		 }
 
 		 // Siphon Life (se não tiver)
 		 else if (wlock.siphon_life_up && !wlock.has_siphon_life)
 		 {
 			loga("Aplicando Siphon Life.");
-			cancelwand(); // desliga wand para usar poção
 			aperta(SIPHONLIFE);
 		 }
 
 		 // ================================
 		 // CHANNELING (PRIORIDADE ALTA)
 		 // ================================
+		 else if (!me.melee) // Debuffs castados, sem melee range
+		 {
+			aperta(INTERACT); // garante que está virado para o target
+		 }
 
 		 // Drain Life (se HP baixo e não channeling)
 		 else if (me.hp < 60 && wlock.drain_life_up && !wlock.has_drain_life)
 		 {
 			loga("HP baixo. Usando Drain Life.");
-			cancelwand(); // desliga wand para usar poção
+			
 			casta(DRAINLIFE);
 		 }
-
+		 // ================================
+		 // CURA DO PET (HEALTH FUNNEL)
+		 // ================================
+		 else if (me.hp > 60 && me.combat && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 40)
+		 {
+			loga("Pet com HP baixo. Usando Health Funnel.");
+			casta(HEALTHFUNNEL);
+			wait_cast(); // espera o canalizar
+			checkme();
+		 }
 		 // Drain Soul (se target com HP baixo)
-		 else if (tar.hp < 25 && wlock.drain_soul_up && !wlock.has_drain_soul)
+		 else if ((tar.hp < 30 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul &&
+			(wlock.shards < 3 || cb_drain_soul.Checked))
 		 {
 			loga("Target baixo. Usando Drain Soul.");
-			cancelwand(); // desliga wand para usar poção
+			
 			casta(DRAINSOUL);
 		 }
 
@@ -3218,7 +3307,7 @@ else if (war.execute_up && tar.hp <= 20)
 		 // Shadow Bolt (filler principal)
 		 else if (cb_use_shadowbolt.Checked && me.mana > atoi(tb_shadowbolt_mana) && wlock.shadowbolt_up && me.mobs < 2)
 		 {
-			cancelwand(); // desliga wand para usar poção
+			
 			casta(SHADOWBOLT);
 			//wait_cast(); // espera fim do cast pode dar backpedal
 		 }
@@ -3229,7 +3318,13 @@ else if (war.execute_up && tar.hp <= 20)
 		 else
 		 {
 			// Se não pode fazer nada, garante autoattack
-			if (!me.wandon) aperta(WAND); // garante que está com wand ligada 
+			if (!me.wandon && cb_wand.Checked && !me.casting)
+			{
+			 viramob();
+			 aperta(WAND,1000); // garante que está com wand ligada 
+			 aperta(STOPCAST); // uma wandada só 
+			 wait(600); // espera 1 segundo para não spam
+			}
 			
 			
 		 }
@@ -3248,7 +3343,7 @@ else if (war.execute_up && tar.hp <= 20)
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
-		 if (!me.melee) aperta(INTERACT); // aproxima se fora de alcance
+	getnear(); // se aproxima do target se estiver fora de alcance de melee
 
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
@@ -3270,14 +3365,11 @@ else if (war.execute_up && tar.hp <= 20)
 		 if (me.hp < 35 && me.hp_potion_rdy)
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 35% e poção pronta
 
+
 		 // ------------------------------------------
-		 // MOVIMENTO: aproximação se fora de melee
+		 // KICK
 		 // ------------------------------------------
-		 if (!me.melee) aperta(INTERACT);                         // tenta chegar no alvo via Interact With
-																															// ------------------------------------------
-																															// AÇÕES VARIADAS
-																															// ------------------------------------------
-																															// KICK
+
 		 if (tar.castbar > 0)
 		 {
 			loga("Tentando interromper cast do mob.");
@@ -3395,6 +3487,7 @@ else if (war.execute_up && tar.hp <= 20)
 	 //-----------------------------------------
 	 else if (me.classe == WARRIOR)
 	 {
+		aperta(CLEARTGT); // limpa o target após o combate
 		if (cb_random_pull_warrior.Checked) //  RANDOMIZA TIPO DE PULL (Charge / ranged)
 		{
 		 Random random = new Random();
@@ -3427,7 +3520,49 @@ else if (war.execute_up && tar.hp <= 20)
 	 }
 
 	}
+	// --------------------------------
+	// APROXIMA-SE DO TARGET (OU VIRA)
+	// --------------------------------
+	void getnear(bool melee = true)
+	{
+	 if (dungeon) return; // não aproxima em dungeons
+// MELEE
+//----------------------
+	 if (melee) // warrior, rogue, paladin
+	 {
+		if (!me.melee || me.wrongway || (me.hastarget && tar.aggro > 0))
+		 aperta(INTERACT); // aproxima se fora de alcance
 
+	 }
+	 //  CASTER
+	 //--------------------------
+	 else // caster, warlock
+	 {
+		if (wlock.has_drain_soul)
+		{
+		 loga("getnear: Drain Soul ativo, não anda.");
+		 return;
+		}
+
+		if (me.wrongway)
+		{
+		 loga("Wrongway ou out of range detectado. Corrigindo.");
+		 aperta(INTERACT, me.outofrange ? 500 : 100); // gira para corrigir facing
+		 para(); // para de andar
+		}
+		else if (me.outofrange) // olhando pro lado errado?
+		{
+		 if (me.outofrange && !me.melee && me.autoattack)
+		 {
+			loga("Out of range do melee.");
+			aperta(STOPCAST);
+			return;
+		 }
+		 
+		 
+		}
+	 }
+	}
 	// --------------------------------
 	// MÉTODO DE ESPERA VIGILANTE
 	// --------------------------------
@@ -6143,10 +6278,12 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 checkme();
-	 if (me.classe == WARLOCK)
+	 while (true)
 	 {
-		loga($"WARLOCK TEST: Demon Skin={me.wandon}, Pet={wlock.has_pet}");
+		espera(1);
+		checkme();
+		loga($"Wrong way: {me.wrongway}");
+		loga($"Out of Range: {me.outofrange}");
 	 }
 	}
 
