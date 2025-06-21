@@ -39,6 +39,17 @@ namespace Discord
 	int stuckcount = 0; // contador de ciclos consecutivos parado
 	loc oldloc;         // última posição registrada pra comparação
 
+	// --------------------------------
+	// VARIÁVEIS TEMPORÁRIAS PARA CRIAÇÃO DE CERCAS
+	// --------------------------------
+	loc temp_cerca_a;           // extremidade A da cerca
+	loc temp_cerca_b;           // extremidade B da cerca  
+	loc temp_cerca_p;           // ponto proibido
+	bool a_definido = false;    // controles de estado
+	bool b_definido = false;
+	bool p_definido = false;
+
+
 	// VARIAVEIS DO MULTITHREAD
 	private Thread updateThread;
 	private volatile bool threadRunning = false;
@@ -54,6 +65,13 @@ namespace Discord
 	public bool on = true; // bot on
 	public bool stopscan = false;
 	int indexAtual = 0;
+
+	// LISTA DE CERCA
+	List<Cerca> lcercas = new List<Cerca>();  // lista de cercas
+
+	// LISTA DE MOBS UNICOS QUE PARTICPARAM DO COMBATE, PARA DEFINIR QUANTIDADE DE LOOT E SKIN: 
+	HashSet<int> killed_skin = new HashSet<int>();
+	HashSet<int> killed_noskin = new HashSet<int>();
 
 
 	//---------------------------------
@@ -302,6 +320,29 @@ namespace Discord
 	public const int CHARGE = F5;     // Charge
 	public const int EXECUTE = F6;     // Charge
 
+	// --------------------------------------------
+	// SKILLS EXCLUSIVAS DO WARLOCK
+	// --------------------------------------------
+	public const int SHADOWBOLT = N1;        // Shadow Bolt (spell principal)
+	public const int IMMOLATE = N2;          // Immolate (DoT + dano inicial)
+	public const int CORRUPTION = N3;        // Corruption (DoT puro)
+	public const int CURSEWEAKNESS = N4;     // Curse of Weakness (reduz ataque)
+	public const int CURSEAGONY = N5;        // Curse of Agony (DoT crescente)
+	public const int DRAINSOUL = N6;         // Drain Soul (channel + soul shard)
+	public const int DRAINLIFE = N7;         // Drain Life (channel + cura)
+
+	
+	public const int SUMMONVOIDWALKER = N0;  // Summon Voidwalker
+
+	public const int PETTATACK = F1;         // Summon Imp
+	public const int SUMMONIMP = F2;         // Summon Imp
+	public const int DEMONSKIN = F3;         // Summon Imp
+	public const int WAND = F4;         // Summon Imp
+	public const int LIFETAP = F5;         // Summon Imp
+	public const int SIPHONLIFE = N8;        // Siphon Life (DoT + cura)
+
+
+
 
 
 	// --------------------------------------------
@@ -321,17 +362,22 @@ namespace Discord
 	// --------------------------------------------
 	// TIPOS DE CRIATURAS
 	// --------------------------------------------
-	public const int HUMANOID = 50; // humanoide
+	public const int HUMANOID = 50;  // humanoide
 	public const int BEAST = 100; // besta
 	public const int PLAYER_MELEE = 105; // player mané ogro (não-caster)
 	public const int PLAYER_CASTER = 110; // player mané caster
+	public const int CRITTER = 80;  // criatura pequena (critter)
+	public const int OOZE = 90;  // lodo, gosma (Ooze)
+	public const int ABERRATION = 95;  // aberração
 	public const int UNDEAD = 150; // morto-vivo
 	public const int DEMON = 200; // demônio
 	public const int ELEMENTAL = 210; // elemental
 	public const int MECHANICAL = 220; // mecânico
 	public const int DRAGONKIN = 230; // dragonete
 	public const int GIANT = 240; // gigante
-	public const int CRITTER = 80; // criatura pequena (critter)
+	public const int TOTEM = 2;   // totem
+	public const int NONCOMBAT_PET = 3;   // mascote não-combatente
+	public const int GAS_CLOUD = 4;   // nuvem de gás
 
 	// --------------------------------------------
 	// CÓDIGOS DE CLASSE (pixel 6 canal G)
@@ -496,12 +542,19 @@ namespace Discord
 	 // ----------------------------------------
 	 // PIXEL 1 – INVENTÁRIO, ERROS E RECURSO
 	 // ----------------------------------------
-	 // R: Slots livres nas bags (255 - slots livres)
-	 // G: Erros:
-	 //     128 = de costas (Facing wrong way)
-	 //      64 = fora de alcance (Out of range)
-	 //      0  = normal
-	 // B: Recurso primário (mana, rage, energia etc.) proporcional (0–255)
+	 //R: slots livres(3 bits) +flags(5 bits):
+	 //bits 0–2(0–7) = slots livres nas bags(máximo 7)
+	 //    bit 3(8) = wand_up(Shoot disponível e em range)
+	 //    bits 4–7 = LIVRES(para futuras expansões)  // BITS LIVRES AQUI 
+	 //
+	 // G: flags de erro de combate:
+	 //    bit 7 (128) = de costas (Facing wrong way)
+	 //    bit 6 ( 64) = fora de alcance (Out of range)
+	 //    0 = normal
+	 //
+	 // B: recurso primário + wand:
+	 //    bits 0–6 (0–127) = recurso primário proporcional (mana, rage, energia, etc.)
+	 //    bit 7 (128) = wand ativa (auto repeat Shoot)
 
 
 	 // ----------------------------------------
@@ -585,6 +638,7 @@ namespace Discord
 	 //    +8   = threat leve (t == 1)
 	 //    +16  = threat médio (t == 2)
 	 //    +32  = threat máximo (t == 3)
+	 // bit 6(+64) = aggro no pet 
 	 // G: livre
 	 // B: livre
 
@@ -675,6 +729,34 @@ namespace Discord
 	 // B: bit 0 = hs_casting     (Heroic Strike está enfileirado como autoattack)
 	 // B: bit 1 = has_thunder    (Thunder Clap ativo no target)
 	 // B: bit 2 = overpower_up	(Overpower pronto)
+	 // -------------------------------------------
+
+	 // -------------------------------------------
+	 // PIXEL 10 – WARLOCK
+	 // -------------------------------------------
+	 // R: bit 0     = immolate_up (spell pronta + range + mana)
+	 // R: bit 1     = corruption_up (spell pronta + range + mana)
+	 // R: bit 2     = curse_weakness_up (spell pronta + range + mana)
+	 // R: bit 3     = curse_agony_up (spell pronta + range + mana)
+	 // R: bit 4     = drain_soul_up (spell pronta + range + mana)
+	 // R: bit 5     = drain_life_up (spell pronta + range + mana)
+	 // R: bit 6     = siphon_life_up (spell pronta + range + mana)
+	 // R: bit 7     = shadowbolt_up (spell pronta + range + mana)
+	 //
+	 // G: bit 0     = has_immolate (>1 segundo restante no target)
+	 // G: bit 1     = has_corruption (>1 segundo restante no target)
+	 // G: bit 2     = has_curse_weakness (ativo no target)
+	 // G: bit 3     = has_curse_agony (ativo no target)
+	 // G: bit 4     = has_drain_soul (channeling ativo)
+	 // G: bit 5     = has_drain_life (channeling ativo)
+	 // G: bit 6     = has_siphon_life (ativo no target)
+	 // G: bit 7     = LIVRE
+	 //
+	 // B: bit 0     = has_demon_skin (aura ativa)
+	 // B: bit 1     = has_pet (pet vivo e ativo)
+	 // B: bit 2     = life tap up
+	 // B: bits 3–7  = LIVRES (reservados para expansões)
+	 //
 	 // -------------------------------------------
 
 
@@ -849,24 +931,29 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 // BLUE - TARGET "unique" ID (GUID HASH)
 	 tar.id = pixels[0].b; // id semi-único do target vindo do pixel 0B
 
-
 	 // ------------------------------------------
-	 // Pixel 1 - Mana (canal B) / Bags (canal R) / Erros de combate (canal G)
+	 // Pixel 1 - Recurso (canal B) / Bags (canal R) / Erros de combate (canal G)
 	 // ------------------------------------------
 
-	 // MANA
-	 int v_mana = (pixels[1].b * 100) / 255;            // canal B (0–255) convertido em porcentagem
-	 e.mana = v_mana;                                   // atualiza atributo de mana
-	 tb_mana.Text = v_mana.ToString();                  // exibe no textbox (debug)
+	 // RECURSO PRIMÁRIO
+	 int v_recurso = pixels[1].b & 127;                   // bits 0–6 → recurso proporcional (0–127)
+	 int v_mana = (v_recurso * 100) / 127;                // convertido em porcentagem
+	 e.mana = v_mana;                                     // atualiza atributo de mana
+	 tb_mana.Text = v_mana.ToString();                    // exibe no textbox (debug)
+
+	 // WAND_UP (bit 3)
+	 me.wand_up = (pixels[1].r & 8) != 0; // bit 3 = wand disponível (Shoot pronto e em range)
+
+	 // WAND ATIVA
+	 me.wandon = (pixels[1].b & 128) != 0;                 // bit 7 = wand ativa
 
 	 // SLOTS LIVRES NAS BAGS
-	 int v_slots = 255 - pixels[1].r;                   // canal R invertido → slots livres reais
-	 e.freeslots = v_slots;                             // atualiza slots livres
+	 me.freeslots = pixels[1].r & 7;      // 3 bits, maximo 7 slots livres (1+2+4 = 7)
 
 	 // ERROS DE COMBATE (bitmask no canal G)
-	 int g_erro = pixels[1].g;                           // canal G codifica erros combinados
-	 e.wrongway = (g_erro & 128) > 0;                   // 128 = "You are facing the wrong way!"
-	 e.outofrange = (g_erro & 64) > 0;                  //  64 = "Out of range" ou "You are too far away!"
+	 int g_erro = pixels[1].g;                            // canal G codifica erros combinados
+	 e.wrongway = (g_erro & 128) != 0;                    // 128 = "You are facing the wrong way!"
+	 e.outofrange = (g_erro & 64) != 0;                   //  64 = "Out of range" ou "You are too far away!"
 
 
 	 // ------------------------------------------
@@ -971,10 +1058,16 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 		tb_class.Text = className;
 		e.classe = class_id_raw; // Armazena o valor bruto da classe, se preferir
-		//loga(e.classe.ToString());
 
-		// B: NOVO: Progresso da barra de cast do Player
-		e.castbar = (pixels[6].b * 100) / 255;
+		if ((e.classe == WARLOCK) || (e.classe==MAGE) || (e.classe == PRIEST)) // Classes que usam mana
+		 me.iscaster = true;
+		else 
+		 me.iscaster = false;
+
+		 //loga(e.classe.ToString());
+
+		 // B: NOVO: Progresso da barra de cast do Player
+		 e.castbar = (pixels[6].b * 100) / 255;
 		e.casting = e.castbar > 0; // 'e.casting' agora é derivado de 'e.castbar'
 															 // e.spell = ((char)pixels[10].b).ToString(); // REMOVIDO: Leitura de nome da spell
 															 // e.spellid = 0; // REMOVIDO/Não necessário aqui
@@ -1012,7 +1105,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 
 	 // -------------------------------------
-	 // NOVO PIXEL 9: REAÇÃO E AMEAÇA DO TARGET (com bitflags no R)
+	 // PIXEL 9: REAÇÃO E AMEAÇA DO TARGET (com bitflags no R)
 	 // -------------------------------------
 	 if (pixels.Count > 9)
 	 {
@@ -1026,15 +1119,16 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		else if (friendly) tar.mood = 1;
 		else tar.mood = 0; // neutro
 
-		// mostra mood no textbox
-		tb_mood.Text = (tar.mood == -1) ? "Hostile" :
-										(tar.mood == 1) ? "Friendly" : "Neutral";
-
 		// lê threat (aggro level): 0 1 2 3
 		if ((pixels[9].r & 32) != 0) tar.aggro = 3; // threat máximo
 		else if ((pixels[9].r & 16) != 0) tar.aggro = 2; // threat médio
 		else if ((pixels[9].r & 8) != 0) tar.aggro = 1; // threat leve
 		else tar.aggro = 0; // sem threat
+
+		// NOVO: lê pet threat
+		tar.pet_aggro = ((pixels[9].r & 64) != 0) ? 1 : 0; // bit 6
+
+		// G e B : livres (não usados atualmente)
 	 }
 
 	 tar.trivial = !tar.iselite && (tar.hp <= 25 || tar.level <= me.level - 3);
@@ -1069,7 +1163,42 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 	 }
 
+	 // -------------------------------------
+	 // PIXEL 10 (Warlock) – SPELLS, DEBUFFS, PET STATUS
+	 // -------------------------------------
+	 else if ( me.classe == WARLOCK)
+	 {
+		int ar10 = pixels[10].r; // R = spells prontas (cooldown + range + mana)
+		int ag10 = pixels[10].g; // G = debuffs no target
+		int ab10 = pixels[10].b; // B = pet status
 
+		// SPELLS PRONTAS (Canal R)
+		wlock.immolate_up = (ar10 & 1) != 0;         // bit 0
+		wlock.corruption_up = (ar10 & 2) != 0;       // bit 1
+		wlock.curse_weakness_up = (ar10 & 4) != 0;   // bit 2
+		wlock.curse_agony_up = (ar10 & 8) != 0;      // bit 3
+		wlock.drain_soul_up = (ar10 & 16) != 0;      // bit 4
+		wlock.drain_life_up = (ar10 & 32) != 0;      // bit 5
+		wlock.siphon_life_up = (ar10 & 64) != 0;     // bit 6
+wlock.shadowbolt_up = (ar10 & 128) != 0;     // bit 7  
+
+		// DEBUFFS NO TARGET (Canal G)
+		wlock.has_immolate = (ag10 & 1) != 0;        // bit 0
+		wlock.has_corruption = (ag10 & 2) != 0;      // bit 1
+		wlock.has_curse_weakness = (ag10 & 4) != 0;  // bit 2
+		wlock.has_curse_agony = (ag10 & 8) != 0;     // bit 3
+		wlock.has_drain_soul = (ag10 & 16) != 0;     // bit 4
+		wlock.has_drain_life = (ag10 & 32) != 0;     // bit 5
+		wlock.has_siphon_life = (ag10 & 64) != 0;    // bit 6
+																								 // bit 7 = LIVRE
+
+		// PET STATUS (Canal B)
+		
+		wlock.has_demon_skin = (ab10 & 1) != 0;     // bit 0
+		wlock.has_pet = (ab10 & 2) != 0;            // bit 1
+		wlock.lifetap_up = (ab10 & 4) != 0;   // bit 2
+																								 // bits 3-7 = LIVRES
+	 }
 
 	 // ====================================================================
 	 // PIXELS ESPECÍFICOS DE ROGUE (10 a 15)
@@ -1326,9 +1455,17 @@ void press(byte key)
 	//--------------------------------------------------------
 	public element me;
 public element tar;
-public palatable pala = new palatable(); // inicializa tabela de status de paladino 
-public roguetable rog = new roguetable(); // inicializa tabela de status de rogue
-	public warriortable war = new warriortable(); // inicializa tabela de status de warrior
+
+	// --------------------------------
+	// INSTÂNCIAS DAS CLASSES DE STATUS
+	// --------------------------------
+	palatable pala = new palatable();
+	roguetable rog = new roguetable();
+	warriortable war = new warriortable();
+	locktable wlock = new locktable();  // NOVA INSTÂNCIA WARLOCK
+
+
+
 	public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
 	
 
@@ -1409,9 +1546,10 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 	 //--------------------------------------------------------
 	 do
 	 {
-		// --------------------------------
-		// LOOP DE PAUSA
-		// --------------------------------
+		drawmap(destino); // atualiza o mapa com o destino
+											// --------------------------------
+											// LOOP DE PAUSA
+											// --------------------------------
 		atualizamapa(me.pos);
 		get_minimap(); // atualiza minimapa
 
@@ -1472,11 +1610,12 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 loga($"Delta para virar: {Math.Abs(dif)}° ({(dif < 0 ? "esquerda" : "direita")})");
 		 loga($"Distância até o destino: {d}");
 
+		 /*
 		 if (podegirar(destino))
 			loga("Curva possível – seguindo em movimento.");
 		 else
 			loga("Curva muito fechada – será necessário parar.");
-
+		 */
 		 giralvo(destino);
 		 // gira para o destino
 		 //--------------------------------------------------------
@@ -1586,26 +1725,36 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 {
 			if (!me.combat)
 			{
+			 // --------------------------------
+			 // ETAPA 5: LOOP DE LOOT OTIMIZADO
+			 // Substituir o while(true) atual no sistema de loot
+			 // --------------------------------
 			 if (cb_loot.Checked)
 			 {
 				int loopcount = 0;
+				int max_scans = calcula_max_scans(); // <<<< NOVA LÓGICA AQUI!
+				primeira_tentativa_sessao = true;     // reseta flag para nova sessão
+				ultimo_tipo_loot = 0;                 // limpa tipo anterior
+				//loga("Nova sessão de loot iniciada.");
 
-				while (true)
+
+
+				while (loopcount < max_scans) // <<<< ERA >= 6, AGORA É DINÂMICO!
 				{
 				 checkme();                  // atualiza dados
 				 if (me.combat) break;      // se entrou em combate, para tudo
 
-				 if (loopcount++ >= 6)      // tentou 6 vezes, desiste
-				 {
-					loga("Loop de loot interrompido após 6 tentativas.");
-					break;
-				 }
+				 loopcount++; // incrementa ANTES do scan
 
 				 loc p = scanloot();        // tenta encontrar algo clicável
-				 if (p.x < 0) break;        // nada encontrado
+				 if (p.x < 0)
+				 {
+					loga($"Scan {loopcount}/{max_scans}: nada encontrado - finalizando loot.");
+					break;        // nada encontrado, pode parar
+				 }
 
-				 clica(p);                  // clica diretamente — cursor já é validado no scanloot
-//				 wait(100);
+				 loga($"Scan {loopcount}/{max_scans}: loot encontrado em ({p.x},{p.y})");
+				 clica(p);                  // clica diretamente
 				 checkme();
 
 				 if (me.spd == 0 && !me.combat)
@@ -1618,6 +1767,11 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 					loga("Clicou errado ao tentar loot.");
 					break;
 				 }
+				}
+
+				if (loopcount >= max_scans)
+				{
+				 loga($"Loot finalizado: atingiu limite de {max_scans} scans.");
 				}
 			 }
 			 //-----------------------------------FIM SCANLOOT-----------------------------------
@@ -1641,7 +1795,7 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 		 }
 
 		 //if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
-		 return; // sai do moveto após combate.
+		 
 
 		} // FIM DA ROTINA PÓS COMBATE (LOOT / SKIN)
 
@@ -1676,9 +1830,65 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 			while (me.hp < atoi(tb_rest_warr) && !me.combat)
 			{
 			 espera(1);
-			 
+
 			}
 		 }
+		}
+
+
+		// ================================
+		// PREPARO PRÉ-PULL (PET + AURAS)
+		// ================================
+		else if (me.classe == WARLOCK)
+		{
+		 // Invoca pet se não tiver
+		 if (!wlock.has_pet)
+		 {
+			loga("Invocando Imp.");
+			para(); // para de andar para invocar
+			casta(SUMMONIMP);
+			espera(11); // espera invocar (10s + margem)
+			checkme();
+			if (!wlock.has_pet)
+			{
+			 loga("Falha ao invocar pet. Continuando sem pet.");
+			}
+		 }
+
+		 // Ativa Demon Skin se não tiver
+		 if (!wlock.has_demon_skin)
+		 {
+			loga("Ativando Demon Skin.");
+			casta(DEMONSKIN);
+			checkme();
+		 }
+
+		 // LIFE TAP SE MANA BAIXA 
+		 if (!cb_lifetap_auto.Checked)
+		 {
+			while (me.mana < atoi(tb_lifetap_mana) && me.hp > atoi(tb_lifetap_hp) && !me.combat)
+			{
+			 casta(LIFETAP); // ativa Life Tap
+			 checkme(); // atualiza status
+			}
+		 }
+		 else
+		 {
+			while (me.hp>me.mana && me.hp >= atoi(tb_pull_hp_lock) && !me.combat)
+			{
+			 casta(LIFETAP); // ativa Life Tap
+			 checkme(); // atualiza status
+			}
+		 }
+		 
+		 // VIDA BAIXA 
+		 while (me.hp < atoi(tb_pull_hp_lock) )
+		 {
+			espera(1);
+			checkme();
+		 }
+
+
 		}
 
 		//----------------------------------
@@ -1692,12 +1902,13 @@ public roguetable rog = new roguetable(); // inicializa tabela de status de rogu
 			para(); // para de andar se estiver andando
 			loga($"Esperando recuperação de HP: {me.hp}");
 			aperta(F12); // COMIDA 
-			while (me.hp < atoi(tb_rogue_eat_at)  && !me.combat)
+			while (me.hp < atoi(tb_rogue_eat_at) && !me.combat)
 			{
 			 espera(1);
 			}
 		 }
 		}
+		
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
@@ -1969,15 +2180,24 @@ void andaplanta(loc alvo)
 	 nao_afoga(); // nada para cima se estiver afogando
 	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 
-	
+
 	 // --------------------------------------------
 	 // VERIFICAÇÃO DO TARGET - ESCOLHA ENTRE DOIS
 	 // --------------------------------------------
 
+	 // --------------------------------------------
+	 // VERIFICAÇÃO DO TARGET - ESCOLHA ENTRE DOIS
+	 // --------------------------------------------
 	 bool bomtarget()
 	 {
-		// avalia se o target atual é considerado bom
-		if (!me.hastarget) return false;
+		// Delay curto para garantir leitura completa
+		wait(50);  // 50ms de delay
+							 // Rejeita target inválido ou sem tipo
+		if (!me.hastarget || tar.type == 0) return false;
+
+		// Log de depuração
+		//loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
+
 		if (cb_pacifist.Checked) return false;
 		if (tar.hp == 0 || tar.morreu) return false;
 		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
@@ -1986,8 +2206,16 @@ void andaplanta(loc alvo)
 		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
 		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
-		if ((tar.type == 50 && cb_nohumanoid.Checked) || (tar.type == 230 && cb_nodragonkin.Checked))
-   	if (tar.type == MECHANICAL && cb_nomech.Checked) return false;
+
+		// Bloqueia apenas humanóides NPC
+		if (cb_nohumanoid.Checked && tar.type == HUMANOID)
+		{
+		 loga($"🚫 Humanóide rejeitado: Type={tar.type}");
+		 return false;
+		}
+
+		if (cb_nodragonkin.Checked && tar.type == DRAGONKIN) return false;
+		if (cb_nomech.Checked && tar.type == MECHANICAL) return false;
 
 		return true;
 	 }
@@ -2041,9 +2269,6 @@ void andaplanta(loc alvo)
 		aperta(TARGETLAST);
 	 }
 
-
-
-
 	 checkme(); // atualiza status após a escolha do target
 
 
@@ -2054,7 +2279,8 @@ void andaplanta(loc alvo)
 
 		if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
 		{
-		 loga("Target locked. Iniciando pull.");
+		loga($"Target type: {tar.type}.");
+		loga("Target locked. Iniciando pull.");
 		 do // while (me.hastarget && !me.combat && tar.hp == 100) // alvo válido e ainda fora de combate
 		 {
 			checkme();
@@ -2299,6 +2525,146 @@ void andaplanta(loc alvo)
 			 para();
 			 // não limpa o target aqui — pode haver fallback fora
 			}
+		 } // ---------------- FIM PULL ROGUE ----------------
+
+		 //------------------------------------------------------------
+		 // ---------------------INICIO PULL WARLOCK ----------------
+		 //--------------------------------------------------------
+		 else if (me.classe == WARLOCK) // ---------------- INÍCIO PULL WARLOCK ----------------
+		 {
+			// ================================
+			// CONTROLE DE PULOS (ANTI-TRAVAMENTO)
+			// ================================
+			 int warlock_ticker = 0; // contador estático para persistir entre chamadas
+			warlock_ticker++;
+
+			// Log apenas na primeira vez ou a cada 10 ciclos para evitar spam
+			if (warlock_ticker == 1 || warlock_ticker % 10 == 0)
+			 loga("Iniciando pull como Warlock.");
+
+			// PULO HUMANO a cada 3 segundos (~15 ciclos de 200ms)
+			if (warlock_ticker % 15 == 0)
+			{
+			 aperta(PULA); // pulo para superar obstáculos
+			 loga("Pulo anti-travamento.");
+			}
+
+			// ================================
+			// PULL RANGED  
+			// ================================
+			//VIRA PARA O MOB
+			aperta(INTERACT, 400); // começa a andar até o mob
+
+			// Verifica se pode puxar com Shadow Bolt
+			if (wlock.shadowbolt_up || wlock.immolate_up || me.wand_up)
+			{
+			 loga("Parando para castar.");
+			 para(); // para de andar
+
+			 // Verifica se ainda tem range após parar
+			 checkme();
+			 int myskill = SHADOWBOLT;
+			 bool usar_wand = false;
+			 bool fazer_nada = false;
+
+			 // ================================
+			 // ESCOLHA DA SKILL PRIORITÁRIA
+			 // ================================
+			 // Prioridade 1: Immolate (se checkbox ativo e spell disponível)
+			 if (cb_use_immolate.Checked && wlock.immolate_up )
+			 {
+				myskill = IMMOLATE;
+			 }
+			 // Prioridade 2: Shadow Bolt (se checkbox ativo e spell disponível)
+			 else if (cb_use_shadowbolt.Checked && wlock.shadowbolt_up)
+			 {
+				myskill = SHADOWBOLT;
+			 }
+			 // Prioridade 3: Wand (se spells indisponíveis ou desabilitadas)
+			 else if (me.wand_up)
+			 {
+				usar_wand = true;
+				loga("Usando Wand - spells indisponíveis ou desabilitadas.");
+			 }
+			 // Última opção: Fazer nada (fallback melee embaixo)
+			 else
+			 {
+				fazer_nada = true;
+				loga("Nenhuma opção ranged disponível. Fallback para melee.");
+			 }
+
+			 // ================================
+			 // EXECUÇÃO DA SKILL ESCOLHIDA
+			 // ================================
+			 if (fazer_nada)
+			 {
+				// Não faz nada - deixa o fallback melee embaixo cuidar
+				loga("Continuando aproximação melee.");
+			 }
+			 else if (!usar_wand) // Spells normais
+			 {
+				aperta((byte)myskill, 2000); // usa spell
+				checkme(); // atualiza status após o cast
+
+				if (me.wrongway)
+				{
+				 aperta(INTERACT, 200);
+				 para(); // para de andar após o cast
+				 aperta((byte)myskill, 2000); // tenta novamente se andou errado
+				}
+
+				// Espera entrar em combate
+				wait(500);
+				checkme();
+
+				if (me.combat)
+				{
+				 loga("Pull com sucesso! Entrando em combate.");
+				 warlock_ticker = 0; // reseta contador ao entrar em combate
+				 return;
+				}
+				else
+				{
+				 loga("Spell não iniciou combate. Continuando aproximação.");
+				}
+			 }
+			 else // Usar Wand
+			 {
+				casta(WAND); // ativa wand
+				loga("Wand ativada para pull.");
+
+				checkme();
+				if (me.combat)
+				{
+				 loga("Pull com Wand bem-sucedido!");
+				 warlock_ticker = 0; // reseta contador ao entrar em combate
+				 return;
+				}
+				else
+				{
+				 loga("Wand não iniciou combate. Continuando aproximação.");
+				}
+			 }
+			}
+
+			// ================================
+			// FALLBACK: APROXIMAÇÃO MELEE
+			// ================================
+			// Se não conseguiu puxar ranged, vai melee
+			if (!me.combat)
+			{
+			 aperta(INTERACT); // continua andando até o mob
+			}
+
+			// ================================
+			// TIMEOUT DE SEGURANÇA
+			// ================================
+			if (warlock_ticker > 50) // ~10 segundos sem sucesso
+			{
+			 loga("Pull timeout - limpando target.");
+			 aperta(CLEARTGT);
+			 warlock_ticker = 0; // reseta contador
+			}
 		 }
 
 
@@ -2337,6 +2703,63 @@ void andaplanta(loc alvo)
 	 }
 	}
 	// --------------------------------
+	// ETAPA 3: TRACKING DURANTE COMBATE
+	// Incluir no LOOP DO COMBATE (dentro do while), ANTES das rotinas de classe
+	// --------------------------------
+	private void rastreia_mob_combate()
+	{
+	 // só adiciona se target válido, com aggro, e levou porrada significativa
+	 if (me.hastarget && tar.aggro > 0 && tar.hp < 50)
+	 {
+		// verifica se é mob skinnable
+		if (tar.type == HUMANOID || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
+		{
+		 if (killed_skin.Add(tar.id)) // Add retorna true se foi novo elemento
+		 {
+			loga($"Mob skinnable rastreado: ID {tar.id}, tipo {tar.type}");
+		 }
+		}
+		else
+		{
+		 if (killed_noskin.Add(tar.id)) // Add retorna true se foi novo elemento  
+		 {
+			loga($"Mob normal rastreado: ID {tar.id}, tipo {tar.type}");
+		 }
+		}
+	 }
+	}
+
+	// --------------------------------
+	// ETAPA 4: CÁLCULO INTELIGENTE DE SCANS
+	// Substituir a linha "if (loopcount++ >= 6)" no método de loot
+	// --------------------------------
+	private int calcula_max_scans()
+	{
+	 int max_scans;
+
+	 if (cb_skinning.Checked)
+	 {
+		// Skinning ATIVO: mobs skinnable precisam de 2 scans (loot + skin)
+		max_scans = killed_noskin.Count + (killed_skin.Count * 2);
+	 }
+	 else
+	 {
+		// Skinning DESATIVO: todos os mobs precisam só de 1 scan (loot apenas)
+		max_scans = killed_noskin.Count + killed_skin.Count;
+	 }
+
+	 // proteção: mínimo 1 scan, máximo 8 (backup de segurança)
+	 max_scans = Math.Max(1, Math.Min(max_scans, 8));
+
+	 loga($"Mobs mortos: {killed_noskin.Count} normais + {killed_skin.Count} skinnable = {max_scans} scans máximos");
+
+	 return max_scans;
+	}
+
+
+
+
+	// --------------------------------
 	// MÉTODO COMBATLOOP - ROTINAS DE COMBATE
 	// --------------------------------
 	// Variáveis de controle
@@ -2356,8 +2779,17 @@ void andaplanta(loc alvo)
 		emCombate = true;
 	 }
 	 int ticker = 0; // contador de ciclos
-	 do
+	 //----------------------------------
+	 // ROTINAS PRÉ LOOP DE COMBATE
+	 //-----------------------------------
+	 // LIMPA MOB COUNT (USADO PARA LOOT E SKIN) 
+	  killed_skin.Clear();        // zera lista de mobs skinnable
+    killed_noskin.Clear();      // zera lista de mobs normais
+    loga("Tracking de mobs reiniciado para novo combate.");
+
+	 do // while me.combat
 	 {
+		
 		if (!on) return; // se o bot estiver desligado, sai do loop
 		combat_ticker++; // incrementa contador de combate 
 		ticker++;
@@ -2373,15 +2805,11 @@ void andaplanta(loc alvo)
 
 
 		// --------------------------------
-		// ROTINAS ALL-CLASS
+		// ROTINAS ALL-CLASS - GCR
 		// --------------------------------
 		// NAO DEIXA AFOGAR 
 		//------------------------------
 		if (!dungeon) nao_afoga(); // nada para cima se estiver afogando; permite nadar em dungeons
-
-		//----- HEALTH POTION --------
-		if (me.hp < 30 && me.mana < 40) // Tá no bico do corvo 
-		 aperta(HEALTHPOTION);
 		//-----------------------------------
 		// ASSIST NO TANK EM DUNGEON 
 		//-----------------------------------
@@ -2392,7 +2820,6 @@ void andaplanta(loc alvo)
 		// -----------------------------------------
 		// BACKPEDAL SE APANHANDO NAS COSTAS 
 		// -----------------------------------------
-
 		if (me.mobs > 1 && (!dungeon || me.dazed)) // combate perigoso: múltiplos mobs (fora de dungeon ou com dazed)
 		{
 		 int limiar = int.Parse(tb_back_limiar.Text);      // valor-limite configurado pelo usuário
@@ -2418,7 +2845,9 @@ void andaplanta(loc alvo)
 		 if (pode_backpedalar)
 		 {
 			aperta(SKEY, 1100);    // anda pra trás 1 segundo mantendo o facing
-			aperta(AUTOATTACK);    // garante ataque ligado após reposicionamento
+			if (!me.iscaster) aperta(AUTOATTACK);    // garante ataque ligado após reposicionamento
+			else
+			 aperta(INTERACT); // se caster, apenas interage para manter o facing
 		 }
 		 else if (!jalogou)
 		 {
@@ -2426,11 +2855,10 @@ void andaplanta(loc alvo)
 			jalogou = true;
 		 }
 		}
-
 		// -----------------------------------------
 		// GIRA PARA O ALVO SE ESTIVER APANHANDO DE COSTAS
 		// -----------------------------------------
-		if (!dungeon && me.wrongway && cb_wrong_gira.Checked)
+		if (false && !dungeon && me.wrongway && cb_wrong_gira.Checked)
 		{
 		 roda(25); // gira pra manter face no inimigo
 		 loga("De costas para o alvo! Ativando correção.");
@@ -2439,45 +2867,55 @@ void andaplanta(loc alvo)
 		}
 
 		// --------------------------------
-		// VERIFICA TARGET VALIDO 
+		// REGISTRA MOB PARA SKIN
 		// --------------------------------
 		//wait(100);
 		checkme();
-		if (!dungeon && !(tar.aggro > 0)) // target morto ou aparentemente inválido
-		{
-
-		 if (!(tar.aggro > 0)) // confirma que ainda está inválido
-		 {
-			if (!deucharge)
-			{
-			 aperta(CLEARTGT); // limpa o target
-			 //loga("Target não está com aggro em mim. Limpando target.");
-			}
-			else
-			 deucharge = false; // evita perder o target por causa do stun do charge 
-
-			checkme(); // atualiza estado após limpar
-
-			// --------------------------------
-			// VERIFICA fim de combate
-			// --------------------------------
-
+		rastreia_mob_combate(); // registra o mob no tracking count  PARA LOOT/SKIN se necessário
+		// --------------------------------
+		// SAI SE FIM DE COMBATE
+		// --------------------------------
 			if (!me.combat) break; // combate terminou, sai do loop
-			continue; // ainda em combate, reinicia ciclo
-		 }
-		}
-		else // Mob vivo e com agro em mim
+// --------------------------------
+// LIMPA ALVO INVALIDO OU MORTO
+// --------------------------------
 
-		{
-		 aperta(INTERACT);               // anda até o alvo se estiver longe
-		 if (ticker % 6 == 0) aperta(PULA); // da uns pulinhos a cada 3 ciclos pra pular a cerca ao ir atras do target 
-		}
+// Define se target tem aggro válido (em mim ou no pet)
+bool tem_aggro_valido = (tar.aggro > 0) || (tar.pet_aggro > 0);
 
-		//---------------------ROTINA EXCLUSIVA PALADINO ---------------------
+// Define se deve preservar target mesmo sem aggro
+bool deve_preservar = dungeon || deucharge;
+
+// Limpa target SE: não tem aggro válido E não deve preservar
+if (!tem_aggro_valido && !deve_preservar)
+{
+    aperta(CLEARTGT);
+    loga("Target sem aggro válido. Limpando.");
+    checkme();
+}
+// Reseta flag do charge se ela estava ativa
+else if (deucharge)
+    deucharge = false; // permite limpar target nos próximos ciclos
+
+// Target válido - continua o combate
+if (tem_aggro_valido || deve_preservar)
+{
+    
+// MANTEM  O TARGET 
+}
+
+		//-------------------------------------------------------------------
+		//---------------------ROTINA EXCLUSIVA PALADINO --------------------
+		//-------------------------------------------------------------------
+		//-
 		if (me.classe == PALADIN)           //  
 		{
 		 wait_cast();                    // espera fim de cast se tiver algum
-
+		 // ------------------------------------------
+		 // MOVIMENTO: aproximação se fora de melee
+		 // ------------------------------------------
+		 if (!me.melee) aperta(INTERACT); // aproxima se fora de alcance
+		 //-----
 		 if (tar.mood != 1 && !me.autoattack) // se mob não é amigável e não estou  atacando ele
 			aperta(AUTOATTACK);         // inicia ataque automático
 		 tenta_curar();                  // verifica se precisa curar e executa se necessário
@@ -2566,7 +3004,7 @@ void andaplanta(loc alvo)
 			 casta(RETALIATION);                  // aciona Retaliation
 
 
-		 if (me.hp < 20 && me.hp_potion_rdy)
+		 if (me.hp < 30 && me.hp_potion_rdy)
 			aperta(HEALTHPOTION); // poção se vida muito baixa
 // ------------------------------------------
 // EXECUTE
@@ -2576,7 +3014,10 @@ else if (war.execute_up && tar.hp <= 20)
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
-		 if (!me.melee) aperta(INTERACT); // aproxima se fora de alcance
+		 if (tar.aggro > 0 && !me.melee) aperta(INTERACT); // aproxima se fora de alcance
+		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
+			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
+		 if (me.wrongway) aperta(INTERACT); // gira para corrigir facing se necessário
 
 
 		 // ------------------------------------------
@@ -2647,15 +3088,154 @@ else if (war.execute_up && tar.hp <= 20)
 
 		 if (war.overpower_up)
 			aperta(OVERPOWER); // usa Overpower se disponível
+		}//------------FIM ROTINA DE COMBATE WARRIOR (WCR) ------------------
 
 
+		//----------------------------------
+		// ROTINA DE COMBATE WARLOCK
+		//----------------------------------
+		// DESLIGA WAND PRA PERMITIR CAST 
+		else if (me.classe == WARLOCK)
+		{
+		 void cancelwand()
+		 { 			 if (me.wandon) // se está com wand ligada
+			 {
+				aperta(WAND); // desliga a wand
+				loga("Desligando Wand.");
+			 }
+		 }
 
+		 wait_cast(); // espera fim de cast se tiver algum
 
+		 // ASSIST NO PET 
+		 //------------------------------
+		 if (!me.hastarget && wlock.has_pet && me.combat)
+			aperta(ASSIST); // assiste o pet se estiver em combate e sem target
 
+		 // MANTEM BUFFS (demon skin)
+		 //------------------------------
+		 if (!wlock.has_demon_skin)
+		 {
+			loga("Ativando Demon Skin.");
+			casta(DEMONSKIN);
+			checkme();
+		 }
+		 // OLHANDO PRO LADO ERRADO
+		 // ================================
+		 if (!me.casting || me.wrongway)
+		 {
+			aperta(INTERACT,70); // gira para corrigir facing
+			para(); // para de andar
+		 }
+		 // ================================
+		 // EMERGÊNCIA: POÇÃO DE VIDA
+		 // ================================
+		 if (me.hp < 30 && me.hp_potion_rdy)
+		 {
+			cancelwand(); // desliga wand para usar poção
+			loga("HP crítico! Usando poção.");
+			aperta(HEALTHPOTION);
+		 }
 
+		 // ================================
+		 // SACRIFÍCIO DO PET (EMERGÊNCIA)
+		 // ================================
+		 if (me.hp < 10 && me.level >= 16 && wlock.has_pet)
+		 {
+			loga("HP crítico! Sacrificando Voidwalker.");
+			// Implementar sacrifício do pet quando necessário
+		 }
 
+		 // ================================
+		 // APLICAR DEBUFFS (PRIORIDADE MÁXIMA)
+		 // ================================
 
+		 // Immolate (se não tiver ou acabando)
+		 if (me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate && !tar.trivial)
+		 {
+			loga($"Status Immolate: immolate_up={wlock.immolate_up} / has_immolate={wlock.has_immolate}");
+			loga("Aplicando Immolate.");
+			cancelwand(); // desliga wand para usar poção
+			casta(IMMOLATE);
+		 }
+
+		 // Corruption (se não tiver)
+		 else if (cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
+		 {
+			loga("Aplicando Corruption.");
+			cancelwand(); // desliga wand para usar poção
+			casta(CORRUPTION);
+		 }
+
+		 // Curse of Weakness (se não tiver)
+		 else if (cb_COW.Checked &&  wlock.curse_weakness_up && !wlock.has_curse_weakness)
+		 {
+			loga("Aplicando Curse of Weakness.");
+			cancelwand(); // desliga wand para usar poção
+			aperta(CURSEWEAKNESS);
+		 }
+
+		 // Curse of Agony (se não tiver)
+		 else if (!cb_COW.Checked && wlock.curse_agony_up && !wlock.has_curse_agony)
+		 {
+			loga("Aplicando Curse of Agony.");
+			cancelwand(); // desliga wand para usar poção
+			aperta(CURSEAGONY);
+		 }
+
+		 // Siphon Life (se não tiver)
+		 else if (wlock.siphon_life_up && !wlock.has_siphon_life)
+		 {
+			loga("Aplicando Siphon Life.");
+			cancelwand(); // desliga wand para usar poção
+			aperta(SIPHONLIFE);
+		 }
+
+		 // ================================
+		 // CHANNELING (PRIORIDADE ALTA)
+		 // ================================
+
+		 // Drain Life (se HP baixo e não channeling)
+		 else if (me.hp < 60 && wlock.drain_life_up && !wlock.has_drain_life)
+		 {
+			loga("HP baixo. Usando Drain Life.");
+			cancelwand(); // desliga wand para usar poção
+			casta(DRAINLIFE);
+		 }
+
+		 // Drain Soul (se target com HP baixo)
+		 else if (tar.hp < 25 && wlock.drain_soul_up && !wlock.has_drain_soul)
+		 {
+			loga("Target baixo. Usando Drain Soul.");
+			cancelwand(); // desliga wand para usar poção
+			casta(DRAINSOUL);
+		 }
+
+		 // ================================
+		 // FILLER: SHADOW BOLT (SPAM)
+		 // ================================
+
+		 // Shadow Bolt (filler principal)
+		 else if (cb_use_shadowbolt.Checked && me.mana > atoi(tb_shadowbolt_mana) && wlock.shadowbolt_up && me.mobs < 2)
+		 {
+			cancelwand(); // desliga wand para usar poção
+			casta(SHADOWBOLT);
+			//wait_cast(); // espera fim do cast pode dar backpedal
+		 }
+
+		 // ================================
+		 // FALLBACK: AUTOATTACK ou WAND
+		 // ================================
+		 else
+		 {
+			// Se não pode fazer nada, garante autoattack
+			if (!me.wandon) aperta(WAND); // garante que está com wand ligada 
+			
+			
+		 }
 		}
+
+
 
 
 
@@ -2665,6 +3245,11 @@ else if (war.execute_up && tar.hp <= 20)
 		// -----------------------------------------------
 		else if (me.classe == ROGUE)
 		{
+		 // ------------------------------------------
+		 // MOVIMENTO: aproximação se fora de melee
+		 // ------------------------------------------
+		 if (!me.melee) aperta(INTERACT); // aproxima se fora de alcance
+
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
@@ -3248,7 +3833,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 		 int.Parse(tb_debug1.Text), // X vem da textbox1
 		 int.Parse(tb_debug2.Text)  // Y vem da textbox2
 	 );
-	 tb_debug4.Text = dist(me.pos, alvo).ToString(); // distancia entre mim e o alvo
+
 	}
 	// --------------------------------------------------------------------
 	// Função s(obj) - Converte .Text de qualquer controle em int (seguro)
@@ -3474,7 +4059,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 checkme();
 tb_debug1.Text = me.pos.x.ToString();
 tb_debug2.Text = me.pos.y.ToString();
-tb_debug3.Text = me.facing.ToString();
+
 }
 	// LOCALIZADOR DA FLEXA DO MINIMAP
 	private Point localiza_flexa_brilho(Bitmap bmp, Point estimado)
@@ -3952,14 +4537,29 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	 last_kill_time = Environment.TickCount; // tempo do último combate vencido
 																							 // --------------------------------
 	 on = true;                        // ativa o bot
-	 lwp.Clear();                      // limpa lista de waypoints
 
-	 foreach (var item in lbwp.Items) // carrega os waypoints da listbox
-		lwp.Add(unpack(item.ToString()));
+// CARREGA APENAS WAYPOINTS VÁLIDOS
+// --------------------------------
+		lwp.Clear();
 
-	 if (lwp.Count == 0) return;       // não faz nada se a lista estiver vazia
+		foreach (var item in lbwp.Items)
+		{
+		 string linha = item.ToString();
 
-	 checkme();                        // atualiza posição do bot
+		 // Só adiciona se for waypoint (3 vírgulas = 4 números)
+		 if (linha.Count(c => c == ',') == 3)
+		 {
+			lwp.Add(unpack(linha));
+		 }
+		}
+
+		if (lwp.Count == 0)
+		{
+		 loga("❌ Nenhum waypoint válido encontrado!");
+		 return;
+		}
+
+		checkme();                        // atualiza posição do drone
 
 	 int idx = nearest(me.pos, lwp);   // encontra o ponto mais próximo
 	 if (idx == -1) return;
@@ -3995,12 +4595,12 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		// --------- CONTROLE DE EXTREMOS ---------
 		if (indexAtual >= lwp.Count) // passou do fim
 		{
-		 if (cb_round.Checked && cb_nostop.Checked)
+		 if (cb_round.Checked )
 		 {
 			indexAtual = 0;               // modo circular → volta ao início
 			loga("Loop completo. Recomeçando do início.");
 		 }
-		 else if (cb_nostop.Checked)
+		 else if (true)
 		 {
 			dir = -1;                     // modo linear → inverte direção
 			indexAtual = lwp.Count - 2;   // volta pro penúltimo
@@ -4010,12 +4610,12 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		}
 		else if (indexAtual < 0) // passou do início
 		{
-		 if (cb_round.Checked && cb_nostop.Checked)
+		 if (cb_round.Checked )
 		 {
 			indexAtual = lwp.Count - 1;   // modo circular → vai pro final
 			loga("Loop completo. Recomeçando do final.");
 		 }
-		 else if (cb_nostop.Checked)
+		 else if (true)
 		 {
 			dir = +1;                     // modo linear → inverte direção
 			indexAtual = 1;               // vai pro segundo
@@ -4029,37 +4629,79 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 
 
 	// --------------------------------
-	// CARREGAR WAYPOINTS AO ABRIR O PROGRAMA
+	// MÉTODO CARREGAR_WAYPOINTS (MODIFICADO)
+	// Carrega waypoints ignorando cercas
 	// --------------------------------
 	private void carregar_waypoints()
 	{
-	 string nome = "waypoints.txt"; // nome padrão
+	 string nome = "waypoints.txt";
 
-	 if (File.Exists("discord.ini")) // se arquivo de config existir
+	 if (File.Exists("discord.ini"))
 	 {
 		string[] linhascfg = File.ReadAllLines("discord.ini");
 		if (linhascfg.Length > 0 && linhascfg[0].Trim() != "")
-		 nome = linhascfg[0].Trim(); // usa nome do cfg
+		 nome = linhascfg[0].Trim();
 	 }
 
-	 tb_filename.Text = nome; // exibe o nome usado no textbox
+	 tb_filename.Text = nome;
 
-	 if (File.Exists(nome)) // tenta carregar o arquivo
+	 if (File.Exists(nome))
 	 {
 		string[] linhas = File.ReadAllLines(nome);
 		lbwp.Items.Clear();
+		lwp.Clear();         // Limpa lista de waypoints para navegação
+		lcercas.Clear();     // Limpa lista de cercas
+
+		int waypoints_carregados = 0;
+		int cercas_carregadas = 0;
 
 		foreach (string linha in linhas)
-		 lbwp.Items.Add(linha);
+		{
+		 int virgulas = linha.Count(c => c == ',');
 
-		if (cb_log.Checked) loga($"Waypoints carregados do arquivo {nome}");
+		 if (virgulas == 3) // waypoint (4 números)
+		 {
+			lbwp.Items.Add(linha);
+			lwp.Add(unpack(linha));  // Adiciona à lista de navegação
+			waypoints_carregados++;
+		 }
+		 else if (virgulas == 11) // cerca (12 números)
+		 {
+			try
+			{
+			 Cerca cerca = Cerca.FromPacked(linha);
+			 lcercas.Add(cerca);
+			 lbwp.Items.Add(linha);
+			 cercas_carregadas++;
+
+			 // Log detalhado da cerca
+			 loga($"Cerca carregada: A({cerca.pontoA.x},{cerca.pontoA.y}) " +
+						$"B({cerca.pontoB.x},{cerca.pontoB.y}) " +
+						$"P({cerca.pontoP.x},{cerca.pontoP.y})");
+			}
+			catch (Exception ex)
+			{
+			 loga($"Erro ao carregar cerca: {ex.Message}");
+			}
+		 }
+		 else if (!string.IsNullOrWhiteSpace(linha))
+		 {
+			loga($"⚠️ Linha com formato inválido ignorada: {linha}");
+		 }
+		}
+
+		if (cb_log.Checked)
+		{
+		 loga($"Arquivo {nome} carregado");
+		 loga($"Total: {waypoints_carregados} waypoints navegáveis");
+		 loga($"        {cercas_carregadas} cercas carregadas");
+		}
 	 }
 	 else
 	 {
 		if (cb_log.Checked) loga($"Arquivo {nome} não encontrado");
 	 }
 	}
-
 
 
 	// --------------------------------
@@ -4093,7 +4735,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	checkme(); // atualiza posição atual
 
 	int d = dist(me.pos, lastpos); // calcula distância desde o último ponto
-	tb_debug4.Text = d.ToString(); // mostra a distância no debug4
+
 
 	if (d >= lim) // se a distância for maior que o limite
 	{
@@ -4107,8 +4749,18 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 // LIMPA LISTBOX
 private void button6_Click(object sender, EventArgs e)
 {
-lbwp.Items.Clear();
-}
+	 // Limpa lista visual
+	 lbwp.Items.Clear();
+
+	 // Limpa lista de waypoints para navegação
+	 lwp.Clear();
+
+	 // Limpa lista de cercas
+	 lcercas.Clear();
+
+	 // Log para confirmação
+	 loga("🧹 Waypoints e cercas COMPLETAMENTE LIMPOS!");
+	}
 
 	// ------------------------------------------
 	// VARIAVEIS GLOBAIS DE ESTATISTICA DE LOOT (usa no metodo abaixo) 
@@ -4143,6 +4795,8 @@ lbwp.Items.Clear();
 	double peso_otimo = 10.0; // valor padrão, será carregado do arquivo
 	double exp_otimo = 1.0;   // idem
 	DateTime prox_salva = DateTime.Now.AddMinutes(10); // inicial
+	byte ultimo_tipo_loot = 0; // marca o ultimo tipo de loot, usado para skin no mesmo local 
+	bool primeira_tentativa_sessao = true; // marca se é a primeira tentativa de loot na sessão
 
 	// ----------------------------------------
 	// FUNÇÃO tipocur
@@ -4189,6 +4843,10 @@ lbwp.Items.Clear();
 	// Posições são ordenadas por frequência, com chance de pular as de freq 0
 	// Frequência da posição 0 (centro) nunca é salva nem usada na ordenação
 	// ---------------------------------------------
+	// --------------------------------
+	// MÉTODO SCANLOOT OTIMIZADO
+	// Versão com início inteligente na posição do último loot
+	// --------------------------------
 	public loc scanloot()
 	{
 	 int pausa = 30; // delay padrão entre movimentos do mouse
@@ -4208,32 +4866,66 @@ lbwp.Items.Clear();
 	 int cx = w / 2;
 	 int cy = (int)(h / 2 + h * 0.05); // centro levemente abaixo da linha horizontal
 
-	 // -------------------------
-	 // TENTA PONTO CENTRAL
-	 // -------------------------
+	 // --------------------------------
+	 // INÍCIO INTELIGENTE: TENTA LAST_SUCCESS PRIMEIRO
+	 // --------------------------------
+	 if (cb_skinning.Checked                    // skinning ativo
+			 && !primeira_tentativa_sessao          // não é a primeira tentativa da sessão
+			 && ultimo_tipo_loot == LOOT            // último foi loot normal (saquinho)
+			 && last_success.x > 0                  // tem posição válida
+			 && last_success.y > 0)
+	 {
+		loga($"Início inteligente: testando last_success ({last_success.x},{last_success.y})");
+
+		mousemove(last_success.x, last_success.y);
+		wait(pausa);
+		byte tipo = tipocur();
+
+		if (tipo == SKIN && cb_skinning.Checked) // encontrou skin na posição anterior!
+		{
+		 ultimo_tipo_loot = SKIN;              // atualiza tipo do último loot
+		 total_loots++;
+		 logastats();
+		 lootCombates++;
+		 loga("Extraindo couro (início inteligente).");
+		 return last_success;                  // retorna a mesma posição
+		}
+		else
+		{
+		 loga("Início inteligente: nada encontrado na posição anterior. Fazendo scan normal.");
+		}
+	 }
+
+	 // --------------------------------
+	 // SCAN NORMAL: TENTA PONTO CENTRAL
+	 // --------------------------------
 	 loc centro = new loc { x = cx, y = cy };
 	 mousemove(centro.x, centro.y); wait(pausa);
-	 byte tipo = tipocur(); // obtém tipo do cursor atual
+	 byte tipo_centro = tipocur(); // obtém tipo do cursor atual
 
-	 if (tipo == LOOT || (tipo == SKIN && cb_skinning.Checked) || (tipo == HERB && catando_planta))
+	 if (tipo_centro == LOOT || (tipo_centro == SKIN && cb_skinning.Checked) || (tipo_centro == HERB && catando_planta))
 	 {
-		last_success = centro; total_loots++;
-		logastats(); lootCombates++;
+		last_success = centro;
+		ultimo_tipo_loot = tipo_centro;           // salva tipo encontrado
+		primeira_tentativa_sessao = false;       // marca que já fez primeira tentativa
+		total_loots++;
+		logastats();
+		lootCombates++;
 
-		if (tipo == 64) loga("Realizando loot.");
-		else if (tipo == 63) loga("Extraindo couro.");
-		else if (tipo == 69) loga("Localizou planta.");
+		if (tipo_centro == LOOT) loga("Realizando loot.");
+		else if (tipo_centro == SKIN) loga("Extraindo couro.");
+		else if (tipo_centro == HERB) loga("Localizou planta.");
 
 		return centro;
 	 }
 
-	 // -------------------------
-	 // ORDENA POSIÇÕES 1 a 24 POR FREQUÊNCIA
-	 // -------------------------
+	 // --------------------------------
+	 // SCAN NORMAL: ORDENA POSIÇÕES 1 a 24 POR FREQUÊNCIA
+	 // --------------------------------
 	 List<int> ordem = Enumerable.Range(1, 24)
-		 .OrderByDescending(i => lootfreq[i])
-		 .ThenBy(i => i)
-		 .ToList();
+			 .OrderByDescending(i => lootfreq[i])
+			 .ThenBy(i => i)
+			 .ToList();
 
 	 Random rnd = new Random();
 
@@ -4257,23 +4949,30 @@ lbwp.Items.Clear();
 		};
 
 		mousemove(p.x, p.y); wait(pausa);
-		tipo = tipocur(); // lê tipo do cursor nesse ponto
+		byte tipo = tipocur(); // lê tipo do cursor nesse ponto
 
 		if (tipo == LOOT || (tipo == SKIN && cb_skinning.Checked) || (tipo == HERB && catando_planta))
 		{
 		 atualiza_lootfreq(idx); // atualiza frequência (exceto centro)
-		 last_success = p; total_loots++;
-		 logastats(); lootCombates++;
+		 last_success = p;
+		 ultimo_tipo_loot = tipo;              // salva tipo encontrado
+		 primeira_tentativa_sessao = false;   // marca que já fez primeira tentativa
+		 total_loots++;
+		 logastats();
+		 lootCombates++;
 
-		 if (tipo == 64) loga("Realizando loot.");
-		 else if (tipo == 63) loga("Extraindo couro.");
-		 else if (tipo == 69) loga("Localizou planta.");
+		 if (tipo == LOOT) loga("Realizando loot.");
+		 else if (tipo == SKIN) loga("Extraindo couro.");
+		 else if (tipo == HERB) loga("Localizou planta.");
 
-		 return p;
+		 return p; // retorna a coordenada onde encontrou
 		}
 	 }
 
-	 return new loc { x = -1, y = -1 }; // loot não encontrado
+	 // --------------------------------
+	 // NADA ENCONTRADO
+	 // --------------------------------
+	 return new loc { x = -1, y = -1 }; // código de erro
 	}
 
 
@@ -4399,7 +5098,52 @@ lbwp.Items.Clear();
 	 find_center(); // chama o método de encontrar o centro do minimapa
 	}
 
-	
+	// Adicionar próximo às outras definições de classe, geralmente no início do arquivo
+	public class Cerca
+	{
+	 public loc pontoA { get; set; }   // extremidade A da cerca
+	 public loc pontoB { get; set; }   // extremidade B da cerca
+	 public loc pontoP { get; set; }   // ponto que define lado proibido
+
+	 // Construtor para facilitar criação
+	 public Cerca(loc a, loc b, loc p)
+	 {
+		pontoA = a;
+		pontoB = b;
+		pontoP = p;
+	 }
+
+	 // Método para converter para string (para salvar no arquivo)
+	 public string ToPacked()
+	 {
+		return $"{pack(pontoA)},{pack(pontoB)},{pack(pontoP)}";
+	 }
+
+	 // Método estático para criar Cerca a partir de uma string packed
+	 public static Cerca FromPacked(string packed)
+	 {
+		string[] coords = packed.Split(',');
+		if (coords.Length != 12)
+		 throw new ArgumentException("Formato de cerca inválido");
+
+		// Reconstrói os três pontos
+		loc a = new loc(
+				int.Parse(coords[0] + coords[1]),
+				int.Parse(coords[2] + coords[3])
+		);
+		loc b = new loc(
+				int.Parse(coords[4] + coords[5]),
+				int.Parse(coords[6] + coords[7])
+		);
+		loc p = new loc(
+				int.Parse(coords[8] + coords[9]),
+				int.Parse(coords[10] + coords[11])
+		);
+
+		return new Cerca(a, b, p);
+	 }
+	}
+
 
 
 	// --------------------------------
@@ -4411,8 +5155,21 @@ lbwp.Items.Clear();
 	 {
 		List<string> linhas = new List<string>();
 
+		// Primeiro salva waypoints
 		foreach (var item in lbwp.Items)
-		 linhas.Add(item.ToString());
+		{
+		 string linha = item.ToString();
+		 int virgulas = linha.Count(c => c == ',');
+
+		 if (virgulas == 3)  // Waypoint (4 números)
+			linhas.Add(linha);
+		}
+
+		// Depois salva cercas
+		foreach (Cerca cerca in lcercas)
+		{
+		 linhas.Add(cerca.ToPacked());
+		}
 
 		string nome = tb_filename.Text.Trim();
 		if (nome == "") nome = "waypoints.txt";
@@ -4421,7 +5178,13 @@ lbwp.Items.Clear();
 		File.WriteAllLines(nome, linhas);        // salva os waypoints
 		File.WriteAllText("discord.ini", nome);  // grava só o nome no cfg
 
-		if (cb_log.Checked) loga($"Waypoints salvos ({linhas.Count} itens) no arquivo {nome}");
+		if (cb_log.Checked)
+		{
+		 loga($"Waypoints salvos:");
+		 loga($"  Waypoints navegáveis: {lwp.Count}");
+		 loga($"  Cercas preservadas: {lcercas.Count}");
+		 loga($"Arquivo: {nome}");
+		}
 	 }
 	 else
 	 {
@@ -4471,6 +5234,85 @@ else
  }
 }
 }
+
+	// Método manual de clamp, substitui Math.Clamp para compatibilidade
+	float Clamp(float value, float min, float max)
+	{
+	 return Math.Min(Math.Max(value, min), max);
+	}
+
+
+	//-------------------------
+	// CHECKFENCE - VERIFICA SE ESTOU DO LADO ERRADO DE ALGUMA CERCA
+	//-------------------------
+	// Método para calcular distância ponto-linha
+	float DistanciaPointToLineSegment(loc ponto, loc lineStart, loc lineEnd)
+	{
+	 float lineMagnitude = dist(lineStart, lineEnd);
+
+	 // Se a linha tem comprimento zero, retorna distância do ponto ao ponto inicial
+	 if (lineMagnitude == 0)
+		return dist(ponto, lineStart);
+
+	 // Projeção do vetor
+	 float t = ((ponto.x - lineStart.x) * (lineEnd.x - lineStart.x) +
+							(ponto.y - lineStart.y) * (lineEnd.y - lineStart.y)) / (lineMagnitude * lineMagnitude);
+
+	 // Clamp entre 0 e 1
+	 t = Math.Max(0, Math.Min(1, t));
+
+	 // Ponto de projeção
+	 loc projecao = new loc(
+			 (int)Math.Round(lineStart.x + t * (lineEnd.x - lineStart.x)),
+			 (int)Math.Round(lineStart.y + t * (lineEnd.y - lineStart.y))
+	 );
+
+	 // Retorna distância
+	 return dist(ponto, projecao);
+	}
+
+	// Método para determinar lado do ponto em relação à linha
+	bool IsPointOnProhibitedSide(loc ponto, loc lineStart, loc lineEnd, loc proibidoPoint)
+	{
+	 // Produto vetorial para determinar lado
+	 int crossProduct = (lineEnd.x - lineStart.x) * (ponto.y - lineStart.y) -
+											(lineEnd.y - lineStart.y) * (ponto.x - lineStart.x);
+
+	 // Produto vetorial para lado proibido
+	 int crossProductProibido = (lineEnd.x - lineStart.x) * (proibidoPoint.y - lineStart.y) -
+															 (lineEnd.y - lineStart.y) * (proibidoPoint.x - lineStart.x);
+
+	 // Se sinais são diferentes, está no lado proibido
+	 return (crossProduct * crossProductProibido < 0);
+	}
+
+	// Método principal de verificação de cerca
+	bool checkfence()
+	{
+	 if (lcercas == null || lcercas.Count == 0)
+		return false;
+
+	 foreach (Cerca cerca in lcercas)
+	 {
+		// Verifica distância da cerca
+		float distancia = DistanciaPointToLineSegment(me.pos, cerca.pontoA, cerca.pontoB);
+
+		// Só avalia cercas próximas (dentro de 100 unidades)
+		if (distancia <= 100)
+		{
+		 // Verifica se está no lado proibido
+		 if (IsPointOnProhibitedSide(me.pos, cerca.pontoA, cerca.pontoB, cerca.pontoP))
+		 {
+			loga($"🚨 VIOLAÇÃO DE CERCA: Distância {distancia:F2}");
+			return true;
+		 }
+		}
+	 }
+
+	 return false;
+	}
+
+
 	// DRAW MAP
 	// --------------------------------------------
 	// MÉTODO desenhamapa - Gera imagem do mapa com o player e o alvo
@@ -4482,23 +5324,24 @@ else
 	 points.Add(new point(me.pos, 1));  // adiciona player (vermelho)
 	 points.Add(new point(alvo, 4));    // adiciona alvo (amarelo)
 
-	 
-
+	 // Tenta converter o valor da textbox, com fallback para 100
 	 float zoom = 100f;
-	 float esc = 1.5f * (zoom / 100f);  // escala gráfica
+	 if (float.TryParse(tb_map_zoom.Text, out float zoom_input))
+	 {
+		zoom = Clamp(zoom_input, 20f, 100f);  // limita entre 50 e 300
+	 }
 
+	 float esc = 1.5f * (zoom / 100f);  // escala gráfica
 	 Bitmap bmp = new Bitmap(256, 256);
 	 using (Graphics g = Graphics.FromImage(bmp))
 	 {
 		g.Clear(Color.Black); // fundo preto
-
 		foreach (point p in points)
 		{
 		 int dxi = (int)((p.pos.x - me.pos.x) * esc);
 		 int dyi = (int)((p.pos.y - me.pos.y) * esc);
 		 int px = 128 + dxi;
 		 int py = 128 + dyi;
-
 		 if (px >= 0 && px < 256 && py >= 0 && py < 256)
 		 {
 			Brush b = Brushes.White;
@@ -4522,20 +5365,50 @@ else
 		 penTracejada.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
 		 int tx = 128 + (int)((alvo.x - me.pos.x) * esc);
 		 int ty = 128 + (int)((alvo.y - me.pos.y) * esc);
-
 		 double dx = tx - 128;
 		 double dy = 128 - ty;
 		 double ang = Math.Atan2(dx, dy) * (180.0 / Math.PI);
 		 if (ang < 0) ang += 360;
-
 		 int yaw_visual = (int)Math.Round(ang);
-		 lb_yaw.Text = (360 - yaw_visual).ToString();       // yaw visual (linha verde)
 		 lb_delta.Text = getyaw(me.pos, alvo).ToString();   // yaw real
-
 		 g.DrawLine(penTracejada, 128, 128, tx, ty);
 		}
-	 }
 
+		// Adiciona desenho de cercas
+		if (lcercas != null && lcercas.Count > 0)
+		{
+		 foreach (Cerca cerca in lcercas)
+		 {
+			// Converte coordenadas para posição no mapa
+			int dxA = (int)((cerca.pontoA.x - me.pos.x) * esc);
+			int dyA = (int)((cerca.pontoA.y - me.pos.y) * esc);
+			int dxB = (int)((cerca.pontoB.x - me.pos.x) * esc);
+			int dyB = (int)((cerca.pontoB.y - me.pos.y) * esc);
+			int dxP = (int)((cerca.pontoP.x - me.pos.x) * esc);
+			int dyP = (int)((cerca.pontoP.y - me.pos.y) * esc);
+
+			int pxA = 128 + dxA;
+			int pyA = 128 + dyA;
+			int pxB = 128 + dxB;
+			int pyB = 128 + dyB;
+			int pxP = 128 + dxP;
+			int pyP = 128 + dyP;
+
+			// Desenha linha da cerca em vermelho
+			using (Pen redPen = new Pen(Color.Red, 1))
+			{
+			 g.DrawLine(redPen, pxA, pyA, pxB, pyB);
+			}
+
+			// Marca ponto proibido com um X
+			using (Pen bluePen = new Pen(Color.Blue, 1))
+			{
+			 g.DrawLine(bluePen, pxP - 2, pyP - 2, pxP + 2, pyP + 2);
+			 g.DrawLine(bluePen, pxP - 2, pyP + 2, pxP + 2, pyP - 2);
+			}
+		 }
+		}
+	 }
 	 pb_map.Image = bmp; // exibe na picturebox
 	}
 
@@ -4606,21 +5479,14 @@ else
 
 		if (ofd.ShowDialog() == DialogResult.OK)
 		{
-		 string nome = ofd.FileName;
-
-		 string[] linhas = File.ReadAllLines(nome);
-		 lbwp.Items.Clear();
-
-		 foreach (string linha in linhas)
-			lbwp.Items.Add(linha);
-
-		 // Atualiza textbox com nome limpo (sem path)
-		 tb_filename.Text = Path.GetFileName(nome);
+		 // Atualiza o nome do arquivo
+		 tb_filename.Text = Path.GetFileName(ofd.FileName);
 
 		 // Atualiza o discord.cfg com o novo nome
 		 File.WriteAllText("discord.ini", tb_filename.Text.Trim());
 
-		 if (cb_log.Checked) loga($"Waypoints carregados de {tb_filename.Text} ({linhas.Length} itens)");
+		 // Chama o método de carregamento atualizado
+		 carregar_waypoints();
 		}
 	 }
 	}
@@ -4977,18 +5843,10 @@ else
 
 	}
 
-	// --------------------------------------------
-	// BOTÃO 14: LOOP DE CAPTURA DO MINIMAPA
-	// --------------------------------------------
+
 	private void button14_Click(object sender, EventArgs e)
 	{
-	 while (on) // enquanto estiver ativado
-	 {
-		get_minimap(); // chama método novo
-		checkme();     // atualiza dados do jogador
 
-		if (!on) break; // se desativado, encerra
-	 }
 	}
 
 
@@ -5285,46 +6143,14 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 wait(5000); // espera 5 segundos para aferição
-	 loga("Iniciando teste de velocidade real com facing...");
-
-	 List<double> vels = new List<double>();
-
-	 for (int i = 0; i < 2; i++) // 3 aferições
+	 checkme();
+	 if (me.classe == WARLOCK)
 	 {
-		loga("Aferição " + (i + 1));
-
-		checkme(); // atualiza status
-		int f1 = me.facing; // facing inicial
-		loc p1 = me.pos;    // posição inicial
-
-		loga("Facing inicial: " + f1 + "°");
-		loga("Posição inicial: X=" + p1.x + " Y=" + p1.y);
-
-		wait(4000);
-
-		checkme(); // atualiza status de novo
-		int f2 = me.facing; // facing final
-		loc p2 = me.pos;    // posição final
-
-		loga("Facing final: " + f2 + "°");
-		loga("Posição final:  X=" + p2.x + " Y=" + p2.y);
-
-		double d = dist(p1, p2);
-		loga("Distância percorrida: " + d.ToString("F2") + " yd");
-
-		double v = d / 4.0;
-		loga("Velocidade estimada: " + v.ToString("F2") + " yd/s");
-
-		vels.Add(v);
-
-		loga("---------------------------");
+		loga($"WARLOCK TEST: Demon Skin={me.wandon}, Pet={wlock.has_pet}");
 	 }
-
-	 double media = vels.Average();
-	 loga("Velocidade média (3 trechos): " + media.ToString("F2") + " yd/s");
-	 loga("Teste concluído.");
 	}
+
+
 	// ------------------------------------------
 	// metodo giraok
 	// ------------------------------------------
@@ -5793,6 +6619,136 @@ else
 	{
 	 stopscan = true;
 	}
+
+	// --------------------------------
+	// BOTÃO FENCE A - DEFINE EXTREMIDADE A DA CERCA
+	// --------------------------------
+	private void bt_fenceA_Click(object sender, EventArgs e)
+	{
+	 checkme(); // atualiza posição atual
+
+	 // Se clicar novamente em A, reseta todo o processo
+	 if (a_definido || b_definido || p_definido)
+	 {
+		loga("⚠️ Processo de criação de cerca resetado!");
+		a_definido = false;
+		b_definido = false;
+		p_definido = false;
+	 }
+
+	 // Armazena ponto A
+	 temp_cerca_a = me.pos;
+	 a_definido = true;
+
+	 loga($"✅ Ponto A da cerca registrado em {temp_cerca_a.x},{temp_cerca_a.y}");
+
+	 // Atualiza estado do botão save
+	 bt_savefence.Enabled = (a_definido && b_definido && p_definido);
+	}
+
+	// --------------------------------
+	// BOTÃO FENCE B - DEFINE EXTREMIDADE B DA CERCA
+	// --------------------------------
+	private void bt_fenceB_Click(object sender, EventArgs e)
+	{
+	 checkme(); // atualiza posição atual
+
+	 // Se clicar novamente em B, reseta todo o processo
+	 if (b_definido)
+	 {
+		loga("⚠️ Processo de criação de cerca resetado!");
+		a_definido = false;
+		b_definido = false;
+		p_definido = false;
+	 }
+
+	 // Armazena ponto B
+	 temp_cerca_b = me.pos;
+	 b_definido = true;
+
+	 loga($"✅ Ponto B da cerca registrado em {temp_cerca_b.x},{temp_cerca_b.y}");
+
+	 // Atualiza estado do botão save
+	 bt_savefence.Enabled = (a_definido && b_definido && p_definido);
+	}
+
+	// --------------------------------
+	// BOTÃO FENCE P - DEFINE PONTO PROIBIDO
+	// --------------------------------
+	private void bt_fenceP_Click(object sender, EventArgs e)
+	{
+	 checkme(); // atualiza posição atual
+
+	 // Se clicar novamente em P, reseta todo o processo
+	 if (p_definido)
+	 {
+		loga("⚠️ Processo de criação de cerca resetado!");
+		a_definido = false;
+		b_definido = false;
+		p_definido = false;
+	 }
+
+	 // Armazena ponto P
+	 temp_cerca_p = me.pos;
+	 p_definido = true;
+
+	 loga($"✅ Ponto P (lado proibido) da cerca registrado em {temp_cerca_p.x},{temp_cerca_p.y}");
+
+	 // Atualiza estado do botão save
+	 bt_savefence.Enabled = (a_definido && b_definido && p_definido);
+	}
+
+	// --------------------------------
+	// BOTÃO ADD FENCE - ADICIONA CERCA À LISTA (RENOMEADO)
+	// --------------------------------
+	private void bt_savefence_Click(object sender, EventArgs e)
+	{
+	 if (!a_definido || !b_definido || !p_definido)
+	 {
+		loga("❌ ERRO: Defina todos os 3 pontos (A, B e P) antes de adicionar!");
+		return;
+	 }
+
+	 // Cria a cerca
+	 Cerca nova_cerca = new Cerca(temp_cerca_a, temp_cerca_b, temp_cerca_p);
+
+	 // Adiciona à lista de cercas
+	 lcercas.Add(nova_cerca);
+
+	 // Adiciona à listbox
+	 lbwp.Items.Add(nova_cerca.ToPacked());
+
+	 loga($"✅ CERCA ADICIONADA:");
+	 loga($"   Ponto A: ({temp_cerca_a.x},{temp_cerca_a.y})");
+	 loga($"   Ponto B: ({temp_cerca_b.x},{temp_cerca_b.y})");
+	 loga($"   Ponto P: ({temp_cerca_p.x},{temp_cerca_p.y})");
+
+	 // Reseta o processo
+	 a_definido = false;
+	 b_definido = false;
+	 p_definido = false;
+	 bt_savefence.Enabled = false;
+
+	 loga("🔄 Pronto para criar nova cerca!");
+	}
+
+	private void label32_Click(object sender, EventArgs e)
+	{
+
+	}
+
+	private void cb_COA_CheckedChanged(object sender, EventArgs e)
+	{
+ cb_COW.Checked = !cb_COA.Checked; // inverte checkbox COW se COA for marcado
+	}
+
+	private void cb_COW_CheckedChanged(object sender, EventArgs e)
+	{
+		cb_COA.Checked = !cb_COW.Checked; // inverte checkbox COA se COW for marcado
+	}
+
+
+
 
 	// MULTI THREAD DE ATUALIZAÇÃO DAS STATS NO BACKGROUND 
 

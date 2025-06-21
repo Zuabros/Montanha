@@ -43,21 +43,26 @@ namespace Discord
 	public bool hascurse;        // amaldiçoado
 	public bool hasdisease;      // doente
 	public bool hasother;        // outros debuffs (ex: bleed)
-	public bool furbolg_form;    // está transformado com Dartol's Rod
 	public bool dazed;           // está atordoado (dazed)
 	public int  mobs;        // contador de mobs atacando
 	public bool  eating;        // comendo ou bebendo
 	public bool ready;    // GCD pronto (Global Cooldown)
+	public bool ranged;
+	public bool iscaster;        // é uma criatura do tipo caster (MAGE, LOCK, PRIEST, etc.)
+	public bool wandon; // wand ativa 1B7
+	public bool wand_up; // wand ativa 1B7
+
 
 	// ----------- específicos do target (tar) -----------
 	public int aggro;         // >= 2 me atacando, 1 agro secundario, 0 nao estou em combate com mob 
+	public int pet_aggro;     // pet tem threat com o target (0 ou 1)
 	public bool israre;          // criatura rara (bit 64 no 7G)
 	public bool iselite;         // criatura elite (bit 32 no 7G)
 	public bool trivial;        // criatura trivial  
 	public int id;            // ID do mob (usado para spells, etc.)
 
 	// ----------- casting -----------
-	public bool iscaster;        // é uma criatura do tipo caster (futuro)
+	
 	public bool casting;         // está castando
 	public int castbar;          // progresso da castbar (0–100)
 	public int spellid;          // ID real da spell (uso futuro)
@@ -65,7 +70,41 @@ namespace Discord
 	// ----------- uso futuro -----------
 	public bool melee;      // está em alcance melee (futuro)
 	public bool rangedrange;     // está em alcance à distância (futuro)
+	
  }
+ // --------------------------------
+ // CLASSE LOCKTABLE - STATUS DO WARLOCK
+ // --------------------------------
+ public class locktable
+ {
+	// SPELLS PRONTAS (true se cooldown + range + mana OK)
+	public bool immolate_up;         // Immolate pronta para usar
+	public bool corruption_up;       // Corruption pronta para usar  
+	public bool curse_weakness_up;   // Curse of Weakness pronta para usar
+	public bool curse_agony_up;      // Curse of Agony pronta para usar
+	public bool drain_soul_up;       // Drain Soul pronta para usar
+	public bool drain_life_up;       // Drain Life pronta para usar
+	public bool siphon_life_up;      // Siphon Life pronta para usar
+	public bool lifetap_up;   // life tap pronto 
+	public bool shadowbolt_up; // Shadow Bolt pronto para usar
+
+
+	// DEBUFFS NO TARGET (true se ativo)
+	public bool has_immolate;        // Immolate ativo no target (>1s)
+	public bool has_corruption;      // Corruption ativo no target (>1s)
+	public bool has_curse_weakness;  // Curse of Weakness ativo no target
+	public bool has_curse_agony;     // Curse of Agony ativo no target
+	public bool has_drain_soul;      // Drain Soul sendo channelado
+	public bool has_drain_life;      // Drain Life sendo channelado
+	public bool has_siphon_life;     // Siphon Life ativo no target
+
+	// PET STATUS
+	public bool has_pet;             // Pet vivo e ativo
+
+	// AURAS
+	public bool has_demon_skin;      // bit 0 - Demon Skin ativo
+ }
+
 
  // --------------------------------
  // CLASSE warriortable
