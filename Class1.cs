@@ -111,8 +111,29 @@ namespace Discord
 	// AURAS
 	public bool has_demon_skin;      // bit 0 - Demon Skin ativo
  }
-
-
+ // --------------------------------
+ // CLASSE priestable
+ // --------------------------------
+ public class priestable
+ {
+	public bool has_pws;
+	public bool has_renew;
+	public bool has_fortitude;
+	public bool has_innerfire;
+	public bool has_innerfocus;
+	public bool has_swp;
+	public bool has_weakened_soul;
+	public bool has_divine_spirit;
+	public bool swp_up;
+	public bool innerfocus_up;
+	public bool fortitude_up;
+	public bool innerfire_up;
+	public bool renew_up;
+	public bool pws_up;
+	public bool smite_up;     // NOVO
+	public bool heal_up;      // NOVO
+	public bool divine_spirit_up;
+ }
  // --------------------------------
  // CLASSE warriortable
  // --------------------------------
@@ -160,6 +181,7 @@ namespace Discord
 	public bool has_expose_armor; // target tem expose armor debuff?
 	public bool kick_up;          // pode usar kick? (range, cooldown, etc.)
  }
+
  // --------------------------------
  // CLASSE PALATABLE - STATUS DO PALADINO
  // --------------------------------

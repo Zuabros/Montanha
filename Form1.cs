@@ -273,6 +273,26 @@ namespace Discord
 	public const int ASSIST = F6;     // debuff de lentidão (genérico)
 	public const int GCD = 1501;  // Global Cooldown (tempo de recarga global em milissegundos)
 	public const int FOOD = F12;     // ataque automático
+	public const int STOPCAST = IGUAL;       // Stop Cast (para de lançar feitiço)
+
+// --------------------------------
+// ALIASES PRIEST
+// --------------------------------
+  public const int SMITE = N1;        // Smite
+	public const int PWS = N2;          // Power Word: Shield  
+	public const int SWP = N3;          // Shadow Word: Pain
+	public const int RENEW = N4;        // Renew
+	public const int HEAL = N5;         // Lesser Heal/Heal
+	public const int BIGHEAL = N6;      // Greater Heal
+	public const int FORTITUDE = N7;    // Power Word: Fortitude
+	public const int INNERFIRE = N0;    // Inner Fire
+	public const int FADE = F1;         // Fade
+	public const int INNERFOCUS = F2;   // Inner Focus
+	public const int DISPEL = F3;       // Dispel Magic
+	public const int WAND = F4;         // Wand
+	public const int DIVSPIRIT = F5;    // Divine Spirit
+	public const int RESURRECT = F7;   // Resurrect
+	public const int MINDCONTROL = F8;  // Mind Control
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO PALADINO
@@ -332,16 +352,13 @@ namespace Discord
 	public const int CURSEAGONY = N5;        // Curse of Agony (DoT crescente)
 	public const int DRAINSOUL = N6;         // Drain Soul (channel + soul shard)
 	public const int DRAINLIFE = N7;         // Drain Life (channel + cura)
-	public const int STOPCAST = IGUAL;       // Stop Cast (para de lançar feitiço)
+
 	public const int HEALTHFUNNEL = N0;       // Stop Cast (para de lançar feitiço)
-
-
-	
 
 	public const int PETATTACK = F1;         // Summon Imp
 	public const int SUMMONPET = F2;         // Summon Imp
 	public const int DEMONSKIN = F3;         // Summon Imp
-	public const int WAND = F4;         // Summon Imp
+	//public const int WAND = F4;         // ja tem no priest 
 	public const int LIFETAP = F5;         // Summon Imp
 	// F6 = Assist (pet) 
  public const int HEALTHSTONE = F7;         // Summon Imp
@@ -486,9 +503,12 @@ namespace Discord
 	 carregar_waypoints(); // Chama o carregamento automático	 
 	 tab_nav.SelectedIndex = 0; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
 	 lb_log.Clear(); // limpa todos os itens da ListBox log
+	 lb_combatlog.Clear(); // limpa todos os itens da ListBox combatlog
 	 carrega_loot(); // carrega frequencia de pontos de loot 
-	 cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
-																 
+	 checkme(); // verifica se o player está em combate e ativa o botao de stop
+	 if (me.level >=9) cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
+	 killstats("load"); // carrega estatísticas de kills do arquivo
+
 
 
 	 // ARRUMA INTERFACE---------------
@@ -1234,6 +1254,31 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		wlock.pet_hp = (int)(ar11 * 100.0 / 127.0);   // pet.hp % (0..100)
 	 }
 
+	 // -------------------------------------
+	 // PIXEL 10: PRIEST STATUS
+	 // -------------------------------------
+	 else if (me.classe == PRIEST)
+	 {
+		// CANAL R: Spells prontas
+		priest.pws_up = (pixels[10].r & 1) != 0;
+		priest.renew_up = (pixels[10].r & 2) != 0;
+		priest.fortitude_up = (pixels[10].r & 4) != 0;
+		priest.innerfire_up = (pixels[10].r & 8) != 0;
+		priest.innerfocus_up = (pixels[10].r & 16) != 0;
+		priest.swp_up = (pixels[10].r & 32) != 0;
+		priest.smite_up = (pixels[10].r & 64) != 0;      // NOVO
+		priest.heal_up = (pixels[10].r & 128) != 0;      // NOVO
+
+		// CANAL G: Buffs e debuffs
+		priest.has_pws = (pixels[10].g & 1) != 0;
+		priest.has_renew = (pixels[10].g & 2) != 0;
+		priest.has_fortitude = (pixels[10].g & 4) != 0;
+		priest.has_innerfire = (pixels[10].g & 8) != 0;
+		priest.has_innerfocus = (pixels[10].g & 16) != 0;
+		priest.has_swp = (pixels[10].g & 32) != 0;
+		priest.has_weakened_soul = (pixels[10].g & 64) != 0;
+		priest.has_divine_spirit = (pixels[10].g & 128) != 0;
+	 }
 
 	 // ====================================================================
 	 // PIXELS ESPECÍFICOS DE ROGUE (10 a 15)
@@ -1498,6 +1543,8 @@ public element tar;
 	roguetable rog = new roguetable();
 	warriortable war = new warriortable();
 	locktable wlock = new locktable();  // NOVA INSTÂNCIA WARLOCK
+	public static priestable priest = new priestable();
+
 
 
 
@@ -1612,7 +1659,7 @@ public element tar;
 		if (timeout.ElapsedMilliseconds > 40000)
 		{
 		 solta(ANDA); // para de andar se timeout
-		 if (cb_log.Checked) loga("Timeout no moveto() — passando para o próximo ponto.");
+		 loga("Timeout no moveto() — passando para o próximo ponto.");
 		 return;
 		}
 		temp++;
@@ -1699,7 +1746,7 @@ public element tar;
 		if (!me.combat && tar.morreu && me.hastarget)
 		{
 		 aperta(SETE); // limpa target se estiver morto
-		 if (cb_log.Checked) loga("Target morto fora de combate — limpando.");
+		 loga("Target morto fora de combate — limpando.");
 		}
 
 		// -----------------------------
@@ -1713,9 +1760,10 @@ public element tar;
 		// -----------------------------
 		if (me.combat)
 		{
-		 solta(ANDA); // para de andar
-		 if (cb_log.Checked) loga("Entrou em combate!");
+		 para(); // para de andar se em combate
+		 clog("Entrou em combate!");
 		 if (!on) return; // se desligado, sai do loop
+		 loga("Chamando combatloop()...");
 		 combatloop(); // entra na rotina de combate
 
 
@@ -1887,8 +1935,7 @@ public element tar;
 		 {
 			loga("Invocando Imp.");
 			para(); // para de andar para invocar
-			casta(SUMMONPET);
-			wait_cast(); // espera o cast terminar
+			castslow(SUMMONPET);
 			checkme();
 			if (!wlock.has_pet)
 			{
@@ -1909,8 +1956,7 @@ public element tar;
 		 {
 			loga("Criando Healthstone.");
 			para(); // para de andar
-			casta(CREATE_HEALTHSTONE);
-			wait_cast(); // espera o cast terminar
+			castslow(CREATE_HEALTHSTONE);
 			checkme();
 
 			if (!wlock.has_healthstone)
@@ -1968,7 +2014,7 @@ public element tar;
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 110)); // enquanto ativo e longe (20 se catando)
+	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Waypoint atingido. Partindo para proximo.");
 	 if (catando_planta) catando_planta= false; // chegou na planta 
@@ -2252,13 +2298,12 @@ void andaplanta(loc alvo)
 		if (!me.hastarget || tar.type == 0) return false;
 
 		// Log de depuração
-		//loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
+		loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
 
 		if (cb_pacifist.Checked) return false;
 		if (tar.hp == 0 || tar.morreu) return false;
 		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
 		if (tar.mood == 1) return false; // amarelo = não hostil
-		if (tar.combat) return false;
 		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
 		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
@@ -2452,7 +2497,7 @@ void andaplanta(loc alvo)
 			 // ---------------------------------------------
 			 else if (war.charge_up)
 			 {
-				loga("Usando Charge primário para iniciar combate.");
+				clog("Pull com charge.");
 
 				aperta(ANDA); // retoma andar após Charge	
 				casta(CHARGE);    // usa Charge
@@ -2571,12 +2616,12 @@ void andaplanta(loc alvo)
 			 para();
 			 aperta(PULA, 10);
 			 aperta(INTERACT);
-			 loga("Pull concluído com sucesso.");
+			 clog("Pull concluído com sucesso.");
 			 return;
 			}
 			else
 			{
-			 loga("Pull falhou. Não entrou em combate.");
+			 clog("Pull falhou. Não entrou em combate.");
 			 if (rog.stealth) aperta(STEALTH); // toggle stealth para sair
 			 para();
 			 // não limpa o target aqui — pode haver fallback fora
@@ -2596,7 +2641,7 @@ void andaplanta(loc alvo)
 
 			// Log apenas na primeira vez ou a cada 10 ciclos para evitar spam
 			if (warlock_ticker == 1 || warlock_ticker % 10 == 0)
-			 loga("Iniciando pull como Warlock.");
+			 clog("Iniciando pull.");
 
 			// PULO HUMANO a cada 3 segundos (~15 ciclos de 200ms)
 			if (warlock_ticker % 15 == 0)
@@ -2615,6 +2660,11 @@ void andaplanta(loc alvo)
 			if (wlock.shadowbolt_up || wlock.immolate_up || me.wand_up)
 			{
 			 loga("Parando para castar.");
+			 if (cb_sendpet.Checked && wlock.has_pet)
+			 {
+				aperta(PETATTACK); // manda o pet atacar se checkbox ativo
+				clog("Mandando pet atacar.");
+			 }
 			 para(); // para de andar
 
 			 // Verifica se ainda tem range após parar
@@ -2640,7 +2690,7 @@ void andaplanta(loc alvo)
 			 else if (me.wand_up)
 			 {
 				usar_wand = true;
-				loga("Usando Wand - spells indisponíveis ou desabilitadas.");
+				clog("Usando Wand (last choice)");
 			 }
 			 // Última opção: Fazer nada (fallback melee embaixo)
 			 else
@@ -2691,12 +2741,12 @@ void andaplanta(loc alvo)
 				if (cb_sendpet.Checked) aperta(PETATTACK);// MANDA O PET
 				casta(WAND); // ativa wand
 
-				loga("Wand ativada para pull.");
+				clog("Cast: Wand.");
 
 				checkme();
 				if (me.combat)
 				{
-				 loga("Pull com Wand bem-sucedido!");
+				 clog("Pull com Wand bem-sucedido!");
 				 warlock_ticker = 0; // reseta contador ao entrar em combate
 				 return;
 				}
@@ -2725,8 +2775,103 @@ void andaplanta(loc alvo)
 			 aperta(CLEARTGT);
 			 warlock_ticker = 0; // reseta contador
 			}
-		 }
+		 }//------------------- FIM PULL WARLOCK ----------------
+			// --------------------------------
+			// PRIEST PULL ROUTINE
+			// --------------------------------
+		 else if (me.classe == PRIEST)
+		 {
+			DateTime inicio = DateTime.Now;
+			loga($"Priest Pull: Iniciando pull no target {tar.level}");
 
+
+
+			while (!me.combat && (DateTime.Now - inicio).TotalSeconds < 10)
+			{
+			 checkme();
+
+			 // Se entrou em combate, sair
+			 if (me.combat)
+			 {
+				loga("Priest Pull: Entrou em combate");
+				return;
+			 }
+
+			 // Se perdeu o target, limpar e sair
+			 if (!me.hastarget)
+			 {
+				loga("Priest Pull: Target perdido");
+				return;
+			 }
+
+			 // Aproximar do target
+			 aperta(INTERACT,200);
+
+			 // Se estiver em range, castar spell de pull
+			 if (me.wand_up || priest.smite_up || priest.swp_up)
+			 {
+				para(); // para de andar
+         // Casta PWS se disponível
+				if (priest.pws_up && !priest.has_pws && !priest.has_weakened_soul)
+				{
+				 loga("Priest Pull: Aplicando Power Word: Shield");
+				 casta(PWS);
+				 checkme(); // atualiza status após o cast
+				}
+
+				// Preferir Shadow Word: Pain se disponível
+				if (priest.swp_up && !priest.has_swp)
+				{
+				 clog("Priest Pull: Usando Shadow Word: Pain");
+				 casta(SWP);
+				 espera(2); // espera 2 segundos para ver se entra em combate
+				 if (me.combat)
+				 {
+					loga("Pull com SWP com sucesso. Saindo do pull.");
+					return; // se entrou em combate, sai do loop
+				 }
+				  }
+				// Senão usar Smite
+				else if (priest.smite_up)
+				{
+				 clog("Priest Pull: Usando Smite");
+				 viramob(); // vira para o mob antes de castar
+				 viramob(); // vira para o mob antes de castar
+				 castslow(SMITE);
+				 espera(2);
+				 if (me.combat)
+				 {
+					loga("Pull com smite com sucesso. Saindo do pull.");
+					return; // se entrou em combate, sai do loop
+				 }
+				}
+				else if (me.wand_up)
+				{
+				 casta(WAND); // ativa wand
+				 espera(3);
+				 if (me.combat)
+				 {
+					loga("Pull com WAND com sucesso. Saindo do pull.");
+					return; // se entrou em combate, sai do loop
+				 }
+				}
+				
+				// Espera um pouco para ver se entra em combate
+				wait(500);
+				checkme();
+				if (me.combat) return;
+			 }
+			 checkme();
+			 wait(100);
+			}
+			loga("Sem pull ranged disponível. Fallback.");
+			// Se chegou aqui, timeout - limpar target
+			if (!me.combat)
+			{
+			 loga("Priest Pull: Timeout - limpando target");
+			 aperta(CLEARTGT); // clear target
+			}
+		 }//------------------- FIM PULL PRIEST ----------------
 
 
 		 checkme();
@@ -2813,12 +2958,20 @@ void andaplanta(loc alvo)
 
 	 loga($"Mobs mortos: {killed_noskin.Count} normais + {killed_skin.Count} skinnable = {max_scans} scans máximos");
 
-	 return max_scans;
+	  return max_scans;
 	}
 
 
 
-
+	// --------------------------------
+	// MÉTODO VIRAMOB - USADO POR MÚLTIPLAS CLASSES
+	// --------------------------------
+	void viramob()
+	{
+	 if (tar.aggro > 0 || tar.pet_aggro > 0) // se tem aggro válido
+		aperta(INTERACT, 400);
+	 para(); // para de andar antes de castar
+	}
 	// --------------------------------
 	// MÉTODO COMBATLOOP - ROTINAS DE COMBATE
 	// --------------------------------
@@ -2829,6 +2982,8 @@ void andaplanta(loc alvo)
 
 	public void combatloop()
 	{
+	 loga("Iniciando loop de combate Combatloop().");
+	 checkme(); // atualiza status inicial
 	 para(); // para de andar se estiver andando
 	 int combat_ticker = 0; // contador de ciclos de combate
 	 bool ja_deu_backpedal = false; // se estiver apanhando muito anda um pouco para tras pra nao dar as costas 
@@ -2904,10 +3059,13 @@ void andaplanta(loc alvo)
 
 		 if (pode_backpedalar)
 		 {
-			aperta(SKEY, 1100);    // anda pra trás 1 segundo mantendo o facing
+			aperta(SKEY, 1000);    // anda pra trás 1 segundo mantendo o facing
 			if (!me.iscaster) aperta(AUTOATTACK);    // garante ataque ligado após reposicionamento
 			else
+			{
 			 aperta(INTERACT); // se caster, apenas interage para manter o facing
+			 loga("Interact code: 251"); // loga o código de interação
+			}
 		 }
 		 else if (!jalogou)
 		 {
@@ -2923,7 +3081,8 @@ void andaplanta(loc alvo)
 		 aperta(INTERACT);
 		 //roda(25); // gira pra manter face no inimigo
 		 loga("De costas para o alvo! Ativando correção.");
-		// wait(2000); // espera 2s para não ficar girando muito
+		 loga("Interact code: 252"); // loga o código de interação
+																 // wait(2000); // espera 2s para não ficar girando muito
 		 checkme(); // atualiza status após girar
 		}
 
@@ -3062,7 +3221,7 @@ if (tem_aggro_valido || deve_preservar)
 		 if ((!me.hp_potion_rdy && war.retaliation_up) && // sem potion e skill pronta
 			 	((me.hp < 50 && me.mobs >= 2) ||   // vida < 50 e 2+ mobs
 				 (me.hp < 65 && me.mobs >= 3) ||   // vida < 65 e 3+ mobs
-				 (me.hp < 40 && me.mobs == 1)))      // vida < 30 com 1 mob
+				 (me.hp < 45 && me.mobs == 1)))      // vida < 30 com 1 mob
 			 casta(RETALIATION);                  // aciona Retaliation
 
 
@@ -3071,17 +3230,30 @@ if (tem_aggro_valido || deve_preservar)
 // ------------------------------------------
 // EXECUTE
 // ------------------------------------------
-else if (war.execute_up && tar.hp <= 20)
+else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
     casta(EXECUTE);
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
 		 getnear(); // se aproxima do target se estiver fora de alcance de melee
-		 if (tar.aggro > 0 && !me.melee) aperta(INTERACT); // aproxima se fora de alcance
+		 if (tar.aggro > 0 && !me.melee)
+		 {
+			aperta(INTERACT); // aproxima se fora de alcance
+			loga("Apertando INTERACT para mob distante.");
+		 }
 		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
 			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
-		 if (me.wrongway) aperta(INTERACT); // gira para corrigir facing se necessário
-
+		 if (tar.aggro > 0 && me.wrongway)
+		 {
+			aperta(INTERACT); // gira para corrigir facing se necessário
+			loga("Corrigindo facing com INTERACT. devido wrong way.");
+			loga("Interact code: 253"); // loga o código de interação
+		 }
+		 if (false && tar.aggro > 0 && !(tar.type == HUMANOID && cb_nohumanoid.Checked))
+		 {
+			aperta(INTERACT);
+			loga("apertando interact de rotina (agro > 0 e nao humanoid) no combate warrior - TESTE 0002 ");
+		 }
 
 		 // ------------------------------------------
 		 // BATTLE SHOUT  (sempre)=10 rage
@@ -3090,8 +3262,13 @@ else if (war.execute_up && tar.hp <= 20)
 			aperta(BATTLESHOUT);
 
 		 // ------------------------------------------
-		 // APLICA REND SE PERMITIDO E EFICAZ= 10 rage
+		 // DEMORALIZING SHOUT  
 		 // ------------------------------------------
+		 else if ((!tar.trivial || me.mobs > 1) && war.demo_up && tar.hp > 25 && !war.has_demoralizing)
+			aperta(DEMORALIZING); // reduz dano dos mobs
+														// ------------------------------------------
+														// APLICA REND SE PERMITIDO E EFICAZ= 10 rage
+														// ------------------------------------------
 		 else if (cb_use_rend.Checked && war.rend_up && !war.has_rend
 	&& (tar.type == HUMANOID                               // sempre aplica em humanóide, pra evitar fugir. 
 		 || (
@@ -3122,7 +3299,7 @@ else if (war.execute_up && tar.hp <= 20)
 											// HEROIC STRIKE  fallback (rage dump)
 											// ------------------------------------------
 		 else if (war.hs_up && !war.hs_casting && me.mana >= atoi(tb_heroic_strike_rage) &&
-							!(tar.hp < 30 && war.execute_up)) // NÃO usa HS se mob < 28% HP e Execute disponível
+							!(tar.hp > 0 && tar.hp < 30 && war.execute_up)) // NÃO usa HS se mob < 28% HP e Execute disponível
 			aperta(HEROICS);
 
 		 // ------------------------------------------
@@ -3143,11 +3320,7 @@ else if (war.execute_up && tar.hp <= 20)
 		 if ((tar.level >= me.level + 1 || cb_bersek.Checked) && war.dwish_up && me.mana > 10 && tar.hp > 60)
 			aperta(DEATHWISH); // usa Death Wish
 
-		 // ------------------------------------------
-		 // DEMORALIZING SHOUT  
-		 // ------------------------------------------
-		 if ((!tar.trivial || me.mobs > 1 ) && war.demo_up && tar.hp > 25 && !war.has_demoralizing)
-			aperta(DEMORALIZING); // reduz dano dos mobs
+
 
 		 if (war.overpower_up)
 			aperta(OVERPOWER); // usa Overpower se disponível
@@ -3161,12 +3334,7 @@ else if (war.execute_up && tar.hp <= 20)
 		else if (me.classe == WARLOCK)
 		{
 		 // DESLIGA WAND PRA PERMITIR CAST 
-		 void viramob()
-		 {
-			aperta(INTERACT,500);
-			para(); // para de andar antes de castar
-			//wait(100); // espera 100ms para garantir que parou
-		 }
+
 
 		 void castacurse()
 		 {
@@ -3198,11 +3366,15 @@ else if (war.execute_up && tar.hp <= 20)
 			// FACE NO TARGET 
 			//------------------------------
 			getnear(false); // se aproxima do target se estiver fora de alcance de melee
-		 if (me.wrongway)
+		 if (me.wrongway && (tar.aggro > 0 || tar.pet_aggro > 0))
+		 {
 			casta(INTERACT); // gira para corrigir facing se necessário
-		 // ASSIST NO PET 
-		 //------------------------------
-		 if (!me.hastarget && wlock.has_pet && me.combat)
+			loga("Interact code: 254"); // loga o código de interação
+		 }
+
+			// ASSIST NO PET 
+			//------------------------------
+			if ((!me.hastarget && wlock.has_pet && me.combat)||(me.mobs > 1 && wlock.has_pet))
 			aperta(ASSIST); // assiste o pet se estiver em combate e sem target
 
 		 // MANTEM BUFFS (demon skin)
@@ -3271,8 +3443,8 @@ else if (war.execute_up && tar.hp <= 20)
 		 if (tar.hp > 15 && cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
 		 {
 			loga("Aplicando Corruption.");
-
-			casta(CORRUPTION);
+			castslow(CORRUPTION);
+  		 viramob();
 		 }
 		 else if (me.mana > 30 && tar.hp > 20 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
 		 {
@@ -3294,15 +3466,12 @@ else if (war.execute_up && tar.hp <= 20)
 		 // ================================
 		 else if (!me.melee) // Debuffs castados, sem melee range
 		 {
+			//if (me.aggro > 0 || me.pet_aggro > 0) 
 			aperta(INTERACT); // garante que está virado para o target
+			loga("Interact por !me.melee. Cod. 001");
 		 }
 
-		 // Drain Life (se HP baixo e não channeling)
-		 else if (me.hp < 60 && wlock.drain_life_up && !wlock.has_drain_life)
-		 {
-			loga("HP baixo. Usando Drain Life.");
-			casta(DRAINLIFE);
-		 }
+
 		 
 		 // Drain Soul (se target com HP baixo)
 		 else if ((tar.hp < 30 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul &&
@@ -3312,7 +3481,13 @@ else if (war.execute_up && tar.hp <= 20)
 
 			casta(DRAINSOUL);
 		 }
-
+		 // Drain Life (se HP baixo e não channeling)
+		 else if (me.hp < 70 && wlock.drain_life_up && !wlock.has_drain_life)
+		 {
+			loga("HP baixo. Usando Drain Life.");
+			castslow(DRAINLIFE);
+			
+		 }
 		 // ================================
 		 // FILLER: SHADOW BOLT (SPAM)
 		 // ================================
@@ -3320,9 +3495,9 @@ else if (war.execute_up && tar.hp <= 20)
 		 // Shadow Bolt (filler principal)
 		 else if (cb_use_shadowbolt.Checked && me.mana > atoi(tb_shadowbolt_mana) && wlock.shadowbolt_up && me.mobs < 2)
 		 {
-
-			casta(SHADOWBOLT);
-			//wait_cast(); // espera fim do cast pode dar backpedal
+			viramob(); // garante que está virado para o target
+			castslow(SHADOWBOLT);
+			
 		 }
 
 		 // ================================
@@ -3331,7 +3506,7 @@ else if (war.execute_up && tar.hp <= 20)
 		 else
 		 {
 			// Se não pode fazer nada, garante autoattack
-			if (!me.wandon && cb_wand.Checked && !me.casting)
+			if (me.wand_up && !me.wandon && cb_wand.Checked && !me.casting)
 			{
 			 viramob();
 			 aperta(WAND, 500); // garante que está com wand ligada 
@@ -3341,23 +3516,124 @@ else if (war.execute_up && tar.hp <= 20)
 
 
 		 }
-		}
+		}//------------FIM ROTINA DE COMBATE WARLOCK ------------------
+		 //----------------------------------
+		 // ROTINA DE COMBATE PRIEST
+		 //----------------------------------
+		else if (me.classe == PRIEST)
+		{
+		 // Virar para o target se estiver de costas
+		 
+		 if (me.wrongway)
+			viramob();
+
+		 // --------------------------------
+		 // PWS - POWER WORD: SHIELD
+		 // Condições para castar:
+		 // - Não tem PWS ativo
+		 // - Não tem Weakened Soul 
+		 // - Spell disponível
+		 // - E uma das situações de risco:
+		 //   • Múltiplos mobs (sempre perigoso)
+		 //   • 1 mob + HP < 20% (situação crítica)
+		 //   • 1 mob + HP ≥ 20% + mob > 25% HP (prevenção contra mob forte)
+		 // --------------------------------
+		 if (!priest.has_pws && !priest.has_weakened_soul && priest.pws_up &&
+			(me.mobs > 1 || (me.mobs == 1 && (me.hp < 20 || (me.hp >= 20 && tar.hp > 25)))))
+
+
+		 {
+			clog("Combat: Power Word: Shield");
+			casta(PWS);
+   	 }
+
+		 // Heal crítico
+		 else if (me.hp < atoi(tb_priest_combatheal) && priest.heal_up)
+		 {
+			clog($"Combat: Heal crítico - HP: {me.hp}%");
+			casta(HEAL);
+		 }
+
+		 // Renew se HP baixo e não tem
+		 else if (me.hp < atoi(tb_renewat) && !priest.has_renew && priest.renew_up)
+		 {
+			clog($"Combat: Renew - HP: {me.hp}%");
+			casta(RENEW);
+		 }
+
+		 // Fortitude se não tem
+		 else if (!priest.has_fortitude && priest.fortitude_up)
+		 {
+			clog("Combat: Fortitude");
+			casta(FORTITUDE);
+		 }
+		 // Shadow Word: Pain no target se não tem
+		 else if (!priest.has_swp && priest.swp_up && tar.hp > 15)
+		 {
+			clog("Combat: Shadow Word: Pain");
+			viramob();
+			casta(SWP);
+		 }
+		 // --------------------------------
+		 // SMITE
+		 // - Checkbox de Smite ativada
+		 // - Mana acima do limite configurado
+		 // - Spell disponível
+		 // - Mob com mais de 20% HP (não desperdiçar em mob quase morto)
+		 // - Se checkbox "Shielded Smite" estiver marcada, só usa se tiver PWS ativo
+		 // --------------------------------
+		 else if (cb_usesmite.Checked && me.mana > atoi(tb_smitemana) && priest.smite_up &&
+							tar.hp > 20 && (priest.has_pws || !cb_shielded_smite.Checked))
+		 {
+			clog("Combat: Smite");
+			viramob();
+			casta(SMITE);
+		 }
+		 // ================================
+		 // FALLBACK: AUTOATTACK ou WAND
+		 // ================================
+		 else
+		 {
+			// Se não pode fazer nada, garante autoattack
+			if (!me.wandon && cb_use_priest_wand.Checked && !me.casting)
+			{
+			 viramob();
+			 clog("Combat: Wand");
+			 aperta(WAND, 500); // garante que está com wand ligada 
+			 aperta(STOPCAST); // uma wandada só 
+												 //wait(600); // espera 1 segundo para não spam
+			}
+		 }
+	}//------------FIM ROTINA DE COMBATE PRIEST ------------------
 
 
 
 
 
-
-		// -----------------------------------------------
-		// ROTINA DE COMBATE ROGUE (RCR)
-		// -----------------------------------------------
-		else if (me.classe == ROGUE)
+		 // -----------------------------------------------
+		 // ROTINA DE COMBATE ROGUE (RCR)
+		 // -----------------------------------------------
+		 else if (me.classe == ROGUE)
 		{
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
-	getnear(); // se aproxima do target se estiver fora de alcance de melee
-
+	
+		 getnear(); // se aproxima do target se estiver fora de alcance de melee
+		 if (tar.aggro > 0 && !me.melee)
+		 {
+			aperta(INTERACT); // aproxima se fora de alcance
+			loga("Apertando INTERACT para mob distante.");
+			loga("Interact code: 254"); // loga o código de interação
+		 }
+		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
+			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
+		 if (tar.aggro > 0 && me.wrongway)
+		 {
+			aperta(INTERACT); // gira para corrigir facing se necessário
+			loga("Corrigindo facing com INTERACT. devido wrong way.");
+			loga("Interact code: 255"); // loga o código de interação
+		 }
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
@@ -3462,7 +3738,8 @@ else if (war.execute_up && tar.hp <= 20)
 	 //---------------------------------------------
 	 // TERMINA O COMBATE 
 	 // ---------------------------------------------
-	 loga($"Combate encerrado. Ciclos: {combat_ticker}");
+	 clog($"Combate encerrado. Ciclos: {combat_ticker}");
+	 killstats("save"); // atualiza stats de kills totais 
 	 // PALADINO (reseta variaveis de combate) 
 	 //----------------------------------------------
 	 pala.defseal = false;     // volta a permitir uso de SOR
@@ -3500,7 +3777,7 @@ else if (war.execute_up && tar.hp <= 20)
 	 //-----------------------------------------
 	 else if (me.classe == WARRIOR)
 	 {
-		aperta(CLEARTGT); // limpa o target após o combate
+		//aperta(CLEARTGT); // limpa o target após o combate
 		if (cb_random_pull_warrior.Checked) //  RANDOMIZA TIPO DE PULL (Charge / ranged)
 		{
 		 Random random = new Random();
@@ -3530,6 +3807,67 @@ else if (war.execute_up && tar.hp <= 20)
 			 espera(1);
 		 }
 		}
+	 }// FIM ROTINA DE DESCANSO PÓS-COMBATE (WARRIOR)
+		//----------------------------------
+		// RECUPERAÇÃO E PREPARO PRÉ COMBATE - PRIEST
+		//----------------------------------
+	 else if (me.classe == PRIEST)
+	 {
+		// Cura se vida baixa
+		if (me.hp < atoi(tb_priest_pullheal))
+		{
+		 para(); // para de andar se estiver andando
+		 loga($"Pós combate: Curando - HP: {me.hp}%");
+
+		 // Aplicar PWS se não tem e não tem weakened soul
+		 if (false && !priest.has_pws && !priest.has_weakened_soul && priest.pws_up)
+		 {
+			casta(PWS);
+			
+		 }
+
+		 // Aplicar Renew se não tem
+		 if (!priest.has_renew && priest.renew_up)
+		 {
+			casta(RENEW);
+			
+		 }
+
+		 // Heal direto se muito baixo
+		 if (me.hp < atoi(tb_priest_combatheal) && priest.heal_up)
+		 {
+			casta(HEAL);
+			
+		 }
+		}
+
+		// Mana baixa - comer/beber
+		if (me.mana < atoi(tb_mana_pull_priest))
+		{
+		 para(); // para de andar se estiver andando
+		 clog($"Priest: Recuperando mana: {me.mana}%");
+		 aperta(F12); // COMIDA/BEBIDA
+		 while (me.mana < atoi(tb_mana_pull_priest) && !me.combat)
+		 {
+			espera(1);
+			checkme();
+		 }
+		}
+
+		// Aplicar buffs se não tem
+		if (!priest.has_fortitude && priest.fortitude_up)
+		{
+		clog("Priest: Aplicando Power Word: Fortitude");
+		 casta(FORTITUDE);
+		 
+		}
+
+		if (!priest.has_innerfire && priest.innerfire_up)
+		{
+		 clog("Priest: Aplicando Inner Fire");
+		 casta(INNERFIRE);
+		 
+		}
 	 }
 
 	}
@@ -3543,8 +3881,12 @@ else if (war.execute_up && tar.hp <= 20)
 //----------------------
 	 if (melee) // warrior, rogue, paladin
 	 {
-		if (!me.melee || me.wrongway || (me.hastarget && tar.aggro > 0))
+		if ((!me.melee || me.wrongway) && (me.hastarget && tar.aggro > 0))
+		 {
 		 aperta(INTERACT); // aproxima se fora de alcance
+		 loga("Apertando INTERACT via método getnear.");
+		 loga("Interact code: 256"); // loga o código de interação
+		}
 
 	 }
 	 //  CASTER
@@ -3561,6 +3903,7 @@ else if (war.execute_up && tar.hp <= 20)
 		{
 		 loga("Wrongway ou out of range detectado. Corrigindo.");
 		 aperta(INTERACT, me.outofrange ? 500 : 100); // gira para corrigir facing
+		 loga("Interact code: 257"); // loga o código de interação
 		 para(); // para de andar
 		}
 		else if (me.outofrange) // olhando pro lado errado?
@@ -3723,8 +4066,8 @@ else if (war.execute_up && tar.hp <= 20)
 
 		if (usou_protecao)
 		{
-		 casta(HLIGHT);            // casta HLIGHT
-		 wait_cast();              // espera o cast
+		 castslow(HLIGHT);            // casta HLIGHT
+		 
 		 checkme();                // atualiza status após cast
 
 		 debugcura("HLIGHT", motivo); // registra nos debug e caixas
@@ -3736,9 +4079,8 @@ else if (war.execute_up && tar.hp <= 20)
 		 }
 		 else if (me.mobs <2 && me.level < 20 && me.hp < 60)
 		 {
-			casta(HLIGHT);            // casta mais um HLIGHT
+			castslow(HLIGHT);            // casta mais um HLIGHT
 			debugcura("OUTRO HLIGHT", "O primeiro nao curou suficiente, level < 20"); // registra no debug
-			wait_cast();              // espera o cast
 			checkme();                // atualiza status após cast
 		 }
 
@@ -3777,8 +4119,7 @@ else if (war.execute_up && tar.hp <= 20)
 		{
 		 aperta(HOJ, GCD);            // stuna o alvo
 		 loga("Curando com hammer of justice.");
-		 aperta(HLIGHT, 1000);        // casta HLIGHT durante o stun
-		 wait_cast();
+		 castslow(HLIGHT);        // casta HLIGHT durante o stun
 		 checkme();
 
 		 debugcura("HLIGHT", "usou HOJ para interromper dano e conseguir curar");
@@ -3848,8 +4189,7 @@ else if (war.execute_up && tar.hp <= 20)
 		}
 
 		loga("For the light!");         // tentativa heroica
-		aperta(HLIGHT, 1000);           // casta holy light
-		wait_cast();                    // espera o cast
+		castslow(HLIGHT); // casta HLIGHT sem proteção
 		checkme();                      // atualiza status
 
 		// registra que castou HLIGHT no desespero
@@ -3869,6 +4209,153 @@ else if (war.execute_up && tar.hp <= 20)
 
 	}
 
+	// --------------------------------
+	// MÉTODO KILLSTATS - GERENCIA ESTATÍSTICAS DE KILLS POR CLASSE
+	// --------------------------------
+	void killstats(string mode)
+	{
+	 // Array com todas as classes do WoW Classic
+	 string[] wowClasses = { "priest", "paladin", "warlock", "warrior", "rogue", "shaman", "mage", "hunter", "druid" };
+
+	 string settingsPath = Path.Combine(Application.StartupPath, "settings");
+	 string filePath = Path.Combine(settingsPath, "montanha_totalkills.ini");
+
+	 try
+	 {
+		if (mode == "load")
+		{
+		 // Cria pasta se não existir
+		 if (!Directory.Exists(settingsPath))
+			Directory.CreateDirectory(settingsPath);
+
+		 // Se arquivo não existe, cria com valores zerados
+		 if (!File.Exists(filePath))
+		 {
+			var defaultContent = new List<string> { "[totalkills]" };
+			foreach (string className in wowClasses)
+			{
+			 defaultContent.Add($"{className}=0");
+			}
+			File.WriteAllLines(filePath, defaultContent);
+			loga("Arquivo de kills criado com valores padrão.");
+		 }
+
+		 // Carrega valores do arquivo para as textboxes
+		 var lines = File.ReadAllLines(filePath);
+		 bool inTotalKillsSection = false;
+
+		 foreach (string line in lines)
+		 {
+			string trimmedLine = line.Trim();
+
+			if (trimmedLine == "[totalkills]")
+			{
+			 inTotalKillsSection = true;
+			 continue;
+			}
+
+			if (trimmedLine.StartsWith("[") && trimmedLine != "[totalkills]")
+			{
+			 inTotalKillsSection = false;
+			 continue;
+			}
+
+			if (inTotalKillsSection && trimmedLine.Contains("="))
+			{
+			 string[] parts = trimmedLine.Split('=');
+			 if (parts.Length == 2)
+			 {
+				string className = parts[0].Trim();
+				string value = parts[1].Trim();
+
+				// Monta nome da textbox dinamicamente
+				string textBoxName = $"tb_kills_{className}";
+				TextBox targetTextBox = this.Controls.Find(textBoxName, true).FirstOrDefault() as TextBox;
+
+				if (targetTextBox != null)
+				{
+				 targetTextBox.Text = value;
+				}
+			 }
+			}
+		 }
+
+		 loga("Estatísticas de kills carregadas do arquivo.");
+		}
+		else if (mode == "save")
+		{
+		 // Incrementa a textbox da classe atual com mobs mortos neste combate
+		 int mobsKilled = killed_noskin.Count + killed_skin.Count;
+
+		 if (mobsKilled > 0)
+		 {
+			// Descobre qual classe está sendo jogada
+			string currentClassName = "";
+			switch (me.classe)
+			{
+			 case PRIEST: currentClassName = "priest"; break;
+			 case PALADIN: currentClassName = "paladin"; break;
+			 case WARLOCK: currentClassName = "warlock"; break;
+			 case WARRIOR: currentClassName = "warrior"; break;
+			 case ROGUE: currentClassName = "rogue"; break;
+			 case SHAMAN: currentClassName = "shaman"; break;
+			 case MAGE: currentClassName = "mage"; break;
+			 case HUNTER: currentClassName = "hunter"; break;
+			 case DRUID: currentClassName = "druid"; break;
+			 default:
+				loga("Classe desconhecida. Ignorando estatísticas de kill.");
+				return;
+			}
+
+			// Procura a textbox da classe atual
+			string textBoxName = $"tb_kills_{currentClassName}";
+			TextBox currentClassTextBox = this.Controls.Find(textBoxName, true).FirstOrDefault() as TextBox;
+
+			if (currentClassTextBox == null)
+			{
+			 loga("Classe não implementada. Ignorando estatísticas de kill.");
+			 return;
+			}
+
+			// Incrementa valor na textbox
+			int currentKills = 0;
+			int.TryParse(currentClassTextBox.Text, out currentKills);
+			currentKills += mobsKilled;
+			currentClassTextBox.Text = currentKills.ToString();
+
+			// Salva arquivo atualizado
+			var content = new List<string> { "[totalkills]" };
+
+			foreach (string className in wowClasses)
+			{
+			 string tbName = $"tb_kills_{className}";
+			 TextBox tb = this.Controls.Find(tbName, true).FirstOrDefault() as TextBox;
+
+			 if (tb != null)
+			 {
+				content.Add($"{className}={tb.Text}");
+			 }
+			 else
+			 {
+				content.Add($"{className}=0");
+			 }
+			}
+
+			// Cria pasta se não existir
+			if (!Directory.Exists(settingsPath))
+			 Directory.CreateDirectory(settingsPath);
+
+			File.WriteAllLines(filePath, content);
+
+			loga($"Kills atualizadas: +{mobsKilled} {currentClassName} (total: {currentKills})");
+		 }
+		}
+	 }
+	 catch (Exception ex)
+	 {
+		loga($"Erro ao {mode} estatísticas de kills: {ex.Message}");
+	 }
+	}
 
 
 	int atoi(TextBox t) => int.Parse(t.Text); // retorna valor inteiro da textbox
@@ -3944,7 +4431,9 @@ else if (war.execute_up && tar.hp <= 20)
 
 	 return false; // não atende critérios
 	}
-
+	//--------------------------------
+	// ESPERA CAST EM ANDAMENTO
+	//---------------------------
 	void wait_cast()
 	{
 	 do
@@ -4100,7 +4589,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 		 solta(WKEY);
 		 logar = false;
 		 aperta(PULA, 10);
-		 if (cb_log.Checked) loga("Curva impossível em movimento – parando para girar..");
+		 loga("Curva impossível em movimento – parando para girar..");
 		}
 	 }
 	 else // modo clássico: para se curva for brusca e o alvo estiver muito perto
@@ -4119,7 +4608,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 wait(tempo);      // espera tempo proporcional ao ângulo
 	 solta(tecla);     // solta a tecla
 
-	 if (cb_log.Checked)
+	 if (true)
 	 {
 		checkme(); // atualiza posição após o giro
 		int f2 = me.facing; // facing após o giro
@@ -4318,12 +4807,26 @@ tb_debug2.Text = me.pos.y.ToString();
 
 	 return "0"; // valor padrão
 	}
+
+	// ----------------------------------------------------------
+	// MÉTODO CASTSLOW: aperta e espera o cast
+	//-----------------------------------------------------------
+	void castslow(int key)
+	{
+	 aperta((byte)key, 1000); // aperta a tecla e espera o GCD
+	 do
+	 { 
+	 checkme();
+		wait (10); // espera 10ms
+	 } while (me.casting); // enquanto estiver castando, continua esperando
+	}
+
 	// ----------------------------------------------------------
 	// MÉTODO CASTA: aperta e espera o GCD 
 	//-----------------------------------------------------------
-	void casta(byte key)
+	void casta(int key)
 	{
-	 aperta(key, 1450); // aperta a tecla e espera o GCD
+	 aperta((byte)key, 1450); // aperta a tecla e espera o GCD
 	 checkme();
 	}
 
@@ -4453,8 +4956,12 @@ tb_debug2.Text = me.pos.y.ToString();
 getstats(ref me);
 	 
 }
-// MÉTODO LOGA - ESCREVE NO LOG E DÁ ENTER AUTOMATICAMENTE
-void loga(string str)
+	void clog(string str)
+	{
+	 lb_combatlog.AppendText(str + "\r\n"); // adiciona o texto e pula pra próxima linha
+	}
+	// MÉTODO LOGA - ESCREVE NO LOG E DÁ ENTER AUTOMATICAMENTE
+	void loga(string str)
 {
 lb_log.AppendText(str + "\r\n"); // adiciona o texto e pula pra próxima linha
 }
@@ -4838,7 +5345,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		 }
 		}
 
-		if (cb_log.Checked)
+		if (true)
 		{
 		 loga($"Arquivo {nome} carregado");
 		 loga($"Total: {waypoints_carregados} waypoints navegáveis");
@@ -4847,7 +5354,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	 }
 	 else
 	 {
-		if (cb_log.Checked) loga($"Arquivo {nome} não encontrado");
+		loga($"Arquivo {nome} não encontrado");
 	 }
 	}
 
@@ -5326,7 +5833,7 @@ private void button6_Click(object sender, EventArgs e)
 		File.WriteAllLines(nome, linhas);        // salva os waypoints
 		File.WriteAllText("discord.ini", nome);  // grava só o nome no cfg
 
-		if (cb_log.Checked)
+		if (true)
 		{
 		 loga($"Waypoints salvos:");
 		 loga($"  Waypoints navegáveis: {lwp.Count}");
@@ -5336,7 +5843,7 @@ private void button6_Click(object sender, EventArgs e)
 	 }
 	 else
 	 {
-		if (cb_log.Checked) loga("Nenhum waypoint para salvar");
+		loga("Nenhum waypoint para salvar");
 	 }
 	}
 
@@ -5368,7 +5875,7 @@ if (!cb_anda.Checked)
 {
  if (on) // se estava ligado
  {
-	if (cb_log.Checked) loga("cb_anda desmarcado: parando o bot.");
+ loga("cb_anda desmarcado: parando o bot.");
 	on = false; // para o loop principal
  }
 }
@@ -5376,7 +5883,7 @@ else
 {
  if (!on) // só se o bot estava parado
  {
-	if (cb_log.Checked) loga("cb_anda marcado: reiniciando o bot.");
+	loga("cb_anda marcado: reiniciando o bot.");
 	on = true; // liga o bot
 	button1_Click_1(null, null); // chama o botão StartBot
  }
