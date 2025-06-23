@@ -5,8 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using static Discord.Form1;
 
+
 namespace Discord
 {
+
+ public struct flag
+ {
+	public int wandGCD;
+ }
 
  // --------------------------------
  // MÓDULO 12 - STRUCT ELEMENT
@@ -33,7 +39,7 @@ namespace Discord
 	public bool outofrange;   // alvo fora de alcance (melee ou spell)
 	public bool swim;         // está nadando
 	public bool armabroken;   // MH ou OH quebrada (bit 1 no 7G)
-
+	
 	// ----------- específicos de mim (me) -----------
 	public int freeslots;        // slots livres na bag
 	public bool racialready;     // racial pronta

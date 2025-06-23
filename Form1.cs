@@ -506,7 +506,7 @@ namespace Discord
 	 lb_combatlog.Clear(); // limpa todos os itens da ListBox combatlog
 	 carrega_loot(); // carrega frequencia de pontos de loot 
 	 checkme(); // verifica se o player está em combate e ativa o botao de stop
-	 if (me.level >=9) cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
+	 if (me.level >=12) cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
 	 killstats("load"); // carrega estatísticas de kills do arquivo
 
 
@@ -571,7 +571,7 @@ namespace Discord
 	 //R: slots livres(3 bits) +flags(5 bits):
 	 //bits 0–2(0–7) = slots livres nas bags(máximo 7)
 	 //    bit 3(8) = wand_up(Shoot disponível e em range)
-	 //    bits 4–7 = LIVRES(para futuras expansões)  // BITS LIVRES AQUI 
+	 //    bits 4–7 = Wand global cooldown (0 a 1.5)
 	 //
 	 // G: flags de erro de combate:
 	 //    bit 7 (128) = de costas (Facing wrong way)
@@ -943,24 +943,24 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 e.mana = v_mana;                                     // atualiza atributo de mana
 	 tb_mana.Text = v_mana.ToString();                    // exibe no textbox (debug)
 
-	 // WAND_UP (bit 3)
-	 me.wand_up = (pixels[1].r & 8) != 0; // bit 3 = wand disponível (Shoot pronto e em range)
-
-	 // WAND ATIVA
-	 me.wandon = (pixels[1].b & 128) != 0;                 // bit 7 = wand ativa
+	 // WAND: 
+	 me.wand_up = (pixels[1].r & 8) != 0;                 // bit 3 = wand disponível (Shoot pronto e em range)
+	 me.wandon = (pixels[1].b & 128) != 0;                // bit 7 = wand ativa
+	 flags.wandGCD = (pixels[1].r & 0xF0) >> 4;           // bits 4-7 = wand GCD (0 a 15)
 
 	 // SLOTS LIVRES NAS BAGS
-	 me.freeslots = pixels[1].r & 7;      // 3 bits, maximo 7 slots livres (1+2+4 = 7)
+	 me.freeslots = pixels[1].r & 7;                      // 3 bits, máximo 7 slots livres (bits 0-2)
 
 	 // ERROS DE COMBATE (bitmask no canal G)
 	 int g_erro = pixels[1].g;                            // canal G codifica erros combinados
-	 me.wrongway = (g_erro & 128) != 0;                    // 128 = "You are facing the wrong way!"
-	 me.outofrange = (g_erro & 64) != 0;                   //  64 = "Out of range" ou "You are too far away!"
-	 if (me.wrongway == true)
-		loga($"Wrong way!");
-	 if (me.outofrange == true)
-		loga($"Out of range!");
+	 me.wrongway = (g_erro & 128) != 0;                   // 128 = "You are facing the wrong way!"
+	 me.outofrange = (g_erro & 64) != 0;                  //  64 = "Out of range" ou "You are too far away!"
 
+	 if (me.wrongway)
+		loga($"Wrong way!");
+
+	 if (me.outofrange)
+		loga($"Out of range!");
 
 	 // ------------------------------------------
 	 // Pixel 2 e 3 (Coordenadas X e Y)
@@ -1533,12 +1533,14 @@ void press(byte key)
 	//-----------------------------------------------------------
 	// MÓDULO 18 - VARIÁVEL GLOBAL -VARIÁVEIS GLOBAIS 
 	//--------------------------------------------------------
-	public element me;
-public element tar;
+
 
 	// --------------------------------
 	// INSTÂNCIAS DAS CLASSES DE STATUS
 	// --------------------------------
+	public element me;
+	public element tar;
+	flag flags = new flag(); // flags gerais do jogo 
 	palatable pala = new palatable();
 	roguetable rog = new roguetable();
 	warriortable war = new warriortable();
@@ -2784,7 +2786,17 @@ void andaplanta(loc alvo)
 			DateTime inicio = DateTime.Now;
 			loga($"Priest Pull: Iniciando pull no target {tar.level}");
 
-
+			void shieldme()
+			{
+			 // Casta PWS se disponível
+			 if (cb_shielded_pull.Checked && priest.pws_up && (!priest.has_pws || !cb_combat_pws.Checked) && !priest.has_weakened_soul)
+			 {
+				loga("Priest Pull: Aplicando Power Word: Shield");
+				casta(PWS);
+				checkme(); // atualiza status após o cast
+				if (!me.autoattack) aperta(AUTOATTACK); // ativa autoattack se não estiver ativo
+			 }
+			}
 
 			while (!me.combat && (DateTime.Now - inicio).TotalSeconds < 10)
 			{
@@ -2811,14 +2823,8 @@ void andaplanta(loc alvo)
 			 if (me.wand_up || priest.smite_up || priest.swp_up)
 			 {
 				para(); // para de andar
-         // Casta PWS se disponível
-				if (priest.pws_up && !priest.has_pws && !priest.has_weakened_soul)
-				{
-				 loga("Priest Pull: Aplicando Power Word: Shield");
-				 casta(PWS);
-				 checkme(); // atualiza status após o cast
-				}
-
+        
+				shieldme(); // aplica PWS se checkbox ativo
 				// Preferir Shadow Word: Pain se disponível
 				if (priest.swp_up && !priest.has_swp)
 				{
@@ -2828,6 +2834,7 @@ void andaplanta(loc alvo)
 				 if (me.combat)
 				 {
 					loga("Pull com SWP com sucesso. Saindo do pull.");
+					
 					return; // se entrou em combate, sai do loop
 				 }
 				  }
@@ -2842,6 +2849,7 @@ void andaplanta(loc alvo)
 				 if (me.combat)
 				 {
 					loga("Pull com smite com sucesso. Saindo do pull.");
+					
 					return; // se entrou em combate, sai do loop
 				 }
 				}
@@ -2852,6 +2860,7 @@ void andaplanta(loc alvo)
 				 if (me.combat)
 				 {
 					loga("Pull com WAND com sucesso. Saindo do pull.");
+					
 					return; // se entrou em combate, sai do loop
 				 }
 				}
@@ -2859,7 +2868,11 @@ void andaplanta(loc alvo)
 				// Espera um pouco para ver se entra em combate
 				wait(500);
 				checkme();
-				if (me.combat) return;
+				if (me.combat)
+				{
+				 
+				 return;
+				}
 			 }
 			 checkme();
 			 wait(100);
@@ -3517,103 +3530,93 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 
 		 }
 		}//------------FIM ROTINA DE COMBATE WARLOCK ------------------
-		 //----------------------------------
+		 // ----------------------------------
 		 // ROTINA DE COMBATE PRIEST
-		 //----------------------------------
+		 // ----------------------------------
 		else if (me.classe == PRIEST)
 		{
 		 // Virar para o target se estiver de costas
-		 
 		 if (me.wrongway)
 			viramob();
 
-		 // --------------------------------
-		 // PWS - POWER WORD: SHIELD
-		 // Condições para castar:
-		 // - Não tem PWS ativo
-		 // - Não tem Weakened Soul 
-		 // - Spell disponível
-		 // - E uma das situações de risco:
-		 //   • Múltiplos mobs (sempre perigoso)
-		 //   • 1 mob + HP < 20% (situação crítica)
-		 //   • 1 mob + HP ≥ 20% + mob > 25% HP (prevenção contra mob forte)
-		 // --------------------------------
-		 if (!priest.has_pws && !priest.has_weakened_soul && priest.pws_up &&
+		 // POWER WORD: SHIELD
+		 if (cb_combat_pws.Checked && !priest.has_pws && !priest.has_weakened_soul && priest.pws_up &&
 			(me.mobs > 1 || (me.mobs == 1 && (me.hp < 20 || (me.hp >= 20 && tar.hp > 25)))))
-
-
 		 {
-			clog("Combat: Power Word: Shield");
+			stopwand();
 			casta(PWS);
-   	 }
-
-		 // Heal crítico
+			clog("Combat: Power Word: Shield");
+		 }
+		 // HEAL CRÍTICO
 		 else if (me.hp < atoi(tb_priest_combatheal) && priest.heal_up)
 		 {
-			clog($"Combat: Heal crítico - HP: {me.hp}%");
+			stopwand();
 			casta(HEAL);
+			clog($"Combat: Heal crítico - HP: {me.hp}%");
 		 }
-
-		 // Renew se HP baixo e não tem
-		 else if (me.hp < atoi(tb_renewat) && !priest.has_renew && priest.renew_up)
+		 else if (
+			 (
+				 (me.hp < atoi(tb_renewat) && !priest.has_renew && priest.renew_up)
+				 ||
+				 (!priest.has_pws && priest.has_weakened_soul && !priest.has_renew && priest.renew_up)
+			 )
+			 &&
+			 me.hp <= 85
+			 &&
+			 !(me.mobs == 1 && me.hp > 60 && tar.hp < 25)
+			 )
 		 {
-			clog($"Combat: Renew - HP: {me.hp}%");
+			stopwand();
 			casta(RENEW);
+			clog($"Combat: Renew - HP: {me.hp}%");
 		 }
 
-		 // Fortitude se não tem
+
+		 // FORTITUDE
 		 else if (!priest.has_fortitude && priest.fortitude_up)
 		 {
-			clog("Combat: Fortitude");
+			stopwand();
 			casta(FORTITUDE);
+			clog("Combat: Fortitude");
 		 }
-		 // Shadow Word: Pain no target se não tem
-		 else if (!priest.has_swp && priest.swp_up && tar.hp > 15)
+		 // SHADOW WORD: PAIN
+		 else if (!priest.has_swp && tar.hp > 15 && priest.swp_up)
 		 {
-			clog("Combat: Shadow Word: Pain");
 			viramob();
+			stopwand();
 			casta(SWP);
+			clog("Combat: Shadow Word: Pain");
 		 }
-		 // --------------------------------
 		 // SMITE
-		 // - Checkbox de Smite ativada
-		 // - Mana acima do limite configurado
-		 // - Spell disponível
-		 // - Mob com mais de 20% HP (não desperdiçar em mob quase morto)
-		 // - Se checkbox "Shielded Smite" estiver marcada, só usa se tiver PWS ativo
-		 // --------------------------------
-		 else if (cb_usesmite.Checked && me.mana > atoi(tb_smitemana) && priest.smite_up &&
-							tar.hp > 20 && (priest.has_pws || !cb_shielded_smite.Checked))
+		 else if (cb_usesmite.Checked && me.mana > atoi(tb_smitemana) &&
+				 tar.hp > 20 && (!cb_shielded_smite.Checked || priest.has_pws) && priest.smite_up)
 		 {
-			clog("Combat: Smite");
 			viramob();
+			stopwand();
 			casta(SMITE);
+			clog("Combat: Smite");
 		 }
 		 // ================================
 		 // FALLBACK: AUTOATTACK ou WAND
 		 // ================================
 		 else
 		 {
-			// Se não pode fazer nada, garante autoattack
+			// Se não pode fazer nada, garante wand ativa
 			if (!me.wandon && cb_use_priest_wand.Checked && !me.casting)
 			{
 			 viramob();
-			 clog("Combat: Wand");
-			 aperta(WAND, 500); // garante que está com wand ligada 
-			 aperta(STOPCAST); // uma wandada só 
-												 //wait(600); // espera 1 segundo para não spam
+			 aperta(WAND, 500); // garante que está com wand ligada
 			}
 		 }
-	}//------------FIM ROTINA DE COMBATE PRIEST ------------------
+		}
+		//------------FIM ROTINA DE COMBATE PRIEST ------------------
 
 
 
-
-
-		 // -----------------------------------------------
-		 // ROTINA DE COMBATE ROGUE (RCR)
-		 // -----------------------------------------------
-		 else if (me.classe == ROGUE)
+		// -----------------------------------------------
+		// ROTINA DE COMBATE ROGUE (RCR)
+		// -----------------------------------------------
+		else if (me.classe == ROGUE)
 		{
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
@@ -3919,6 +3922,49 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		}
 	 }
 	}
+
+
+
+
+	// --------------------------------
+	// MÉTODO STOPWAND: Para wand (sem retorno)
+	// Se wand não está ativa, não faz nada.
+	// Se wand ativa, força STOPCAST e espera até desativar ou timeout 3s.
+	// Após parada, reativa autoattack.
+	// --------------------------------
+	void stopwand()
+	{
+	 if (!me.wandon)
+		return; // não faz nada se wand não está ativa
+
+	 int start_time = Environment.TickCount;
+	 int elapsed=0;
+
+	 clog("Parando wand...");
+
+	 // Loop até wand sair ou timeout
+	 while (me.wandon || flags.wandGCD > 0)
+	 {
+		checkme(); // atualiza me.wandon
+		aperta(STOPCAST, 1);
+
+		elapsed = Environment.TickCount - start_time;
+
+		if (elapsed > 3000)
+		{
+		 clog("Timeout 3s ao esperar parar cast da wand.");
+		 break;
+		}
+	 }
+
+	 // Reativa autoattack
+	 aperta(AUTOATTACK);
+
+	 clog($"Wand desativada após {elapsed} ms.");
+	}
+
+
+
 	// --------------------------------
 	// MÉTODO DE ESPERA VIGILANTE
 	// --------------------------------
@@ -4824,9 +4870,14 @@ tb_debug2.Text = me.pos.y.ToString();
 	// ----------------------------------------------------------
 	// MÉTODO CASTA: aperta e espera o GCD 
 	//-----------------------------------------------------------
-	void casta(int key)
+	void casta(int key, bool stopcast = false)
 	{
-	 aperta((byte)key, 1450); // aperta a tecla e espera o GCD
+	 if (stopcast && me.wandon) // se for pra parar o cast
+	 {
+		aperta(STOPCAST);
+		wait(1000);
+	 }
+		aperta((byte)key, 1450); // aperta a tecla e espera o GCD
 	 checkme();
 	}
 
@@ -6798,13 +6849,20 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 while (true)
+	 wait(2000);
+	 on = true;
+	 int sweetspot = atoi(tb_debug);
+	 while (on)
 	 {
-		espera(1);
-		checkme();
-		loga($"Wrong way: {me.wrongway}");
-		loga($"Out of Range: {me.outofrange}");
+		aperta(WAND);
+		wait(sweetspot);
+		aperta(STOPCAST);
 	 }
+	 sweetspot += 100; // aumenta o tempo de espera para o próximo clique
+	 tb_debug.Text = sweetspot.ToString(); // atualiza textbox de debug
+	loga("Novo sweetspot: " + sweetspot + "ms"); // loga o novo valor
+
+
 	}
 
 
@@ -6874,33 +6932,7 @@ else
 
 	private void button18_Click(object sender, EventArgs e)
 	{
-	 loga("Esperando 5 segundos antes de iniciar coleta...");
-	 wait(3000); // tempo pra começar a girar
-
-	 //-----------------------------------------------
-	 // INICIALIZAÇÃO
-	 //-----------------------------------------------
-	 checkme();
-	 loc inicio = me.pos;                // salva posição inicial
-	 double ult_dist_logada = 0;         // última distância logada
-	 loga("Iniciando...");
-	 checkme();
-	 //-----------------------------------------------
-	 // LOOP DE MONITORAMENTO DE DISTÂNCIA
-	 //-----------------------------------------------
-	 while (on) // enquanto flag 'on' estiver ativa
-	 {
-		checkme();                            // atualiza posição atual
-		double d_total = dist(inicio, me.pos); // calcula distância desde o início
-
-		if (d_total - ult_dist_logada >= 10)  // andou mais 10 metros?
-		{
-		 ult_dist_logada = Math.Floor(d_total / 10) * 10; // atualiza última logada
-		 loga($"Andou 10 metros. Total: {ult_dist_logada}m"); // loga no painel
-		}
-
-		wait(100); // pequena pausa para evitar spam de CPU
-	 }
+	 on = false;
 	}
 
 	// ----------------------------------------

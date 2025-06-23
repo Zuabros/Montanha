@@ -293,6 +293,9 @@ namespace Discord
 	 this.cb_humanlike = new System.Windows.Forms.CheckBox();
 	 this.cb_cloudemove = new System.Windows.Forms.CheckBox();
 	 this.cb_shielded_smite = new System.Windows.Forms.CheckBox();
+	 this.cb_combat_pws = new System.Windows.Forms.CheckBox();
+	 this.cb_shielded_pull = new System.Windows.Forms.CheckBox();
+	 this.tb_debug = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -326,6 +329,7 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.tb_debug);
 	 this.tabPage1.Controls.Add(this.label38);
 	 this.tabPage1.Controls.Add(this.label37);
 	 this.tabPage1.Controls.Add(this.lb_combatlog);
@@ -2008,6 +2012,9 @@ namespace Discord
 	 // 
 	 // tabPage7
 	 // 
+	 this.tabPage7.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage7.Controls.Add(this.cb_shielded_pull);
+	 this.tabPage7.Controls.Add(this.cb_combat_pws);
 	 this.tabPage7.Controls.Add(this.cb_shielded_smite);
 	 this.tabPage7.Controls.Add(this.label36);
 	 this.tabPage7.Controls.Add(this.tb_mana_pull_priest);
@@ -2025,7 +2032,6 @@ namespace Discord
 	 this.tabPage7.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage7.TabIndex = 4;
 	 this.tabPage7.Text = "Priest";
-	 this.tabPage7.UseVisualStyleBackColor = true;
 	 // 
 	 // label36
 	 // 
@@ -3052,10 +3058,40 @@ namespace Discord
 	 this.cb_shielded_smite.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cb_shielded_smite.Location = new System.Drawing.Point(163, 134);
 	 this.cb_shielded_smite.Name = "cb_shielded_smite";
-	 this.cb_shielded_smite.Size = new System.Drawing.Size(80, 17);
+	 this.cb_shielded_smite.Size = new System.Drawing.Size(89, 17);
 	 this.cb_shielded_smite.TabIndex = 88;
-	 this.cb_shielded_smite.Text = "checkBox1";
+	 this.cb_shielded_smite.Text = "Only shielded";
 	 this.cb_shielded_smite.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_combat_pws
+	 // 
+	 this.cb_combat_pws.AutoSize = true;
+	 this.cb_combat_pws.Checked = true;
+	 this.cb_combat_pws.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_combat_pws.Location = new System.Drawing.Point(45, 226);
+	 this.cb_combat_pws.Name = "cb_combat_pws";
+	 this.cb_combat_pws.Size = new System.Drawing.Size(90, 17);
+	 this.cb_combat_pws.TabIndex = 89;
+	 this.cb_combat_pws.Text = "Combat PWS";
+	 this.cb_combat_pws.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_shielded_pull
+	 // 
+	 this.cb_shielded_pull.AutoSize = true;
+	 this.cb_shielded_pull.Location = new System.Drawing.Point(179, 226);
+	 this.cb_shielded_pull.Name = "cb_shielded_pull";
+	 this.cb_shielded_pull.Size = new System.Drawing.Size(87, 17);
+	 this.cb_shielded_pull.TabIndex = 90;
+	 this.cb_shielded_pull.Text = "Shielded Pull";
+	 this.cb_shielded_pull.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_debug
+	 // 
+	 this.tb_debug.Location = new System.Drawing.Point(619, 138);
+	 this.tb_debug.Name = "tb_debug";
+	 this.tb_debug.Size = new System.Drawing.Size(69, 20);
+	 this.tb_debug.TabIndex = 67;
+	 this.tb_debug.Text = "1";
 	 // 
 	 // Form1
 	 // 
@@ -3389,6 +3425,9 @@ namespace Discord
 	private Label label46;
 	private TextBox tb_kills_hunter;
 	private CheckBox cb_shielded_smite;
+	private CheckBox cb_shielded_pull;
+	private CheckBox cb_combat_pws;
+	private TextBox tb_debug;
  }
 }
 
