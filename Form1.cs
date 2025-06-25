@@ -442,7 +442,204 @@ namespace Discord
 	// --------------------------------------------
 	// CLASSES  E STRUCTS 
 	// --------------------------------------------
-	
+	// =====================================================
+	// SISTEMA DE OTIMIZAÇÃO ADAPTATIVA PARA COMBO POINTS
+	// =====================================================
+
+	// =====================================================
+	// SISTEMA DE OTIMIZAÇÃO ADAPTATIVA PARA COMBO POINTS
+	// =====================================================
+
+	// Variáveis globais para o sistema de otimização
+	public static class ComboOptimizer
+	{
+	 // Probabilidades lidas das textboxes (com fallback)
+	 public static double prob_regular = 33.0;
+	 public static double prob_plus1 = 33.0;
+	 public static double prob_minus1 = 34.0;
+
+	 // Totais acumulados por categoria (sem reset)
+	 public static int total_energy_regular = 0;
+	 public static int total_dano_regular = 0;
+	 public static int total_energy_plus1 = 0;
+	 public static int total_dano_plus1 = 0;
+	 public static int total_energy_minus1 = 0;
+	 public static int total_dano_minus1 = 0;
+
+	 // Estado atual
+	 public static int categoria_atual = 0; // 0=regular, 1=plus1, -1=minus1
+	 public static int contador_casts = 0; // para ajustar probabilidades a cada 10 casts
+
+	 // Referência para o form (para acessar textboxes)
+	 public static Form1 form_instance = null;
+
+	 // Lê probabilidades das textboxes (com fallback para valores padrão)
+	 public static void LerProbabilidades()
+	 {
+		try
+		{
+		 if (form_instance != null)
+		 {
+			prob_regular = double.Parse(form_instance.tb_prob_zero.Text);
+			prob_plus1 = double.Parse(form_instance.tb_prob_plus1.Text);
+			prob_minus1 = double.Parse(form_instance.tb_prob_minus1.Text);
+
+			// Verifica se somam aproximadamente 100%
+			double total = prob_regular + prob_plus1 + prob_minus1;
+			if (Math.Abs(total - 100.0) > 5.0) // tolerância de 5%
+			{
+			 throw new Exception("Probabilidades não somam 100%");
+			}
+		 }
+		}
+		catch
+		{
+		 // Em caso de erro, reseta para valores padrão
+		 prob_regular = 33.0;
+		 prob_plus1 = 33.0;
+		 prob_minus1 = 34.0;
+		 AtualizarTextboxesProbabilidades();
+		}
+	 }
+
+	 // Atualiza as textboxes de probabilidades
+	 public static void AtualizarTextboxesProbabilidades()
+	 {
+		if (form_instance != null)
+		{
+		 form_instance.tb_prob_zero.Text = prob_regular.ToString("F0");
+		 form_instance.tb_prob_plus1.Text = prob_plus1.ToString("F0");
+		 form_instance.tb_prob_minus1.Text = prob_minus1.ToString("F0");
+		}
+	 }
+
+	 // Determina qual categoria usar no próximo combate
+	 public static int EscolherCategoria()
+	 {
+		// Lê probabilidades das textboxes sempre
+		LerProbabilidades();
+
+		Random rand = new Random();
+		double sorteio = rand.NextDouble() * 100;
+
+		if (sorteio <= prob_regular)
+		 return 0; // regular
+		else if (sorteio <= prob_regular + prob_plus1)
+		 return 1; // plus1
+		else
+		 return -1; // minus1
+	 }
+
+	 // Calcula média atual de uma categoria
+	 public static double CalcularMedia(int total_dano, int total_energy)
+	 {
+		if (total_energy == 0) return 0;
+		return (total_dano * 100.0) / total_energy;
+	 }
+
+	 // Registra cast (SS ou EVIS) na categoria atual
+	 public static void RegistrarCast(int energia, int dano)
+	 {
+		switch (categoria_atual)
+		{
+		 case 0: // regular
+			total_energy_regular += energia;
+			total_dano_regular += dano;
+			break;
+		 case 1: // plus1
+			total_energy_plus1 += energia;
+			total_dano_plus1 += dano;
+			break;
+		 case -1: // minus1
+			total_energy_minus1 += energia;
+			total_dano_minus1 += dano;
+			break;
+		}
+
+		contador_casts++;
+
+		// Atualiza displays sempre
+		AtualizarDisplays();
+
+		// Atualiza probabilidades a cada 10 casts
+		if (contador_casts % 10 == 0)
+		{
+		 AtualizarProbabilidades();
+		}
+	 }
+
+	 // Atualiza as probabilidades baseado nos resultados (a cada 10 casts)
+	 public static void AtualizarProbabilidades()
+	 {
+		// Só atualiza se todas as categorias têm dados
+		if (total_energy_regular == 0 || total_energy_plus1 == 0 || total_energy_minus1 == 0)
+		 return;
+
+		// Calcula médias atuais
+		double media_regular = CalcularMedia(total_dano_regular, total_energy_regular);
+		double media_plus1 = CalcularMedia(total_dano_plus1, total_energy_plus1);
+		double media_minus1 = CalcularMedia(total_dano_minus1, total_energy_minus1);
+
+		// Identifica maior e menor média
+		double maior_media = Math.Max(media_regular, Math.Max(media_plus1, media_minus1));
+		double menor_media = Math.Min(media_regular, Math.Min(media_plus1, media_minus1));
+
+		// Lê probabilidades atuais das textboxes
+		LerProbabilidades();
+
+		// Ajusta: +1% para maior, -1% para menor
+		if (media_regular == maior_media)
+		{
+		 prob_regular = Math.Min(prob_regular + 1, 80); // cap 80%
+		}
+		else if (media_regular == menor_media)
+		{
+		 prob_regular = Math.Max(prob_regular - 1, 10); // mínimo 10%
+		}
+
+		if (media_plus1 == maior_media)
+		{
+		 prob_plus1 = Math.Min(prob_plus1 + 1, 80);
+		}
+		else if (media_plus1 == menor_media)
+		{
+		 prob_plus1 = Math.Max(prob_plus1 - 1, 10);
+		}
+
+		if (media_minus1 == maior_media)
+		{
+		 prob_minus1 = Math.Min(prob_minus1 + 1, 80);
+		}
+		else if (media_minus1 == menor_media)
+		{
+		 prob_minus1 = Math.Max(prob_minus1 - 1, 10);
+		}
+
+		// Normaliza para somar 100%
+		double total = prob_regular + prob_plus1 + prob_minus1;
+		prob_regular = (prob_regular / total) * 100;
+		prob_plus1 = (prob_plus1 / total) * 100;
+		prob_minus1 = (prob_minus1 / total) * 100;
+
+		// Atualiza textboxes
+		AtualizarTextboxesProbabilidades();
+	 }
+
+	 // Atualiza as textboxes com as médias
+	 public static void AtualizarDisplays()
+	 {
+		if (form_instance != null)
+		{
+		 form_instance.tb_regular.Text = CalcularMedia(total_dano_regular, total_energy_regular).ToString("F1");
+		 form_instance.tb_plus1.Text = CalcularMedia(total_dano_plus1, total_energy_plus1).ToString("F1");
+		 form_instance.tb_minus1.Text = CalcularMedia(total_dano_minus1, total_energy_minus1).ToString("F1");
+		}
+	 }
+	}
+
+
+
+
 	// M10 - STRUCT LOC - REPRESENTA UMA POSIÇÃO (X, Y) NA ESCALA MULTIPLICADA POR 10.
 	public struct loc
 	{
@@ -484,6 +681,9 @@ namespace Discord
 
 
 	 InitializeComponent();
+	 ComboOptimizer.form_instance = this;
+
+	 
 	 // DEFINE MONITOR DA DIREITA PARA NASCER----
 	 // Para aparecer no monitor da direita (assumindo que seja o segundo monitor):
 	 Screen[] screens = Screen.AllScreens;
@@ -511,6 +711,7 @@ namespace Discord
 
 
 
+
 	 // ARRUMA INTERFACE---------------
 	}
 	// --------------------------------
@@ -533,6 +734,7 @@ namespace Discord
 		this.b = 0;
 	 }
 	}
+
 
 	// M21 - INICIALIZA VARIÁVEIS DINÂMICAS INICIAIS
 	private void inicializa()
@@ -920,7 +1122,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		{
 		 loga("Chegaram novos convidados na festa!");
 		 loga("Dando backpedal para evitar dar as costas.");
-		 if (!tar.casting) aperta(SKEY, 1100); // backpedal 1.2s
+		 if (!tar.casting && !cb_no_backpedal.Checked) aperta(SKEY, 1000); // backpedal 1.2s
 
 		}
 		loga("Mobs: " + mobs);
@@ -959,7 +1161,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 if (me.wrongway)
 		loga($"Wrong way!");
 
-	 if (me.outofrange)
+	 if (false && me.outofrange)
 		loga($"Out of range!");
 
 	 // ------------------------------------------
@@ -1065,15 +1267,13 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		tb_class.Text = className;
 		e.classe = class_id_raw; // Armazena o valor bruto da classe, se preferir
 
-		if ((e.classe == WARLOCK) || (e.classe==MAGE) || (e.classe == PRIEST)) // Classes que usam mana
-		 me.iscaster = true;
-		else 
-		 me.iscaster = false;
+		me.iscaster = (e.classe == WARLOCK || e.classe == MAGE || e.classe == PRIEST);
 
-		 //loga(e.classe.ToString());
 
-		 // B: NOVO: Progresso da barra de cast do Player
-		 e.castbar = (pixels[6].b * 100) / 255;
+		//loga(e.classe.ToString());
+
+		// B: NOVO: Progresso da barra de cast do Player
+		e.castbar = (pixels[6].b * 100) / 255;
 		e.casting = e.castbar > 0; // 'e.casting' agora é derivado de 'e.castbar'
 															 // e.spell = ((char)pixels[10].b).ToString(); // REMOVIDO: Leitura de nome da spell
 															 // e.spellid = 0; // REMOVIDO/Não necessário aqui
@@ -1462,6 +1662,7 @@ while (sw.ElapsedMilliseconds <= milliseconds) // Continua até atingir o tempo 
 
 
 
+
 // M05 - MÉTODO APERTA - ENVIA UM PRESSIONAMENTO DE TECLA PARA O WOW.
 public void aperta(byte key, int time = 40) // time 0 = pressiona, time 2 = solta
 {
@@ -1551,7 +1752,15 @@ void press(byte key)
 
 
 	public HashSet<loc> hash_planta = new HashSet<loc>(); // inicializa tabela de plantas encontradas
+
+	// =====================================================
+	// SISTEMA DE OTIMIZAÇÃO ADAPTATIVA PARA COMBO POINTS
+	// =====================================================
+
+	// Variáveis globais para o sistema de otimização
 	
+
+
 
 	//------------------------------
 	// NAO DEIXA AFOGAR 
@@ -1762,10 +1971,11 @@ void press(byte key)
 		// -----------------------------
 		if (me.combat)
 		{
-		 para(); // para de andar se em combate
+		 if (!me.iscaster) para(); // para de andar se em combate
 		 clog("Entrou em combate!");
 		 if (!on) return; // se desligado, sai do loop
 		 loga("Chamando combatloop()...");
+		 if (me.classe==ROGUE ) ComboOptimizer.categoria_atual = ComboOptimizer.EscolherCategoria(); // se for Rogue, escolhe categoria de combo points
 		 combatloop(); // entra na rotina de combate
 
 
@@ -2240,8 +2450,7 @@ void andaplanta(loc alvo)
 	{
 	 if (!cb_scan_elite.Checked) return; 
 
-	 aperta(TAB);       // seleciona o alvo mais próximo
-	 checkme();         // atualiza status do alvo
+
 
 	 string tipo = "";  // tipo textual do alvo
 
@@ -2253,17 +2462,23 @@ void andaplanta(loc alvo)
 		tipo = "raro";
 	 else if (tar.iselite && cb_elite_patrol.Checked)
 		tipo = "elite";
+	 else if (tar.level > me.level + 1 && cb_scan_highlevel.Checked)
+		tipo = "highlevel"; // alvo de nível alto
 
 	 if (me.hastarget && tipo != "")
 	 {
+		para(); // para de andar se estiver andando
 		int seg = atoi(tb_wait_patrol); // segundos a esperar
 		loga($"Detectado patrulha do tipo {tipo}. Esperando {seg} segundos.");
 		if (me.classe == ROGUE && !rog.stealth)
+		{
 		 aperta(STEALTH); // entra em stealth se for rogue e não estiver stealth
+		 clog("Stealth anti patrol ativado.");
+		}
 		espera(seg); // aguarda o tempo configurado
 	 }
-	 else
-		loga("Nenhum elite ou patrulha detectado.");
+	 //else
+	//	loga("Nenhum elite ou patrulha detectado.");
 	}
 
 
@@ -2282,7 +2497,7 @@ void andaplanta(loc alvo)
 	 // NAO DEIXA AFOGAR 
 	 //------------------------------
 	 nao_afoga(); // nada para cima se estiver afogando
-	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
+
 
 
 	 // --------------------------------------------
@@ -2300,7 +2515,7 @@ void andaplanta(loc alvo)
 		if (!me.hastarget || tar.type == 0) return false;
 
 		// Log de depuração
-		loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
+		//loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
 
 		if (cb_pacifist.Checked) return false;
 		if (tar.hp == 0 || tar.morreu) return false;
@@ -2329,6 +2544,7 @@ void andaplanta(loc alvo)
 	 int mood1 = tar.mood;
 	 bool t1_ok = bomtarget();
 	 int t1_id = tar.id;
+	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 
 	 // pega segundo target
 	 aperta(TAB, 400);
@@ -2336,7 +2552,7 @@ void andaplanta(loc alvo)
 	 int mood2 = tar.mood;
 	 bool t2_ok = bomtarget();
 	 int t2_id = tar.id;
-
+	 if (t2_id != t1_id) scan_elites(); // verifica se tem target novo
 
 	 if (t1_id == 0) // se nenhum target foi encontrado inicialmente
 		loga("Procurando targets.");
@@ -2427,14 +2643,15 @@ void andaplanta(loc alvo)
 			 {
 				aperta(AUTOATTACK); // ataca direto se nenhuma opção acima for válida
 				aperta(INTERACT); // anda até o mob11
+			 loga("Pala interact 112");
 			 }
 
 			 if (ticker++ % 8 == 0)
 				aperta(PULA); // pulo de simulação humana a cada 2s
 
 			 aperta(INTERACT); // anda até o mob11
-
-			 wait(200);   // aguarda meio segundo
+			//loga("Pala interact 113");
+			wait(200);   // aguarda meio segundo
 			 checkme();   // atualiza status
 			}
 			// ---------------------------------------------
@@ -2444,7 +2661,8 @@ void andaplanta(loc alvo)
 			{
 			 aperta(AUTOATTACK);    // ativa autoattack
 			 aperta(INTERACT);      // começa a andar até o mob
-			 checkme();             // atualiza status
+			 //loga("Pala interact 114");
+			checkme();             // atualiza status
 
 			 // ---------------------------------------------
 			 // PULL COM ARREMESSO (Throw)
@@ -2595,7 +2813,16 @@ void andaplanta(loc alvo)
 				if (tar.type == HUMANOID && cb_pickpocket.Checked && rog.stealth)
 				 aperta(PICKPOCKET);
 				else
-				 aperta(SS);
+				{ // sinister strike com log 
+				 int preen = me.mana;
+				 int prehp = tar.hp;
+				 aperta(SS);  // seu código existente
+				 checkme();
+				 int dano_ss = prehp - tar.hp;
+				 int managasta = preen - me.mana; // energia gasta pelo SS
+																					// Registra energia e dano do SS
+				 if (managasta > 15) ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
+				}
 			 }
 
 			 // Movimento contínuo
@@ -2999,6 +3226,7 @@ void andaplanta(loc alvo)
 	 checkme(); // atualiza status inicial
 	 para(); // para de andar se estiver andando
 	 int combat_ticker = 0; // contador de ciclos de combate
+	 int generic_ticker = 0; // contador de ciclos genérico
 	 bool ja_deu_backpedal = false; // se estiver apanhando muito anda um pouco para tras pra nao dar as costas 
 	 bool jalogou = false; // se já logou o decay
 	 if (!emCombate) // decay
@@ -3014,7 +3242,7 @@ void andaplanta(loc alvo)
 	  killed_skin.Clear();        // zera lista de mobs skinnable
     killed_noskin.Clear();      // zera lista de mobs normais
     loga("Tracking de mobs reiniciado para novo combate.");
-
+	 
 	 do // while me.combat
 	 {
 		
@@ -3072,7 +3300,7 @@ void andaplanta(loc alvo)
 
 		 if (pode_backpedalar)
 		 {
-			aperta(SKEY, 1000);    // anda pra trás 1 segundo mantendo o facing
+			if (!cb_no_backpedal.Checked) aperta(SKEY, 1000);    // anda pra trás 1 segundo mantendo o facing
 			if (!me.iscaster) aperta(AUTOATTACK);    // garante ataque ligado após reposicionamento
 			else
 			{
@@ -3621,28 +3849,19 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
-	
-		 getnear(); // se aproxima do target se estiver fora de alcance de melee
-		 if (tar.aggro > 0 && !me.melee)
-		 {
-			aperta(INTERACT); // aproxima se fora de alcance
-			loga("Apertando INTERACT para mob distante.");
-			loga("Interact code: 254"); // loga o código de interação
-		 }
-		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
-			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
-		 if (tar.aggro > 0 && me.wrongway)
-		 {
-			aperta(INTERACT); // gira para corrigir facing se necessário
-			loga("Corrigindo facing com INTERACT. devido wrong way.");
-			loga("Interact code: 255"); // loga o código de interação
-		 }
+		 checkme();
+		 loga($"Aggro: {tar.aggro} Ticker: {ticker}"); // loga o ticker atual
+		 if (tar.aggro > 0) aperta (INTERACT); // gira para corrigir facing se necessário
+		 //getnear();// Aproxima do target se necessário
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
-		 if (tar.mood != 1 && !me.autoattack) aperta(AUTOATTACK); // garante autoattack se mob hostil
-		 if (ticker % 6 == 0) aperta(PULA);                        // human-like pulo eventual
-
+		 if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
+		 {
+			aperta(AUTOATTACK);
+			loga("Autoattack iniciado. Cod 323");
+		 }
+		 if (ticker % 3 == 0) aperta(PULA);                        // human-like pulo eventual
 		 // -----------------------------------------------------------------------
 		 // EVASION: Se o HP estiver abaixo do limiar configurado,
 		 // -----------------------------------------------------------------------
@@ -3652,10 +3871,14 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			{
 			 if (!(me.mobs == 1 && tar.hp <= 25))                // se NÃO é apenas 1 mob com 25% ou menos de vida
 				aperta(EVASION);                               // então usa Evasion
+			 clog($"Combat: Evasion - HP: {me.hp}%"); // loga o uso de Evasion
 			}
 		 }
 		 if (me.hp < 35 && me.hp_potion_rdy)
+		 {
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 35% e poção pronta
+			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
+		 }
 
 
 		 // ------------------------------------------
@@ -3667,7 +3890,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			loga("Tentando interromper cast do mob.");
 			loga(rog.kick_up.ToString());
 			if (rog.kick_up)
-			 casta(KICK); // interrompe cast do mob se possível
+			 aperta(KICK,1000); // interrompe cast do mob se possível
 		 }
 
 		 // ------------------------------------------
@@ -3675,7 +3898,20 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ------------------------------------------
 		 if (rog.combo == 0)
 		 {
-			if (rog.ss_up) casta(SS);  // sem combo → gerar com SS
+			if (rog.ss_up)
+			{
+			 { // sinister strike com log 
+				int preen = me.mana;
+				int prehp = tar.hp;
+				aperta(SS,1000);  // seu código existente
+				checkme();
+				int dano_ss = prehp - tar.hp;
+				int managasta = preen - me.mana; // energia gasta pelo SS
+																				 // Registra energia e dano do SS
+				if (managasta > 0) ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
+				clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
+			 }
+			}
 		 }
 		 // ------------------------------------------
 		 // COMBATE COM COMBO POINTS
@@ -3697,16 +3933,43 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 				pontos = 4;
 			 else // mob acima do meu nível
 				pontos = 5;
+
+			 // APLICA A VARIAÇÃO BASEADA NA CATEGORIA ATUAL
+			 pontos += ComboOptimizer.categoria_atual;
+
+			 // Garante limites mínimos e máximos
+			 pontos = Math.Max(1, Math.Min(5, pontos));
+
 			 tb_evis_cp.Text = pontos.ToString(); // mostra no textbox
 			}
-			bool finalizavel = tar.hp <= 25;
+
+			bool finalizavel = tar.hp <= 30;
 			bool rotina = rog.combo >= atoi(tb_evis_cp);  // combo ideal
 			bool pode_evis = rog.evis_up && (finalizavel || rotina);
 
 			if (pode_evis)
 			{
-			 casta(EVIS);  // mob vai morrer ou combo cheio
+			 checkme();
+			 int prehp = tar.hp;
+			 int premana = me.mana;
+
+			 aperta(PULA); // pula antes de atacar (visual agressivo)
+			 aperta(EVIS,1000);  // mob vai morrer ou combo cheio
+			 checkme();
+
+
+			 int dano = prehp - tar.hp;
+			 int poscombo = rog.combo; // salva o combo após o ataque
+																 // Registra energia e dano do eviscerate
+			 if (me.mana < premana)
+			 {
+				ComboOptimizer.RegistrarCast(35, dano);
+
+				clog($"Eviscerate: CP: {rog.combo} HP: {tar.hp}% Damage: {dano} Category: {ComboOptimizer.categoria_atual}");
+			 }
+			 else clog("Eviscerate cast fail.");
 			}
+
 			// ------------------------------------------
 			// SLICE AND DICE
 			// ------------------------------------------		
@@ -3721,15 +3984,37 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 				&& cb_expose_armor.Checked)
 
 			{
-			 loga("Aplicando Expose Armor.");
-			 casta(EXPOSE_ARMOR);
+			 clog("Aplicando Expose Armor.");
+			 aperta(EXPOSE_ARMOR,1000);
+			 checkme();
 			}
+			
 			// ------------------------------------------
 			// SINISTER STRIKE (energy dump)
 			// ------------------------------------------						
 			else if (rog.ss_up && mana(45))
 			{
-			 casta(SS);  // fallback → gerar mais combo
+			 checkme();
+			 int prehp= tar.hp; // salva o HP antes do ataque
+			 int precombo = me.mana; // salva o combo antes do ataque
+			 if (rog.ss_up)
+			 {
+				prehp = tar.hp;
+				aperta(SS,1000);  // seu código existente
+				checkme();
+				int dano_ss = prehp - tar.hp;
+				int poscombo = me.mana; // salva o combo após o ataque
+																	// Registra energia e dano do SS
+				if (poscombo < precombo)
+				{
+
+				 ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
+				 clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
+				}
+				else clog("Sinister Strike cast fail.");
+			 }
+			 checkme();
+			 
 			}
 
 		 }
@@ -3880,20 +4165,46 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 	void getnear(bool melee = true)
 	{
 	 if (dungeon) return; // não aproxima em dungeons
-// MELEE
-//----------------------
-	 if (melee) // warrior, rogue, paladin
-	 {
-		if ((!me.melee || me.wrongway) && (me.hastarget && tar.aggro > 0))
-		 {
-		 aperta(INTERACT); // aproxima se fora de alcance
-		 loga("Apertando INTERACT via método getnear.");
-		 loga("Interact code: 256"); // loga o código de interação
-		}
 
+	 // -----------------------
+	 // Atualiza estado do player
+	 // -----------------------
+	 checkme();
+
+	 // -----------------------
+	 // Se não há target ou aggro, não faz nada
+	 // -----------------------
+	 if (!me.hastarget || tar.aggro == 0)
+	 {
+		loga("getnear: Sem target ou sem aggro, retornando.");
+		return;
 	 }
-	 //  CASTER
-	 //--------------------------
+
+	 // -----------------------
+	 // MELEE CLASSES
+	 // -----------------------
+	 if (me.classe == WARRIOR || me.classe == ROGUE || me.classe == PALADIN)
+	 {
+		if (me.wrongway)
+		{
+		 loga("getnear: Corrigindo wrongway (code 112).");
+		 aperta(INTERACT);
+		}
+		else if (!me.melee)
+		{
+		 loga("getnear: Corrigindo distância (fora de melee) (code 221).");
+		 aperta(INTERACT);
+		}
+		else
+		{
+		 loga("getnear: Target em melee e facing correto — forçando INTERACT (code 223).");
+		 aperta(INTERACT);
+		}
+	 }
+
+	 // -----------------------
+	 // CASTER CLASSES
+	 // -----------------------
 	 else // caster, warlock
 	 {
 		if (wlock.has_drain_soul)
@@ -3917,12 +4228,9 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			aperta(STOPCAST);
 			return;
 		 }
-		 
-		 
 		}
 	 }
 	}
-
 
 
 
@@ -7434,6 +7742,11 @@ else
 	private void cb_COW_CheckedChanged(object sender, EventArgs e)
 	{
 		cb_COA.Checked = !cb_COW.Checked; // inverte checkbox COA se COW for marcado
+	}
+
+	private void cb_scan_elite_CheckedChanged(object sender, EventArgs e)
+	{
+
 	}
 
 
