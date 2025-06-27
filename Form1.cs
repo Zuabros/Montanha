@@ -274,11 +274,12 @@ namespace Discord
 	public const int GCD = 1501;  // Global Cooldown (tempo de recarga global em milissegundos)
 	public const int FOOD = F12;     // ataque automático
 	public const int STOPCAST = IGUAL;       // Stop Cast (para de lançar feitiço)
+	public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) MELEE
 
-// --------------------------------
-// ALIASES PRIEST
-// --------------------------------
-  public const int SMITE = N1;        // Smite
+	// --------------------------------
+	// ALIASES PRIEST
+	// --------------------------------
+	public const int SMITE = N1;        // Smite
 	public const int PWS = N2;          // Power Word: Shield  
 	public const int SWP = N3;          // Shadow Word: Pain
 	public const int RENEW = N4;        // Renew
@@ -286,7 +287,7 @@ namespace Discord
 	public const int BIGHEAL = N6;      // Greater Heal
 	public const int FORTITUDE = N7;    // Power Word: Fortitude
 	public const int INNERFIRE = N0;    // Inner Fire
-	public const int FADE = F1;         // Fade
+	public const int DESPERATE = F1;         // desperate prayer 
 	public const int INNERFOCUS = F2;   // Inner Focus
 	public const int DISPEL = F3;       // Dispel Magic
 	public const int WAND = F4;         // Wand
@@ -371,16 +372,22 @@ namespace Discord
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO ROGUE
 	// --------------------------------------------
-	public const int SS = N1; // Sinister Strike
-	public const int EVIS = N2; // Eviscerate
-	public const int THROW = N3; // Throwing knife
-	public const int STEALTH = N4; // Stealth
-	public const int PICKPOCKET = N5; // Pickpocket
-	public const int EVASION = N6; // Evasion
-	public const int SAD = N7; // Evasion
-	public const int EXPOSE_ARMOR = N0; // EXPOSE ARMOR
-	public const int KICK = F1; // KICK
-
+	//public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) 
+	public const int SS = N1;               // Sinister Strike
+	public const int EVIS = N2;             // Eviscerate
+	public const int THROW = N3;            // Throwing Knife
+	public const int STEALTH = N4;          // Stealth
+	public const int PICKPOCKET = N5;       // Pickpocket
+	public const int EVASION = N6;          // Evasion
+	public const int SAD = N7;              // Slice and Dice
+	public const int EXPOSE_ARMOR = N0;     // Expose Armor
+	
+	public const int KICK = F1;             // Kick
+	public const int VANISH = F2;           // Vanish
+	public const int GOUGE = F3;            // Gouge
+	public const int RIPOSTE = F4;          // Riposte
+	public const int RUPTURE = F5;          // Rupture
+	// F6 reservado para Assist
 
 	// --------------------------------------------
 	// TIPOS DE CRIATURAS
@@ -561,8 +568,8 @@ namespace Discord
 		// Atualiza displays sempre
 		AtualizarDisplays();
 
-		// Atualiza probabilidades a cada 10 casts
-		if (contador_casts % 10 == 0)
+		// Atualiza probabilidades a cada 2 casts
+		if (contador_casts % 2 == 0)
 		{
 		 AtualizarProbabilidades();
 		}
@@ -580,42 +587,52 @@ namespace Discord
 		double media_plus1 = CalcularMedia(total_dano_plus1, total_energy_plus1);
 		double media_minus1 = CalcularMedia(total_dano_minus1, total_energy_minus1);
 
-		// Identifica maior e menor média
-		double maior_media = Math.Max(media_regular, Math.Max(media_plus1, media_minus1));
-		double menor_media = Math.Min(media_regular, Math.Min(media_plus1, media_minus1));
-
 		// Lê probabilidades atuais das textboxes
 		LerProbabilidades();
 
-		// Ajusta: +1% para maior, -1% para menor
-		if (media_regular == maior_media)
+		// Monta lista com probabilidades e categorias
+		var probs = new List<(double media, double prob, int cat)>
+	{
+		(media_regular, prob_regular, 0),
+		(media_plus1, prob_plus1, 1),
+		(media_minus1, prob_minus1, -1)
+	};
+
+		// Ordena do maior para o menor (por média de dano)
+		probs.Sort((a, b) => b.media.CompareTo(a.media));
+
+		// ================================
+		// AUMENTA A MELHOR (até 90)
+		// ================================
+		probs[0] = (probs[0].media, Math.Min(probs[0].prob + 1, 90), probs[0].cat);
+
+		// ================================
+		// DIMINUI A PIOR DISPONÍVEL (>10)
+		// ================================
+		// Se o último já for 10, tenta o segundo pior
+		if (probs[2].prob > 10)
 		{
-		 prob_regular = Math.Min(prob_regular + 1, 80); // cap 80%
+		 probs[2] = (probs[2].media, probs[2].prob - 1, probs[2].cat);
 		}
-		else if (media_regular == menor_media)
+		else if (probs[1].prob > 10)
 		{
-		 prob_regular = Math.Max(prob_regular - 1, 10); // mínimo 10%
+		 probs[1] = (probs[1].media, probs[1].prob - 1, probs[1].cat);
+		}
+		// Se todos em 10, não tira nada
+
+		// ================================
+		// APLICA DE VOLTA NAS VARIÁVEIS
+		// ================================
+		foreach (var p in probs)
+		{
+		 if (p.cat == 0) prob_regular = p.prob;
+		 else if (p.cat == 1) prob_plus1 = p.prob;
+		 else if (p.cat == -1) prob_minus1 = p.prob;
 		}
 
-		if (media_plus1 == maior_media)
-		{
-		 prob_plus1 = Math.Min(prob_plus1 + 1, 80);
-		}
-		else if (media_plus1 == menor_media)
-		{
-		 prob_plus1 = Math.Max(prob_plus1 - 1, 10);
-		}
-
-		if (media_minus1 == maior_media)
-		{
-		 prob_minus1 = Math.Min(prob_minus1 + 1, 80);
-		}
-		else if (media_minus1 == menor_media)
-		{
-		 prob_minus1 = Math.Max(prob_minus1 - 1, 10);
-		}
-
-		// Normaliza para somar 100%
+		// ================================
+		// NORMALIZA PARA SOMAR 100%
+		// ================================
 		double total = prob_regular + prob_plus1 + prob_minus1;
 		prob_regular = (prob_regular / total) * 100;
 		prob_plus1 = (prob_plus1 / total) * 100;
@@ -624,7 +641,6 @@ namespace Discord
 		// Atualiza textboxes
 		AtualizarTextboxesProbabilidades();
 	 }
-
 	 // Atualiza as textboxes com as médias
 	 public static void AtualizarDisplays()
 	 {
@@ -910,23 +926,31 @@ namespace Discord
 
 
 	 // ----------------------------------------
-	 // ROGUE 
+	 // ROGUE
 	 // ----------------------------------------
-	 // PIXEL 10 (Rogue) – Combo Points + Throw + Stealth
+	 // PIXEL 10 (Rogue) – Combo Points + CDs + Auras + Debuffs
 	 // ----------------------------------------
 	 // R: bits 0–2 = número de combo points (0 a 7)
-	 //     bit 0 = soma 1
-	 //     bit 1 = soma 2
-	 //     bit 2 = soma 4
-	 //     bit 3 = throw_up (faca pronta para uso e em range)
-	 //     bit 4 = stealth_up (é possível ativar Stealth agora)
-	 //     bit 5 (32) evasion up
-	 //     bit 6 (64) slice and dice up
-	 // 	  bit 7 (128) expose armor pronto + energy 
-	 // G: bit 0 = has_stealth (está com aura de Stealth ativa)
-	 //		 bit 1 = has_SAD (slice and dice ativo)
-	 //    bit 2 = kick_up (Kick pronto e em range)
-	 // B: 1 = target tem expose armor debuff 
+	 //     bit 0 = +1
+	 //     bit 1 = +2
+	 //     bit 2 = +4
+	 //     bit 3 = throw_up         (Throw ou Shoot pronto e em range)
+	 //     bit 4 = stealth_up       (pode ativar Stealth agora)
+	 //     bit 5 = evasion_up       (Evasion pronto)
+	 //     bit 6 = sad_up           (Slice and Dice pronto)
+	 //     bit 7 = expose_up        (Expose Armor pronto + energia ≥ 25)
+
+	 // G: bit 0 = has_stealth       (aura de Stealth ativa)
+	 //     bit 1 = has_sad          (aura Slice and Dice ativa)
+	 //     bit 2 = kick_up          (Kick pronto e em range)
+
+	 // B: bit 0 = has_expose        (target com debuff Expose Armor)
+	 //     bit 1 = vanish_up        (Vanish pronto)
+	 //     bit 2 = riposte_up       (Riposte pronto)
+	 //     bit 3 = gouge_up         (Gouge pronto)
+	 //     bit 4 = rupture_up       (Rupture pronto + energia suficiente)
+	 //     bit 5 = has_rupture      (target com debuff Rupture)
+
 
 	 // ----------------------------------------
 	 // PIXEL 11 a 15 (Rogue) – Vazios por enquanto
@@ -1466,8 +1490,8 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		priest.innerfire_up = (pixels[10].r & 8) != 0;
 		priest.innerfocus_up = (pixels[10].r & 16) != 0;
 		priest.swp_up = (pixels[10].r & 32) != 0;
-		priest.smite_up = (pixels[10].r & 64) != 0;      // NOVO
-		priest.heal_up = (pixels[10].r & 128) != 0;      // NOVO
+		priest.smite_up = (pixels[10].r & 64) != 0;        // NOVO
+		priest.heal_up = (pixels[10].r & 128) != 0;        // NOVO
 
 		// CANAL G: Buffs e debuffs
 		priest.has_pws = (pixels[10].g & 1) != 0;
@@ -1478,50 +1502,80 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		priest.has_swp = (pixels[10].g & 32) != 0;
 		priest.has_weakened_soul = (pixels[10].g & 64) != 0;
 		priest.has_divine_spirit = (pixels[10].g & 128) != 0;
+
+		// CANAL B: Cooldowns defensivos
+		priest.desperate_prayer_up = (pixels[10].b & 1) != 0;  // Desperate Prayer pronto
 	 }
 
-	 // ====================================================================
-	 // PIXELS ESPECÍFICOS DE ROGUE (10 a 15)
-	 // ====================================================================
+
 	 else if (e.classe == ROGUE) // se for Rogue, lê o Pixel 10
 	 {
-		// -------------------------------------
-		// PIXEL 10 – COMBO POINTS + CDs + STEALTH
-		// R: bits 0–2 = combo points (0 a 7)
-		// R: bit 3 (valor 8)   = throw_up
-		// R: bit 4 (valor 16)  = stealth_up (pode usar Stealth)
-		// R: bit 5 (valor 32)  = evasion_up (pode usar Evasion)
-		// R: bit 6 (valor 64)  = SAD_up (Slice and Dice pode ser usado)
-		// R: bit 7 (valor 128) = expose_armor_up (pode usar Expose Armor)
-		// G: bit 0 (valor 1)   = stealth (está em Stealth)
-		// G: bit 1 (valor 2)   = has_SAD (aura Slice and Dice ativa)
-		// G: bit 2 (valor 4)   = kick_up (Kick pronto e em range)
-		// B: bit 0 (valor 1)   = target com debuff Expose Armor
-		// -------------------------------------
+		// ----------------------------------------
+		// ROGUE
+		// ----------------------------------------
+		// PIXEL 10 (Rogue) – Combo Points + CDs + Auras + Debuffs
+		// ----------------------------------------
+		// R: bits 0–2 = número de combo points (0 a 7)
+		//     bit 0 = +1
+		//     bit 1 = +2
+		//     bit 2 = +4
+		//     bit 3 = throw_up         (Throw ou Shoot pronto e em range)
+		//     bit 4 = stealth_up       (pode ativar Stealth agora)
+		//     bit 5 = evasion_up       (Evasion pronto)
+		//     bit 6 = sad_up           (Slice and Dice pronto)
+		//     bit 7 = expose_up        (Expose Armor pronto + energia ≥ 25)
+
+		// G: bit 0 = has_stealth       (aura de Stealth ativa)
+		//     bit 1 = has_sad          (aura Slice and Dice ativa)
+		//     bit 2 = kick_up          (Kick pronto e em range)
+
+		// B: bit 0 = has_expose        (target com debuff Expose Armor)
+		//     bit 1 = vanish_up        (Vanish pronto)
+		//     bit 2 = riposte_up       (Riposte pronto)
+		//     bit 3 = gouge_up         (Gouge pronto)
+		//     bit 4 = rupture_up       (Rupture pronto + energia suficiente)
+		//     bit 5 = has_rupture      (target com debuff Rupture)
+
 		int r10 = pixels[10].r;
 		int g10 = pixels[10].g;
 		int b10 = pixels[10].b;
-		// RED
-		rog.combo = r10 & 7;           // bits 0–2 = combo points
-		rog.throw_up = (r10 & 8) != 0;    // bit 3 = throw_up
-		rog.stealth_up = (r10 & 16) != 0;   // bit 4 = stealth_up
-		rog.evasion_up = (r10 & 32) != 0;   // bit 5 = evasion_up
-		rog.SAD_up = (r10 & 64) != 0;   // bit 6 = Slice and Dice pode ser usado
-		rog.expose_armor_up = (r10 & 128) != 0;  // bit 7 = Expose Armor pode ser usado
-		// GREEN
-		rog.stealth = (g10 & 1) != 0;    // bit 0 = aura Stealth ativa
-		rog.has_SAD = (g10 & 2) != 0;    // bit 1 = aura Slice and Dice ativa
-		rog.kick_up = me.melee && (g10 & 4) != 0; // bit 2 = Kick pronto e em range
-		// BLUE
-		rog.has_expose_armor = (b10 & 1) != 0;    // bit 0 = target com debuff Expose Armor
 
-		tb_combos.Text = rog.combo.ToString(); // exibe combo points
+		// ----------------------------------------
+		// RED (R) – combo, CDs e habilidades
+		// ----------------------------------------
+		rog.combo = r10 & 7;                           // bits 0–2 = combo points
+		rog.throw_up = (r10 & 8) != 0;                 // bit 3 = throw_up
+		rog.stealth_up = (r10 & 16) != 0;              // bit 4 = stealth_up
+		rog.evasion_up = (r10 & 32) != 0;              // bit 5 = evasion_up
+		rog.SAD_up = (r10 & 64) != 0;                  // bit 6 = Slice and Dice pode ser usado
+		rog.expose_armor_up = (r10 & 128) != 0;        // bit 7 = Expose Armor pode ser usado
+
+		// ----------------------------------------
+		// GREEN (G) – auras e kick
+		// ----------------------------------------
+		rog.stealth = (g10 & 1) != 0;                  // bit 0 = aura Stealth ativa
+		rog.has_SAD = (g10 & 2) != 0;                  // bit 1 = aura Slice and Dice ativa
+		rog.kick_up = me.melee && (g10 & 4) != 0;      // bit 2 = Kick pronto e em range
+
+		// ----------------------------------------
+		// BLUE (B) – debuffs no target e CDs adicionais
+		// ----------------------------------------
+		rog.has_expose_armor = (b10 & 1) != 0;         // bit 0 = target com debuff Expose Armor
+		rog.vanish_up = (b10 & 2) != 0;                // bit 1 = Vanish pronto
+		rog.riposte_up = (b10 & 4) != 0;               // bit 2 = Riposte pronto
+		rog.gouge_up = (b10 & 8) != 0;                 // bit 3 = Gouge pronto
+		rog.rupture_up = (b10 & 16) != 0;              // bit 4 = Rupture pronto
+		rog.has_rupture = (b10 & 32) != 0;             // bit 5 = target com debuff Rupture
+
+		// ----------------------------------------
+		// Derivados por condição atual
+		// ----------------------------------------
+		tb_combos.Text = rog.combo.ToString();         // exibe combo points na tela
 
 		rog.evis_up = me.mana > 35 && rog.combo > 0 && me.melee; // Eviscerate disponível
 		rog.ss_up = me.mana > 45 && me.melee;                  // Sinister Strike disponível
-		
-	 }
 
+	 }
 
 	 // ====================================================================
 	 // PIXELS ESPECÍFICOS DE PALADINO (10 a 15)
@@ -1782,6 +1836,7 @@ void press(byte key)
 	 // --------------------------------
 	 // ROTINAS GERAIS PRÉ-MOVIMENTAÇÃO
 	 // --------------------------------
+	 reset_stuck_system(); // inicializa o sistema anti stuck 
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // tem algum seal ativo
 
 	 Func<int, bool> mana = (p) => me.mana > p;            // verifica se tem mana acima de p
@@ -1803,6 +1858,7 @@ void press(byte key)
 		loga("Inatividade de 5 minutos. Usando Hearthstone.");
 		HS();
 	 }
+
 	 //------------------------------
 	 // DECISÃO DE ANDAR OU PARAR
 	 //------------------------------
@@ -1848,6 +1904,12 @@ void press(byte key)
 
 		nao_afoga(); // se afogando, tenta nadar
 
+		// ================================
+		// CHAMADA DO SISTEMA ANTI-STUCK
+		// ================================
+		if (check_stuck() > 1) return; // ← SÓ ISSO!
+
+
 		// -----------------------------
 		// HERBALISTA - CATA PLANTA
 		// -----------------------------
@@ -1863,6 +1925,8 @@ void press(byte key)
 		 }
 
 		}
+
+
 
 		// -----------------------------
 		// TIMEOUT DE 40 SEGUNDOS
@@ -1930,7 +1994,7 @@ void press(byte key)
 			//if (cb_log.Checked) loga("enrosco lvl " + stuckcount);
 			if (stuckcount > 0)
 			{
-			 unstuck();       // executa pulo + giro se necessário
+			// unstuck();       // executa pulo + giro se necessário
 												//stuckcount = 0;  // reseta após tentativa
 			}
 		 }
@@ -2089,16 +2153,19 @@ void press(byte key)
 		 {
 			HS(); // usa a pedra de lar se não tiver espaço na bag
 		 }
-		 else if (me.armabroken) // ARMA QUEBRADA – MAIN OU OFFHAND
+		 if (me.armabroken) // ARMA QUEBRADA – MAIN OU OFFHAND
 		 {
 			loga("Arma quebrada detectada. Usando Hearthstone.");
 			HS(); // retorna pra reparar
 		 }
-
-		 //if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
+		 if (cb_hearth_ding.Checked && me.level >= atoi(tb_hearthlevel)) // HEARTHSTONE SE LEVEL UP
+			HS(); // usa a pedra de lar se atingiu o level definido
 		 
 
-		} // FIM DA ROTINA PÓS COMBATE (LOOT / SKIN)
+			//if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
+
+
+		 } // FIM DA ROTINA PÓS COMBATE (LOOT / SKIN)
 
 		//----------------------------------
 		// RECUPERAÇAO E PREPARO PRÉ COMBATE - PALADINO
@@ -2196,7 +2263,7 @@ void press(byte key)
 		 }
 		 
 		 // VIDA BAIXA 
-		 while (me.hp < atoi(tb_pull_hp_lock) )
+		 while (!me.combat && me.hp < atoi(tb_pull_hp_lock) )
 		 {
 			espera(1);
 			checkme();
@@ -2214,12 +2281,18 @@ void press(byte key)
 		 if (me.hp < atoi(tb_rogue_eat_at))
 		 {
 			para(); // para de andar se estiver andando
+
+			if (!rog.stealth && rog.stealth_up)
+			 aperta(STEALTH); // ativa stealth se não estiver stealth e stealth_up ativo
+
 			loga($"Esperando recuperação de HP: {me.hp}");
 			aperta(F12); // COMIDA 
-			while (me.hp < atoi(tb_rogue_eat_at) && !me.combat)
+			while (!me.combat && me.hp < atoi(tb_rogue_eat_at))
 			{
 			 espera(1);
 			}
+			if (rog.stealth)
+			 aperta(STEALTH); // desativa stealth se stealth ativo
 		 }
 		}
 		
@@ -2462,8 +2535,10 @@ void andaplanta(loc alvo)
 		tipo = "raro";
 	 else if (tar.iselite && cb_elite_patrol.Checked)
 		tipo = "elite";
-	 else if (tar.level > me.level + 1 && cb_scan_highlevel.Checked)
+	 else if (tar.level > me.level + 1 && cb_scan_highlevel.Checked && tar.mood != 1)
 		tipo = "highlevel"; // alvo de nível alto
+	 else if (tar.type == ELEMENTAL && elemental_patrol.Checked)
+		tipo = "elemental"; // alvo de nível alto
 
 	 if (me.hastarget && tipo != "")
 	 {
@@ -2763,7 +2838,7 @@ void andaplanta(loc alvo)
 			while (!me.combat && Environment.TickCount - t0 < 15000 && me.hastarget && tar.hp >= 100)
 			{
 			 checkme();
-
+			 if (check_stuck() >= 2) break;
 			 // Se entrou em range do THROW
 			 if (rog.throw_up)
 			 {
@@ -2784,6 +2859,7 @@ void andaplanta(loc alvo)
 					loga("Esperando reação do mob após ranged pull.");
 					while (Environment.TickCount - t0 < 15000)
 					{
+					 //if (check_stuck() >= 2) break;
 					 wait(300);
 					 checkme();
 					 if (me.melee || me.mobs > 0)
@@ -3574,9 +3650,6 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 
 		else if (me.classe == WARLOCK)
 		{
-		 // DESLIGA WAND PRA PERMITIR CAST 
-
-
 		 void castacurse()
 		 {
 			if (wlock.has_curse_agony || wlock.has_curse_weakness) return;
@@ -3585,7 +3658,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			{
 			 if (!tar.trivial) casta(CURSEWEAKNESS);
 			 else
-				if (tar.hp > 25) casta(CURSEAGONY);
+					 if (tar.hp > 25) casta(CURSEAGONY);
 			}
 			else if (cb_COW.Checked && wlock.curse_weakness_up && !wlock.has_curse_weakness)
 			{
@@ -3598,25 +3671,21 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			 casta(CURSEAGONY);
 			}
 		 }
-		 //wait_cast(); // espera fim de cast se tiver algum
-		 //-----------------------
-		 // ESCOLHE O CURSE AUTOMATICO
-		 //-----------------------
-     
-			//---------------------------
-			// FACE NO TARGET 
-			//------------------------------
-			getnear(false); // se aproxima do target se estiver fora de alcance de melee
+
+		 //---------------------------
+		 // FACE NO TARGET 
+		 //------------------------------
+		 getnear(false); // se aproxima do target se estiver fora de alcance de melee
 		 if (me.wrongway && (tar.aggro > 0 || tar.pet_aggro > 0))
 		 {
 			casta(INTERACT); // gira para corrigir facing se necessário
 			loga("Interact code: 254"); // loga o código de interação
 		 }
 
-			// ASSIST NO PET 
-			//------------------------------
-			if ((!me.hastarget && wlock.has_pet && me.combat)||(me.mobs > 1 && wlock.has_pet))
-			aperta(ASSIST); // assiste o pet se estiver em combate e sem target
+		 // ASSIST NO PET 
+		 //------------------------------
+		 if ((!me.hastarget && wlock.has_pet && me.combat) || (me.mobs > 1 && wlock.has_pet))
+			aperta(ASSIST); // assiste o pet se estiver em combate sem target ou +1 mob
 
 		 // MANTEM BUFFS (demon skin)
 		 //------------------------------
@@ -3630,33 +3699,17 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ================================
 		 // EMERGÊNCIA: HEALTHSTONE OU POÇÃO
 		 // ================================
-		 // ================================
-		 // CURA DO PET (HEALTH FUNNEL)
-		 // ================================
-		 if (me.hp > 60 && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 40)
-		 {
-			loga("Pet com HP baixo. Usando Health Funnel.");
-			casta(HEALTHFUNNEL);
-			do
-			{
-			 checkme();
-			 wait(1000); // espera 1 segundo para não spam
-			} while (me.casting && me.hp > 60)
-;
-			 // espera terminar o cast
-		 }
-
-			if (me.hp < 30)
+		 if (me.hp < 40)
 		 {
 			// Usa Healthstone primeiro, se tiver e pronta
 			if (wlock.healthstone_up)
 			{
 			 loga("HP crítico! Usando Healthstone.");
 			 aperta(HEALTHSTONE);
+			 checkme();
 			}
-
 			// Se não tem Healthstone ou cooldown, tenta potion
-			else if (me.hp_potion_rdy)
+			else if (me.hp < 30 && me.hp_potion_rdy)
 			{
 			 loga("HP crítico! Usando poção.");
 			 aperta(HEALTHPOTION);
@@ -3664,6 +3717,21 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			}
 		 }
 
+
+		 // ================================
+		 // CURA DO PET (HEALTH FUNNEL)
+		 // ================================
+		 if (me.hp > 60 && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 50)
+		 {
+			loga("Pet com HP baixo. Usando Health Funnel.");
+			casta(HEALTHFUNNEL);
+			do
+			{
+			 checkme();
+			 wait(1000); // espera 1 segundo para não spam
+			} while (me.casting && me.hp > 60);
+			// espera terminar o cast
+		 }
 
 		 // ================================
 		 // SACRIFÍCIO DO PET (EMERGÊNCIA)
@@ -3677,15 +3745,15 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ================================
 		 // APLICAR DEBUFFS (PRIORIDADE MÁXIMA)
 		 // ================================
-
 		 castacurse();
 		 checkme();
+
 		 // Corruption (se não tiver)
 		 if (tar.hp > 15 && cb_use_corruption.Checked && wlock.corruption_up && !wlock.has_corruption)
 		 {
 			loga("Aplicando Corruption.");
 			castslow(CORRUPTION);
-  		 viramob();
+			viramob();
 		 }
 		 else if (me.mana > 30 && tar.hp > 20 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
 		 {
@@ -3694,7 +3762,6 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			viramob();
 			casta(IMMOLATE);
 		 }
-
 		 // Siphon Life (se não tiver)
 		 else if (wlock.siphon_life_up && !wlock.has_siphon_life)
 		 {
@@ -3707,19 +3774,17 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ================================
 		 else if (!me.melee) // Debuffs castados, sem melee range
 		 {
-			//if (me.aggro > 0 || me.pet_aggro > 0) 
 			aperta(INTERACT); // garante que está virado para o target
 			loga("Interact por !me.melee. Cod. 001");
 		 }
 
-
-		 
 		 // Drain Soul (se target com HP baixo)
-		 else if ((tar.hp < 30 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul &&
-			(wlock.shards < 3 || cb_drain_soul.Checked))
+		 else if ((tar.hp < 40 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul &&
+				 (wlock.shards < 3 || cb_drain_soul.Checked))
 		 {
-			loga("Target baixo. Usando Drain Soul.");
+			if (me.wandon && tar.hp < 40) stopwand(); // Para a wand se HP < 35%
 
+			loga("Target baixo. Usando Drain Soul.");
 			casta(DRAINSOUL);
 		 }
 		 // Drain Life (se HP baixo e não channeling)
@@ -3727,18 +3792,16 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 {
 			loga("HP baixo. Usando Drain Life.");
 			castslow(DRAINLIFE);
-			
 		 }
+
 		 // ================================
 		 // FILLER: SHADOW BOLT (SPAM)
 		 // ================================
-
 		 // Shadow Bolt (filler principal)
 		 else if (cb_use_shadowbolt.Checked && me.mana > atoi(tb_shadowbolt_mana) && wlock.shadowbolt_up && me.mobs < 2)
 		 {
 			viramob(); // garante que está virado para o target
 			castslow(SHADOWBOLT);
-			
 		 }
 
 		 // ================================
@@ -3746,17 +3809,23 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ================================
 		 else
 		 {
-			// Se não pode fazer nada, garante autoattack
-			if (me.wand_up && !me.wandon && cb_wand.Checked && !me.casting)
+			// Usa wand se Drain Soul não estiver disponível E wand estiver disponível
+			if (!wlock.drain_soul_up && me.wand_up && !me.wandon && cb_wand.Checked && !me.casting)
 			{
 			 viramob();
 			 aperta(WAND, 500); // garante que está com wand ligada 
 			 aperta(STOPCAST); // uma wandada só 
-												 //wait(600); // espera 1 segundo para não spam
 			}
-
-
 		 }
+		 if (tar.hp < 35 && me.wandon &&
+		((tar.hp < 30 || !cb_wand.Checked) && !wlock.has_drain_soul &&
+		 (wlock.shards < 3 || cb_drain_soul.Checked)))
+		 {
+			loga("Parando wand: Target baixo e Drain Soul será necessário.");
+			stopwand();
+			checkme(); // atualiza status após parar wand
+		 }
+
 		}//------------FIM ROTINA DE COMBATE WARLOCK ------------------
 		 // ----------------------------------
 		 // ROTINA DE COMBATE PRIEST
@@ -3776,249 +3845,286 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			clog("Combat: Power Word: Shield");
 		 }
 		 // HEAL CRÍTICO
+		 if (me.mobs > 1 && me.hp < 50 && priest.desperate_prayer_up)
+		 {
+			stopwand();
+			casta(DESPERATE); // DESPERATE PRAYER 
+		 }
+		 else if (me.mobs > 2 && me.hp < 50 && !priest.desperate_prayer_up && me.hp_potion_rdy)
+		 {
+			aperta(HEALTHPOTION); // POÇÃO DE VIDA
+		 }
+		 // HEAL (COMBAT HEAL)
 		 else if (me.hp < atoi(tb_priest_combatheal) && priest.heal_up)
-		 {
-			stopwand();
-			casta(HEAL);
-			clog($"Combat: Heal crítico - HP: {me.hp}%");
-		 }
-		 else if (
-			 (
-				 (me.hp < atoi(tb_renewat) && !priest.has_renew && priest.renew_up)
-				 ||
-				 (!priest.has_pws && priest.has_weakened_soul && !priest.has_renew && priest.renew_up)
-			 )
-			 &&
-			 me.hp <= 85
-			 &&
-			 !(me.mobs == 1 && me.hp > 60 && tar.hp < 25)
-			 )
-		 {
-			stopwand();
-			casta(RENEW);
-			clog($"Combat: Renew - HP: {me.hp}%");
-		 }
+			{
+			 stopwand();
+			 casta(HEAL);
+			 clog($"Combat: Heal crítico - HP: {me.hp}%");
+			}
+			// RENEW
+			else if (
+				(
+					(me.hp < atoi(tb_renewat) && !priest.has_renew && priest.renew_up)
+					||
+					(!priest.has_pws && priest.has_weakened_soul && !priest.has_renew && priest.renew_up)
+				)
+				&&
+				me.hp <= 85
+				&&
+				!(me.mobs == 1 && me.hp > 60 && tar.hp < 25)
+				)
+			{
+			 stopwand();
+			 casta(RENEW);
+			 clog($"Combat: Renew - HP: {me.hp}%");
+			}
 
 
-		 // FORTITUDE
-		 else if (!priest.has_fortitude && priest.fortitude_up)
-		 {
-			stopwand();
-			casta(FORTITUDE);
-			clog("Combat: Fortitude");
-		 }
-		 // SHADOW WORD: PAIN
-		 else if (!priest.has_swp && tar.hp > 15 && priest.swp_up)
-		 {
-			viramob();
-			stopwand();
-			casta(SWP);
-			clog("Combat: Shadow Word: Pain");
-		 }
-		 // SMITE
-		 else if (cb_usesmite.Checked && me.mana > atoi(tb_smitemana) &&
-				 tar.hp > 20 && (!cb_shielded_smite.Checked || priest.has_pws) && priest.smite_up)
-		 {
-			viramob();
-			stopwand();
-			casta(SMITE);
-			clog("Combat: Smite");
-		 }
-		 // ================================
-		 // FALLBACK: AUTOATTACK ou WAND
-		 // ================================
-		 else
-		 {
-			// Se não pode fazer nada, garante wand ativa
-			if (!me.wandon && cb_use_priest_wand.Checked && !me.casting)
+			// FORTITUDE
+			else if (!priest.has_fortitude && priest.fortitude_up)
+			{
+			 stopwand();
+			 casta(FORTITUDE);
+			 clog("Combat: Fortitude");
+			}
+			// SHADOW WORD: PAIN
+			else if (!priest.has_swp && tar.hp > 15 && priest.swp_up)
 			{
 			 viramob();
-			 aperta(WAND, 500); // garante que está com wand ligada
+			 stopwand();
+			 casta(SWP);
+			 clog("Combat: Shadow Word: Pain");
 			}
-		 }
-		}
-		//------------FIM ROTINA DE COMBATE PRIEST ------------------
-
-
-
-		// -----------------------------------------------
-		// ROTINA DE COMBATE ROGUE (RCR)
-		// -----------------------------------------------
-		else if (me.classe == ROGUE)
-		{
-		 // ------------------------------------------
-		 // MOVIMENTO: aproximação se fora de melee
-		 // ------------------------------------------
-		 checkme();
-		 loga($"Aggro: {tar.aggro} Ticker: {ticker}"); // loga o ticker atual
-		 if (tar.aggro > 0) aperta (INTERACT); // gira para corrigir facing se necessário
-		 //getnear();// Aproxima do target se necessário
-		 // ------------------------------------------
-		 // AUTOATTACK + PULOS
-		 // ------------------------------------------
-		 if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
-		 {
-			aperta(AUTOATTACK);
-			loga("Autoattack iniciado. Cod 323");
-		 }
-		 if (ticker % 3 == 0) aperta(PULA);                        // human-like pulo eventual
-		 // -----------------------------------------------------------------------
-		 // EVASION: Se o HP estiver abaixo do limiar configurado,
-		 // -----------------------------------------------------------------------
-		 if (me.hp < atoi(tb_evasion))
-		 {
-			if (rog.evasion_up)                                      // se Evasion está pronta
+			// SMITE
+			else if (cb_usesmite.Checked && me.mana > atoi(tb_smitemana) &&
+					tar.hp > 20 && (!cb_shielded_smite.Checked || priest.has_pws) && priest.smite_up)
 			{
-			 if (!(me.mobs == 1 && tar.hp <= 25))                // se NÃO é apenas 1 mob com 25% ou menos de vida
-				aperta(EVASION);                               // então usa Evasion
-			 clog($"Combat: Evasion - HP: {me.hp}%"); // loga o uso de Evasion
+			 viramob();
+			 stopwand();
+			 casta(SMITE);
+			 clog("Combat: Smite");
 			}
-		 }
-		 if (me.hp < 35 && me.hp_potion_rdy)
-		 {
-			aperta(HEALTHPOTION); // usa poção de cura se HP < 35% e poção pronta
-			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
-		 }
-
-
-		 // ------------------------------------------
-		 // KICK
-		 // ------------------------------------------
-
-		 if (tar.castbar > 0)
-		 {
-			loga("Tentando interromper cast do mob.");
-			loga(rog.kick_up.ToString());
-			if (rog.kick_up)
-			 aperta(KICK,1000); // interrompe cast do mob se possível
-		 }
-
-		 // ------------------------------------------
-		 // COMBATE SEM COMBO POINTS
-		 // ------------------------------------------
-		 if (rog.combo == 0)
-		 {
-			if (rog.ss_up)
+			// ================================
+			// FALLBACK: AUTOATTACK ou WAND
+			// ================================
+			else
 			{
-			 { // sinister strike com log 
-				int preen = me.mana;
-				int prehp = tar.hp;
-				aperta(SS,1000);  // seu código existente
-				checkme();
-				int dano_ss = prehp - tar.hp;
-				int managasta = preen - me.mana; // energia gasta pelo SS
-																				 // Registra energia e dano do SS
-				if (managasta > 0) ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
-				clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
-			 }
-			}
-		 }
-		 // ------------------------------------------
-		 // COMBATE COM COMBO POINTS
-		 // ------------------------------------------
-		 else
-		 {
-			// ------------------------------------------
-			// EVISCERATE
-			// ------------------------------------------			
-			if (cb_evis_auto.Checked)
-			{
-			 int dif = tar.level - me.level; // diferença entre os níveis
-			 int pontos;
-			 if (dif <= -2) // mob 2 ou mais níveis abaixo
-				pontos = 2;
-			 else if (dif == -1) // mob 1 nível abaixo
-				pontos = 3;
-			 else if (dif == 0) // mesmo nível
-				pontos = 4;
-			 else // mob acima do meu nível
-				pontos = 5;
-
-			 // APLICA A VARIAÇÃO BASEADA NA CATEGORIA ATUAL
-			 pontos += ComboOptimizer.categoria_atual;
-
-			 // Garante limites mínimos e máximos
-			 pontos = Math.Max(1, Math.Min(5, pontos));
-
-			 tb_evis_cp.Text = pontos.ToString(); // mostra no textbox
-			}
-
-			bool finalizavel = tar.hp <= 30;
-			bool rotina = rog.combo >= atoi(tb_evis_cp);  // combo ideal
-			bool pode_evis = rog.evis_up && (finalizavel || rotina);
-
-			if (pode_evis)
-			{
-			 checkme();
-			 int prehp = tar.hp;
-			 int premana = me.mana;
-
-			 aperta(PULA); // pula antes de atacar (visual agressivo)
-			 aperta(EVIS,1000);  // mob vai morrer ou combo cheio
-			 checkme();
-
-
-			 int dano = prehp - tar.hp;
-			 int poscombo = rog.combo; // salva o combo após o ataque
-																 // Registra energia e dano do eviscerate
-			 if (me.mana < premana)
+			 // Se não pode fazer nada, garante wand ativa
+			 if (!me.wandon && cb_use_priest_wand.Checked && !me.casting)
 			 {
-				ComboOptimizer.RegistrarCast(35, dano);
-
-				clog($"Eviscerate: CP: {rog.combo} HP: {tar.hp}% Damage: {dano} Category: {ComboOptimizer.categoria_atual}");
+				viramob();
+				aperta(WAND, 500); // garante que está com wand ligada
 			 }
-			 else clog("Eviscerate cast fail.");
+			}
+		 }
+		 //------------FIM ROTINA DE COMBATE PRIEST ------------------
+
+
+
+		 // -----------------------------------------------
+		 // ROTINA DE COMBATE ROGUE (RCR)
+		 // -----------------------------------------------
+		 else if (me.classe == ROGUE)
+		 {
+			// ------------------------------------------
+			// MOVIMENTO: aproximação se fora de melee
+			// ------------------------------------------
+			checkme();
+			loga($"Aggro: {tar.aggro} Ticker: {ticker}"); // loga o ticker atual
+			if (tar.aggro > 0) aperta(INTERACT); // gira para corrigir facing se necessário
+																					 //getnear();// Aproxima do target se necessário
+																					 // ------------------------------------------
+																					 // AUTOATTACK + PULOS
+																					 // ------------------------------------------
+			if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
+			{
+			 aperta(AUTOATTACK);
+			 loga("Autoattack iniciado. Cod 323");
+			}
+			if (ticker % 3 == 0) aperta(PULA);                        // human-like pulo eventual
+																																// -----------------------------------------------------------------------
+																																// VANISH 
+																																// -----------------------------------------------------------------------
+			if (me.mobs == 3)// TESTE 
+			{
+			 if (rog.vanish_up)
+			 {
+				casta(STOPATTACK); // para auto attack 
+				checkme();
+				if (rog.gouge_up) casta(GOUGE); // tenta Gouge para imobilizar mobs se disponível
+				checkme();
+				aperta(CLEARTGT); // limpa o target
+				aperta(VANISH);
+				aperta(CLEARTGT); // limpa o target
+				anda(-6); // recua 6 metros  para evitar aggro imediato
+				espera(2);
+				checkme();
+				if (rog.stealth_up) casta(STEALTH);
+				while (me.hp < 100 && !me.combat)
+				{
+				 espera(1); // espera 10 segundos para evitar spam de Vanish
+
+				}
+			 }
+
+			}
+			// -----------------------------------------------------------------------
+			// EVASION: Se o HP estiver abaixo do limiar configurado,
+			// -----------------------------------------------------------------------
+			if (me.hp < atoi(tb_evasion))
+			{
+			 if (rog.evasion_up)                                      // se Evasion está pronta
+			 {
+				if (!(me.mobs == 1 && tar.hp <= 25))                // se NÃO é apenas 1 mob com 25% ou menos de vida
+				 aperta(EVASION);                               // então usa Evasion
+				clog($"Combat: Evasion - HP: {me.hp}%"); // loga o uso de Evasion
+			 }
+			}
+			if (me.hp < 35 && me.hp_potion_rdy)
+			{
+			 aperta(HEALTHPOTION); // usa poção de cura se HP < 35% e poção pronta
+			 clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
+			}
+
+
+			// ------------------------------------------
+			// KICK
+			// ------------------------------------------
+
+			if (tar.castbar > 0)
+			{
+			 loga("Tentando interromper cast do mob.");
+			 loga(rog.kick_up.ToString());
+			 if (rog.kick_up)
+				aperta(KICK, 1000); // interrompe cast do mob se possível
 			}
 
 			// ------------------------------------------
-			// SLICE AND DICE
-			// ------------------------------------------		
-			else if (!(me.mobs == 1 && tar.trivial) && !rog.has_SAD && rog.SAD_up && cb_SAD.Checked)
-			{
-			 casta(SAD);   // não tem Slice and Dice → aplica se indicado
-			}
+			// COMBATE SEM COMBO POINTS
 			// ------------------------------------------
-			// EXPOSE ARMOR
-			// ------------------------------------------					
-			else if (!tar.trivial && (rog.has_SAD || !cb_SAD.Checked) && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70
-				&& cb_expose_armor.Checked)
-
+			if (rog.combo == 0)
 			{
-			 clog("Aplicando Expose Armor.");
-			 aperta(EXPOSE_ARMOR,1000);
-			 checkme();
-			}
-			
-			// ------------------------------------------
-			// SINISTER STRIKE (energy dump)
-			// ------------------------------------------						
-			else if (rog.ss_up && mana(45))
-			{
-			 checkme();
-			 int prehp= tar.hp; // salva o HP antes do ataque
-			 int precombo = me.mana; // salva o combo antes do ataque
 			 if (rog.ss_up)
 			 {
-				prehp = tar.hp;
-				aperta(SS,1000);  // seu código existente
-				checkme();
-				int dano_ss = prehp - tar.hp;
-				int poscombo = me.mana; // salva o combo após o ataque
-																	// Registra energia e dano do SS
-				if (poscombo < precombo)
-				{
-
-				 ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
+				{ // sinister strike com log 
+				 int preen = me.mana;
+				 int prehp = tar.hp;
+				 aperta(SS, 1000);  // seu código existente
+				 checkme();
+				 int dano_ss = prehp - tar.hp;
+				 int managasta = preen - me.mana; // energia gasta pelo SS
+																					// Registra energia e dano do SS
+				 if (managasta > 0) ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
 				 clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
 				}
-				else clog("Sinister Strike cast fail.");
 			 }
-			 checkme();
-			 
 			}
+			// ------------------------------------------
+			// COMBATE COM COMBO POINTS
+			// ------------------------------------------
+			else
+			{
+			 // ------------------------------------------
+			 // EVISCERATE
+			 // ------------------------------------------			
+			 if (cb_evis_auto.Checked)
+			 {
+				int dif = tar.level - me.level; // diferença entre os níveis
+				int pontos;
+				if (dif <= -2) // mob 2 ou mais níveis abaixo
+				 pontos = 2;
+				else if (dif == -1) // mob 1 nível abaixo
+				 pontos = 3;
+				else if (dif == 0) // mesmo nível
+				 pontos = 4;
+				else // mob acima do meu nível
+				 pontos = 5;
 
+				// APLICA A VARIAÇÃO BASEADA NA CATEGORIA ATUAL
+				pontos += ComboOptimizer.categoria_atual;
+
+				// Garante limites mínimos e máximos
+				pontos = Math.Max(1, Math.Min(5, pontos));
+
+				tb_evis_cp.Text = pontos.ToString(); // mostra no textbox
+			 }
+
+			 bool finalizavel = tar.hp <= 30;
+			 bool rotina = rog.combo >= atoi(tb_evis_cp);  // combo ideal
+			 bool pode_evis = rog.evis_up && (finalizavel || rotina);
+
+			 if (pode_evis)
+			 {
+				checkme();
+				int prehp = tar.hp;
+				int premana = me.mana;
+
+				aperta(PULA); // pula antes de atacar (visual agressivo)
+				aperta(EVIS, 1000);  // mob vai morrer ou combo cheio
+				checkme();
+
+
+				int dano = prehp - tar.hp;
+				int poscombo = rog.combo; // salva o combo após o ataque
+																	// Registra energia e dano do eviscerate
+				if (me.mana < premana)
+				{
+				 ComboOptimizer.RegistrarCast(35, dano);
+
+				 clog($"Eviscerate: CP: {rog.combo} HP: {tar.hp}% Damage: {dano} Category: {ComboOptimizer.categoria_atual}");
+				}
+				else clog("Eviscerate cast fail.");
+			 }
+
+			 // ------------------------------------------
+			 // SLICE AND DICE
+			 // ------------------------------------------		
+			 else if (!(me.mobs == 1 && tar.trivial) && !rog.has_SAD && rog.SAD_up && cb_SAD.Checked)
+			 {
+				casta(SAD);   // não tem Slice and Dice → aplica se indicado
+			 }
+			 // ------------------------------------------
+			 // EXPOSE ARMOR
+			 // ------------------------------------------					
+			 else if (!tar.trivial && (rog.has_SAD || !cb_SAD.Checked) && rog.expose_armor_up && !rog.has_expose_armor && tar.hp > 70
+				 && cb_expose_armor.Checked)
+
+			 {
+				clog("Aplicando Expose Armor.");
+				aperta(EXPOSE_ARMOR, 1000);
+				checkme();
+			 }
+
+			 // ------------------------------------------
+			 // SINISTER STRIKE (energy dump)
+			 // ------------------------------------------						
+			 else if (rog.ss_up && mana(45))
+			 {
+				checkme();
+				int prehp = tar.hp; // salva o HP antes do ataque
+				int precombo = me.mana; // salva o combo antes do ataque
+				if (rog.ss_up)
+				{
+				 prehp = tar.hp;
+				 aperta(SS, 1000);  // seu código existente
+				 checkme();
+				 int dano_ss = prehp - tar.hp;
+				 int poscombo = me.mana; // salva o combo após o ataque
+																 // Registra energia e dano do SS
+				 if (poscombo < precombo)
+				 {
+
+					ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
+					clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
+				 }
+				 else clog("Sinister Strike cast fail.");
+				}
+				checkme();
+
+			 }
+
+			}
 		 }
-		}
 		checkme();
 
 	 } while (me.combat); // FIM DO LOOP DE COMBATE 
@@ -4278,7 +4384,6 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 	// --------------------------------
 	void espera(int seconds=1)
 	{
-	 solta(ANDA); // para de andar antes de esperar
 	 for (int i = seconds; i > 0; i--)
 	 {
 		if (me.combat)
@@ -5010,39 +5115,211 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 		solta(AKEY); // solta a tecla  
 	 }
 	}
+
+
+	// ====================================================================
+	// SISTEMA ANTI-STUCK UNIVERSAL
+	// Para ser usado em qualquer loop que pode travar
+	// ====================================================================
+	// --------------------------------
+	// VARIÁVEIS GLOBAIS (adicionar na sua classe)
+	// --------------------------------
+	private static loc lastpos = new loc(0, 0);
+	private static int stuck_timer = 0;
+	private static int stuck_count = 0;
+	private static bool stuck_system_active = false;
+
+	// --------------------------------
+	// MÉTODO PRINCIPAL: check_stuck()
+	// --------------------------------
+	private int check_stuck()
+	{
+	 int now = Environment.TickCount;
+
+	 // ================================
+	 // AUTO-RESET: se mudou muito de posição
+	 // ================================
+	 if (stuck_timer > 0 && dist(me.pos, lastpos) > 50)
+	 {
+		loga("✅ Auto-reset: movimento significativo detectado");
+		stuck_timer = 0;
+		stuck_count = 0;
+		stuck_system_active = false;
+	 }
+
+	 // ================================
+	 // AUTO-RESET: se passou muito tempo sem verificar
+	 // ================================
+	 if (stuck_timer > 0 && (now - stuck_timer) > 60000)
+	 {
+		loga("🔄 Auto-reset: timeout de contexto (1min)");
+		stuck_timer = 0;
+		stuck_count = 0;
+		stuck_system_active = false;
+	 }
+
+	 // ================================
+	 // INICIALIZAÇÃO
+	 // ================================
+	 if (stuck_timer == 0)
+	 {
+		stuck_timer = now;
+		lastpos = me.pos;
+		stuck_count = 0;
+		stuck_system_active = false;
+		return 0;
+	 }
+
+	 // ================================
+	 // VERIFICA A CADA 6 SEGUNDOS
+	 // ================================
+	 int elapsed = now - stuck_timer;
+	 if (elapsed >= 6000)
+	 {
+		int distance_moved = dist(me.pos, lastpos);
+		loga($"🚶 Movimento em 6s: {distance_moved} unidades");
+
+		if (distance_moved < 10)
+		{
+		 stuck_count++;
+		 loga($"🚫 TRAVAMENTO DETECTADO! Tentativa #{stuck_count}");
+
+		 switch (stuck_count)
+		 {
+			case 1: // 6s: pulo simples
+			 loga("🦘 Anti-stuck #1: Tentando pulo simples");
+			 aperta(PULA, 100);
+			 wait(500);
+			 break;
+
+			case 2: // 12s: rotina direita + clear target
+			 loga("➡️ Anti-stuck #2: Rotina pela DIREITA + Clear Target");
+			 execute_unstuck_routine(false);
+			 aperta(CLEARTGT);
+			 wait(1000);
+			 return 2; // BREAK do loop
+
+			case 3: // 18s: rotina esquerda
+			 loga("⬅️ Anti-stuck #3: Rotina pela ESQUERDA");
+			 execute_unstuck_routine(true);
+			 wait(1000);
+			 return 2; // BREAK do loop
+
+			default: // 24s+: reset completo
+			 loga("🔄 Anti-stuck #4+: RESET completo");
+			 aperta(CLEARTGT);
+			 para();
+			 stuck_count = 0;
+			 wait(2000);
+			 return 3; // RETURN do método
+		 }
+
+		 return 1; // executou anti-stuck, pode continuar
+		}
+		else
+		{
+		 // Movimento normal detectado
+		 if (stuck_count > 0)
+		 {
+			loga($"✅ Movimento normal retomado. Reset do sistema anti-stuck.");
+			stuck_count = 0;
+			stuck_system_active = false;
+		 }
+		}
+
+		// Atualiza para próxima verificação
+		stuck_timer = now;
+		lastpos = me.pos;
+
+		return 0;
+	 }
+
+	 return 0; // ainda não passou 6s
+	}
+	// --------------------------------
+	// ROTINA ANTI-STUCK SIMPLIFICADA
+	// --------------------------------
+	private void execute_unstuck_routine(bool esquerda)
+	{
+	 loga($"🔧 Executando rotina anti-stuck: {(esquerda ? "ESQUERDA" : "DIREITA")}");
+
+	 para();
+	 wait(200);
+
+	 // ETAPA 1: Anda para trás por 5 segundos
+	 loga("⬇️ Andando para trás por 5 segundos");
+	 anda(-4.0f);  // marcha à ré por 5 segundos
+	 
+
+	 // ETAPA 2: Roda 70 graus para direita ou esquerda
+	 if (esquerda)
+	 {
+		loga("↺ Girando 70° para ESQUERDA");
+		roda(-70);  // gira 70° para esquerda
+	 }
+	 else
+	 {
+		loga("↻ Girando 70° para DIREITA");
+		roda(70);   // gira 70° para direita
+	 }
+	 
+
+	 // ETAPA 3: Anda para frente por 5 segundos
+	 loga("⬆️ Andando para frente por 5 segundos");
+	 anda(4.0f);   // marcha à frente por 5 segundos
+
+	 espera(1);
+	 loga("✅ Rotina anti-stuck concluída");
+	}
+
+	// --------------------------------
+	// RESET MANUAL (OPCIONAL)
+	// --------------------------------
+	private void reset_stuck_system()
+	{
+	 stuck_timer = 0;
+	 stuck_count = 0;
+	 stuck_system_active = false;
+	 lastpos = new loc(0, 0);
+	 loga("🔄 Sistema anti-stuck resetado manualmente");
+	}
+
+
+
 	// --------------------------------  
 	// MÉTODO ANDA  
-	// faz o bot andar pra frente por X metros, ou apenas iniciar/parar marcha  
+	// faz o bot andar pra frente por X segundos, ou apenas iniciar/parar marcha  
 	// --------------------------------  
-	void anda(float m)
+	void anda(float s)
 	{
-	 if (m == 0) // se for 0, apenas começa a andar  
+	 if (s == 0) // se for 0, apenas começa a andar  
 	 {
 		press(WKEY); // segura pra frente  
 		loga("iniciou marcha contínua");
 		return;
 	 }
-
-	 if (m == -1) // se for -1, para de andar  
+	 if (s == -1) // se for -1, para de andar  
 	 {
 		solta(WKEY); // solta a tecla  
 		loga("parou de andar");
 		return;
 	 }
-
-	 if (m < 0) // não aceita valores negativos exceto -1  
+	 if (s < -1) // valores menores que -1: marcha à ré
 	 {
-		loga("erro: valor inválido para anda()");
+		float segundos_re = Math.Abs(s); // converte para positivo
+		int tempos = (int)(segundos_re * 1000); // converte segundos para milissegundos
+		press(SKEY); // começa a andar para trás
+		wait(tempos); // espera o tempo em segundos (convertido para ms)
+		solta(SKEY); // para de andar para trás
+		loga("andou para trás por " + segundos_re + " segundos");
 		return;
 	 }
 
-	 float vel = 6f; // metros por segundo  
-	 int tempo = (int)(m / vel * 1000); // tempo em ms = distância / velocidade  
-
+	 int tempo = (int)(s * 1000); // converte segundos para milissegundos
 	 press(WKEY); // começa a andar  
-	 wait(tempo); // espera o tempo necessário  
+	 wait(tempo); // espera o tempo em segundos (convertido para ms)
 	 solta(WKEY); // para de andar  
-	 loga("andou " + m + " metros");
+	 loga("andou por " + s + " segundos");
 	}
 
 	private void bt_debug2_Click(object sender, EventArgs e)
@@ -7745,6 +8022,11 @@ else
 	}
 
 	private void cb_scan_elite_CheckedChanged(object sender, EventArgs e)
+	{
+
+	}
+
+	private void tb_timer_hours_TextChanged(object sender, EventArgs e)
 	{
 
 	}

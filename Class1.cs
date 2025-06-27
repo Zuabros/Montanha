@@ -139,6 +139,7 @@ namespace Discord
 	public bool smite_up;     // NOVO
 	public bool heal_up;      // NOVO
 	public bool divine_spirit_up;
+	public bool desperate_prayer_up; // NOVO
  }
  // --------------------------------
  // CLASSE warriortable
@@ -173,20 +174,26 @@ namespace Discord
  // --------------------------------
  public class roguetable
  {
-	public int energy;         // energia atual do rogue (0-100)
-	public int combo;          // combo points acumulados (0-5)
-	public bool ss_up;          // pode castar SS (range, cooldown, etc.)
-	public bool evis_up;          // pode castar SS (range, cooldown, etc.)
-	public bool throw_up;          // pode tacar throw knife (range, cooldown, etc.)
-	public bool stealth_up;          // pode ficar stealth? 
-	public bool stealth;          // esta stealth?
-	public bool evasion_up;     // cooldown restante de evasion
-	public bool SAD_up;            // pode usar slice and dice? (range, cooldown, etc.)
-	public bool has_SAD;            // tem SAD
-	public bool expose_armor_up; // pode usar expose armor? (range, cooldown, energy, etc.)
-	public bool has_expose_armor; // target tem expose armor debuff?
-	public bool kick_up;          // pode usar kick? (range, cooldown, etc.)
+	public int energy;                  // energia atual do rogue (0–100)
+	public int combo;                   // combo points acumulados (0–5, até 7 com talentos)
+	public bool ss_up;                  // pode castar SS (range, cooldown, etc.)
+	public bool evis_up;                // pode castar Eviscerate (range, cooldown, etc.)
+	public bool throw_up;              // pode tacar faca (range, cooldown, etc.)
+	public bool stealth_up;            // pode ativar Stealth agora
+	public bool stealth;               // está em Stealth?
+	public bool evasion_up;            // Evasion pronto para uso
+	public bool SAD_up;                // Slice and Dice pronto
+	public bool has_SAD;               // aura Slice and Dice ativa
+	public bool expose_armor_up;       // Expose Armor pronto (energia, range, cooldown)
+	public bool has_expose_armor;      // target com debuff Expose Armor
+	public bool kick_up;               // Kick pronto
+	public bool vanish_up;             // Vanish pronto
+	public bool riposte_up;            // Riposte pronto
+	public bool gouge_up;              // Gouge pronto
+	public bool rupture_up;            // Rupture pronto
+	public bool has_rupture;           // target com debuff Rupture
  }
+
 
  // --------------------------------
  // CLASSE PALATABLE - STATUS DO PALADINO

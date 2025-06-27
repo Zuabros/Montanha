@@ -308,6 +308,9 @@ namespace Discord
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.cb_no_backpedal = new System.Windows.Forms.CheckBox();
 	 this.cb_scan_highlevel = new System.Windows.Forms.CheckBox();
+	 this.elemental_patrol = new System.Windows.Forms.CheckBox();
+	 this.cb_hearth_ding = new System.Windows.Forms.CheckBox();
+	 this.tb_hearthlevel = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -828,6 +831,9 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.tb_hearthlevel);
+	 this.tabPage2.Controls.Add(this.cb_hearth_ding);
+	 this.tabPage2.Controls.Add(this.elemental_patrol);
 	 this.tabPage2.Controls.Add(this.cb_scan_highlevel);
 	 this.tabPage2.Controls.Add(this.cb_no_backpedal);
 	 this.tabPage2.Controls.Add(this.cb_nomech);
@@ -2950,29 +2956,30 @@ namespace Discord
 	 // 
 	 // tb_timer_hours
 	 // 
-	 this.tb_timer_hours.Location = new System.Drawing.Point(16, 406);
+	 this.tb_timer_hours.Location = new System.Drawing.Point(52, 381);
 	 this.tb_timer_hours.Name = "tb_timer_hours";
-	 this.tb_timer_hours.Size = new System.Drawing.Size(28, 20);
+	 this.tb_timer_hours.Size = new System.Drawing.Size(25, 20);
 	 this.tb_timer_hours.TabIndex = 55;
 	 this.tb_timer_hours.Text = "6";
+	 this.tb_timer_hours.TextChanged += new System.EventHandler(this.tb_timer_hours_TextChanged);
 	 // 
 	 // cb_HS_timer
 	 // 
 	 this.cb_HS_timer.AutoSize = true;
 	 this.cb_HS_timer.Checked = true;
 	 this.cb_HS_timer.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_HS_timer.Location = new System.Drawing.Point(21, 383);
+	 this.cb_HS_timer.Location = new System.Drawing.Point(3, 383);
 	 this.cb_HS_timer.Name = "cb_HS_timer";
-	 this.cb_HS_timer.Size = new System.Drawing.Size(87, 17);
+	 this.cb_HS_timer.Size = new System.Drawing.Size(52, 17);
 	 this.cb_HS_timer.TabIndex = 51;
-	 this.cb_HS_timer.Text = "Timer (hours)";
+	 this.cb_HS_timer.Text = "Timer";
 	 this.cb_HS_timer.UseVisualStyleBackColor = true;
 	 // 
 	 // hs_min_left
 	 // 
-	 this.hs_min_left.Location = new System.Drawing.Point(58, 406);
+	 this.hs_min_left.Location = new System.Drawing.Point(8, 406);
 	 this.hs_min_left.Name = "hs_min_left";
-	 this.hs_min_left.Size = new System.Drawing.Size(29, 20);
+	 this.hs_min_left.Size = new System.Drawing.Size(93, 20);
 	 this.hs_min_left.TabIndex = 50;
 	 this.hs_min_left.Text = "300";
 	 // 
@@ -3214,6 +3221,36 @@ namespace Discord
 	 this.cb_scan_highlevel.TabIndex = 75;
 	 this.cb_scan_highlevel.Text = "High Level";
 	 this.cb_scan_highlevel.UseVisualStyleBackColor = true;
+	 // 
+	 // elemental_patrol
+	 // 
+	 this.elemental_patrol.AutoSize = true;
+	 this.elemental_patrol.Checked = true;
+	 this.elemental_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.elemental_patrol.Location = new System.Drawing.Point(6, 368);
+	 this.elemental_patrol.Name = "elemental_patrol";
+	 this.elemental_patrol.Size = new System.Drawing.Size(72, 17);
+	 this.elemental_patrol.TabIndex = 76;
+	 this.elemental_patrol.Text = "Elemental";
+	 this.elemental_patrol.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_hearth_ding
+	 // 
+	 this.cb_hearth_ding.AutoSize = true;
+	 this.cb_hearth_ding.Location = new System.Drawing.Point(9, 465);
+	 this.cb_hearth_ding.Name = "cb_hearth_ding";
+	 this.cb_hearth_ding.Size = new System.Drawing.Size(83, 17);
+	 this.cb_hearth_ding.TabIndex = 77;
+	 this.cb_hearth_ding.Text = "Hearth at lvl";
+	 this.cb_hearth_ding.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_hearthlevel
+	 // 
+	 this.tb_hearthlevel.Location = new System.Drawing.Point(90, 463);
+	 this.tb_hearthlevel.Name = "tb_hearthlevel";
+	 this.tb_hearthlevel.Size = new System.Drawing.Size(31, 20);
+	 this.tb_hearthlevel.TabIndex = 78;
+	 this.tb_hearthlevel.Text = "8";
 	 // 
 	 // Form1
 	 // 
@@ -3570,6 +3607,9 @@ namespace Discord
 	private TextBox tb_prob_minus1;
 	private CheckBox cb_no_backpedal;
 	private CheckBox cb_scan_highlevel;
+	private CheckBox elemental_patrol;
+	private TextBox tb_hearthlevel;
+	private CheckBox cb_hearth_ding;
  }
 }
 
