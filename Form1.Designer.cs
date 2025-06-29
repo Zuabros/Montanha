@@ -79,6 +79,11 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.tb_hearthlevel = new System.Windows.Forms.TextBox();
+	 this.cb_hearth_ding = new System.Windows.Forms.CheckBox();
+	 this.elemental_patrol = new System.Windows.Forms.CheckBox();
+	 this.cb_scan_highlevel = new System.Windows.Forms.CheckBox();
+	 this.cb_no_backpedal = new System.Windows.Forms.CheckBox();
 	 this.cb_nomech = new System.Windows.Forms.CheckBox();
 	 this.cb_noelite = new System.Windows.Forms.CheckBox();
 	 this.cb_scan_elite = new System.Windows.Forms.CheckBox();
@@ -99,19 +104,12 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
-	 this.label49 = new System.Windows.Forms.Label();
 	 this.label50 = new System.Windows.Forms.Label();
-	 this.label48 = new System.Windows.Forms.Label();
 	 this.tb_energy_ss = new System.Windows.Forms.TextBox();
-	 this.label47 = new System.Windows.Forms.Label();
 	 this.cb_randomize_rogue = new System.Windows.Forms.CheckBox();
-	 this.label22 = new System.Windows.Forms.Label();
 	 this.cb_expose_armor = new System.Windows.Forms.CheckBox();
-	 this.tb_minus1 = new System.Windows.Forms.TextBox();
 	 this.cb_SAD = new System.Windows.Forms.CheckBox();
-	 this.tb_regular = new System.Windows.Forms.TextBox();
 	 this.cb_evis_auto = new System.Windows.Forms.CheckBox();
-	 this.tb_plus1 = new System.Windows.Forms.TextBox();
 	 this.cb_range_pull = new System.Windows.Forms.CheckBox();
 	 this.tb_evasion = new System.Windows.Forms.TextBox();
 	 this.label26 = new System.Windows.Forms.Label();
@@ -279,6 +277,13 @@ namespace Discord
 	 this.label41 = new System.Windows.Forms.Label();
 	 this.label40 = new System.Windows.Forms.Label();
 	 this.label39 = new System.Windows.Forms.Label();
+	 this.label49 = new System.Windows.Forms.Label();
+	 this.label48 = new System.Windows.Forms.Label();
+	 this.label47 = new System.Windows.Forms.Label();
+	 this.label22 = new System.Windows.Forms.Label();
+	 this.tb_minus1 = new System.Windows.Forms.TextBox();
+	 this.tb_regular = new System.Windows.Forms.TextBox();
+	 this.tb_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_timer_hours = new System.Windows.Forms.TextBox();
 	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
 	 this.hs_min_left = new System.Windows.Forms.TextBox();
@@ -306,11 +311,11 @@ namespace Discord
 	 this.tb_prob_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
-	 this.cb_no_backpedal = new System.Windows.Forms.CheckBox();
-	 this.cb_scan_highlevel = new System.Windows.Forms.CheckBox();
-	 this.elemental_patrol = new System.Windows.Forms.CheckBox();
-	 this.cb_hearth_ding = new System.Windows.Forms.CheckBox();
-	 this.tb_hearthlevel = new System.Windows.Forms.TextBox();
+	 this.cb_nomurloc = new System.Windows.Forms.CheckBox();
+	 this.label51 = new System.Windows.Forms.Label();
+	 this.tb_damage_hit = new System.Windows.Forms.TextBox();
+	 this.label52 = new System.Windows.Forms.Label();
+	 this.tb_damage_ss = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -831,6 +836,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_nomurloc);
 	 this.tabPage2.Controls.Add(this.tb_hearthlevel);
 	 this.tabPage2.Controls.Add(this.cb_hearth_ding);
 	 this.tabPage2.Controls.Add(this.elemental_patrol);
@@ -863,6 +869,58 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // tb_hearthlevel
+	 // 
+	 this.tb_hearthlevel.Location = new System.Drawing.Point(90, 463);
+	 this.tb_hearthlevel.Name = "tb_hearthlevel";
+	 this.tb_hearthlevel.Size = new System.Drawing.Size(31, 20);
+	 this.tb_hearthlevel.TabIndex = 78;
+	 this.tb_hearthlevel.Text = "8";
+	 // 
+	 // cb_hearth_ding
+	 // 
+	 this.cb_hearth_ding.AutoSize = true;
+	 this.cb_hearth_ding.Location = new System.Drawing.Point(9, 465);
+	 this.cb_hearth_ding.Name = "cb_hearth_ding";
+	 this.cb_hearth_ding.Size = new System.Drawing.Size(83, 17);
+	 this.cb_hearth_ding.TabIndex = 77;
+	 this.cb_hearth_ding.Text = "Hearth at lvl";
+	 this.cb_hearth_ding.UseVisualStyleBackColor = true;
+	 // 
+	 // elemental_patrol
+	 // 
+	 this.elemental_patrol.AutoSize = true;
+	 this.elemental_patrol.Checked = true;
+	 this.elemental_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.elemental_patrol.Location = new System.Drawing.Point(6, 368);
+	 this.elemental_patrol.Name = "elemental_patrol";
+	 this.elemental_patrol.Size = new System.Drawing.Size(72, 17);
+	 this.elemental_patrol.TabIndex = 76;
+	 this.elemental_patrol.Text = "Elemental";
+	 this.elemental_patrol.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_scan_highlevel
+	 // 
+	 this.cb_scan_highlevel.AutoSize = true;
+	 this.cb_scan_highlevel.Checked = true;
+	 this.cb_scan_highlevel.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_scan_highlevel.Location = new System.Drawing.Point(6, 344);
+	 this.cb_scan_highlevel.Name = "cb_scan_highlevel";
+	 this.cb_scan_highlevel.Size = new System.Drawing.Size(77, 17);
+	 this.cb_scan_highlevel.TabIndex = 75;
+	 this.cb_scan_highlevel.Text = "High Level";
+	 this.cb_scan_highlevel.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_no_backpedal
+	 // 
+	 this.cb_no_backpedal.AutoSize = true;
+	 this.cb_no_backpedal.Location = new System.Drawing.Point(9, 441);
+	 this.cb_no_backpedal.Name = "cb_no_backpedal";
+	 this.cb_no_backpedal.Size = new System.Drawing.Size(156, 17);
+	 this.cb_no_backpedal.TabIndex = 74;
+	 this.cb_no_backpedal.Text = "Caster Farm (no backpedal)";
+	 this.cb_no_backpedal.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_nomech
 	 // 
@@ -1070,6 +1128,10 @@ namespace Discord
 	 // tabPage4
 	 // 
 	 this.tabPage4.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage4.Controls.Add(this.label52);
+	 this.tabPage4.Controls.Add(this.tb_damage_ss);
+	 this.tabPage4.Controls.Add(this.label51);
+	 this.tabPage4.Controls.Add(this.tb_damage_hit);
 	 this.tabPage4.Controls.Add(this.label50);
 	 this.tabPage4.Controls.Add(this.tb_energy_ss);
 	 this.tabPage4.Controls.Add(this.cb_randomize_rogue);
@@ -1094,15 +1156,6 @@ namespace Discord
 	 this.tabPage4.TabIndex = 1;
 	 this.tabPage4.Text = "Rogue";
 	 // 
-	 // label49
-	 // 
-	 this.label49.AutoSize = true;
-	 this.label49.Location = new System.Drawing.Point(34, 485);
-	 this.label49.Name = "label49";
-	 this.label49.Size = new System.Drawing.Size(13, 13);
-	 this.label49.TabIndex = 74;
-	 this.label49.Text = "0";
-	 // 
 	 // label50
 	 // 
 	 this.label50.AutoSize = true;
@@ -1112,31 +1165,13 @@ namespace Discord
 	 this.label50.TabIndex = 16;
 	 this.label50.Text = "Energy SS: ";
 	 // 
-	 // label48
-	 // 
-	 this.label48.AutoSize = true;
-	 this.label48.Location = new System.Drawing.Point(39, 510);
-	 this.label48.Name = "label48";
-	 this.label48.Size = new System.Drawing.Size(16, 13);
-	 this.label48.TabIndex = 73;
-	 this.label48.Text = "-1";
-	 // 
 	 // tb_energy_ss
 	 // 
-	 this.tb_energy_ss.Location = new System.Drawing.Point(62, 224);
+	 this.tb_energy_ss.Location = new System.Drawing.Point(76, 227);
 	 this.tb_energy_ss.Name = "tb_energy_ss";
 	 this.tb_energy_ss.Size = new System.Drawing.Size(40, 20);
 	 this.tb_energy_ss.TabIndex = 15;
 	 this.tb_energy_ss.Text = "45";
-	 // 
-	 // label47
-	 // 
-	 this.label47.AutoSize = true;
-	 this.label47.Location = new System.Drawing.Point(36, 462);
-	 this.label47.Name = "label47";
-	 this.label47.Size = new System.Drawing.Size(19, 13);
-	 this.label47.TabIndex = 72;
-	 this.label47.Text = "+1";
 	 // 
 	 // cb_randomize_rogue
 	 // 
@@ -1150,15 +1185,6 @@ namespace Discord
 	 this.cb_randomize_rogue.Text = "Random pull type";
 	 this.cb_randomize_rogue.UseVisualStyleBackColor = true;
 	 // 
-	 // label22
-	 // 
-	 this.label22.AutoSize = true;
-	 this.label22.Location = new System.Drawing.Point(6, 436);
-	 this.label22.Name = "label22";
-	 this.label22.Size = new System.Drawing.Size(111, 13);
-	 this.label22.TabIndex = 71;
-	 this.label22.Text = "Damage / 100 energy";
-	 // 
 	 // cb_expose_armor
 	 // 
 	 this.cb_expose_armor.AutoSize = true;
@@ -1170,13 +1196,6 @@ namespace Discord
 	 this.cb_expose_armor.TabIndex = 13;
 	 this.cb_expose_armor.Text = "Expose armor";
 	 this.cb_expose_armor.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_minus1
-	 // 
-	 this.tb_minus1.Location = new System.Drawing.Point(62, 507);
-	 this.tb_minus1.Name = "tb_minus1";
-	 this.tb_minus1.Size = new System.Drawing.Size(42, 20);
-	 this.tb_minus1.TabIndex = 70;
 	 // 
 	 // cb_SAD
 	 // 
@@ -1190,13 +1209,6 @@ namespace Discord
 	 this.cb_SAD.Text = "Slice and Dice";
 	 this.cb_SAD.UseVisualStyleBackColor = true;
 	 // 
-	 // tb_regular
-	 // 
-	 this.tb_regular.Location = new System.Drawing.Point(62, 485);
-	 this.tb_regular.Name = "tb_regular";
-	 this.tb_regular.Size = new System.Drawing.Size(42, 20);
-	 this.tb_regular.TabIndex = 69;
-	 // 
 	 // cb_evis_auto
 	 // 
 	 this.cb_evis_auto.AutoSize = true;
@@ -1208,13 +1220,6 @@ namespace Discord
 	 this.cb_evis_auto.TabIndex = 11;
 	 this.cb_evis_auto.Text = "Auto";
 	 this.cb_evis_auto.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_plus1
-	 // 
-	 this.tb_plus1.Location = new System.Drawing.Point(62, 459);
-	 this.tb_plus1.Name = "tb_plus1";
-	 this.tb_plus1.Size = new System.Drawing.Size(42, 20);
-	 this.tb_plus1.TabIndex = 68;
 	 // 
 	 // cb_range_pull
 	 // 
@@ -2954,6 +2959,63 @@ namespace Discord
 	 this.label39.TabIndex = 0;
 	 this.label39.Text = "Priest";
 	 // 
+	 // label49
+	 // 
+	 this.label49.AutoSize = true;
+	 this.label49.Location = new System.Drawing.Point(34, 485);
+	 this.label49.Name = "label49";
+	 this.label49.Size = new System.Drawing.Size(13, 13);
+	 this.label49.TabIndex = 74;
+	 this.label49.Text = "0";
+	 // 
+	 // label48
+	 // 
+	 this.label48.AutoSize = true;
+	 this.label48.Location = new System.Drawing.Point(39, 510);
+	 this.label48.Name = "label48";
+	 this.label48.Size = new System.Drawing.Size(16, 13);
+	 this.label48.TabIndex = 73;
+	 this.label48.Text = "-1";
+	 // 
+	 // label47
+	 // 
+	 this.label47.AutoSize = true;
+	 this.label47.Location = new System.Drawing.Point(36, 462);
+	 this.label47.Name = "label47";
+	 this.label47.Size = new System.Drawing.Size(19, 13);
+	 this.label47.TabIndex = 72;
+	 this.label47.Text = "+1";
+	 // 
+	 // label22
+	 // 
+	 this.label22.AutoSize = true;
+	 this.label22.Location = new System.Drawing.Point(6, 436);
+	 this.label22.Name = "label22";
+	 this.label22.Size = new System.Drawing.Size(111, 13);
+	 this.label22.TabIndex = 71;
+	 this.label22.Text = "Damage / 100 energy";
+	 // 
+	 // tb_minus1
+	 // 
+	 this.tb_minus1.Location = new System.Drawing.Point(62, 507);
+	 this.tb_minus1.Name = "tb_minus1";
+	 this.tb_minus1.Size = new System.Drawing.Size(42, 20);
+	 this.tb_minus1.TabIndex = 70;
+	 // 
+	 // tb_regular
+	 // 
+	 this.tb_regular.Location = new System.Drawing.Point(62, 485);
+	 this.tb_regular.Name = "tb_regular";
+	 this.tb_regular.Size = new System.Drawing.Size(42, 20);
+	 this.tb_regular.TabIndex = 69;
+	 // 
+	 // tb_plus1
+	 // 
+	 this.tb_plus1.Location = new System.Drawing.Point(62, 459);
+	 this.tb_plus1.Name = "tb_plus1";
+	 this.tb_plus1.Size = new System.Drawing.Size(42, 20);
+	 this.tb_plus1.TabIndex = 68;
+	 // 
 	 // tb_timer_hours
 	 // 
 	 this.tb_timer_hours.Location = new System.Drawing.Point(52, 381);
@@ -3200,57 +3262,52 @@ namespace Discord
 	 this.tb_prob_minus1.TabIndex = 77;
 	 this.tb_prob_minus1.Text = "33";
 	 // 
-	 // cb_no_backpedal
+	 // cb_nomurloc
 	 // 
-	 this.cb_no_backpedal.AutoSize = true;
-	 this.cb_no_backpedal.Location = new System.Drawing.Point(9, 441);
-	 this.cb_no_backpedal.Name = "cb_no_backpedal";
-	 this.cb_no_backpedal.Size = new System.Drawing.Size(156, 17);
-	 this.cb_no_backpedal.TabIndex = 74;
-	 this.cb_no_backpedal.Text = "Caster Farm (no backpedal)";
-	 this.cb_no_backpedal.UseVisualStyleBackColor = true;
+	 this.cb_nomurloc.AutoSize = true;
+	 this.cb_nomurloc.Checked = true;
+	 this.cb_nomurloc.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_nomurloc.Location = new System.Drawing.Point(532, 42);
+	 this.cb_nomurloc.Name = "cb_nomurloc";
+	 this.cb_nomurloc.Size = new System.Drawing.Size(75, 17);
+	 this.cb_nomurloc.TabIndex = 79;
+	 this.cb_nomurloc.Text = "No Murloc";
+	 this.cb_nomurloc.UseVisualStyleBackColor = true;
+	 this.cb_nomurloc.CheckedChanged += new System.EventHandler(this.cb_nomurloc_CheckedChanged);
 	 // 
-	 // cb_scan_highlevel
+	 // label51
 	 // 
-	 this.cb_scan_highlevel.AutoSize = true;
-	 this.cb_scan_highlevel.Checked = true;
-	 this.cb_scan_highlevel.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_scan_highlevel.Location = new System.Drawing.Point(6, 344);
-	 this.cb_scan_highlevel.Name = "cb_scan_highlevel";
-	 this.cb_scan_highlevel.Size = new System.Drawing.Size(77, 17);
-	 this.cb_scan_highlevel.TabIndex = 75;
-	 this.cb_scan_highlevel.Text = "High Level";
-	 this.cb_scan_highlevel.UseVisualStyleBackColor = true;
+	 this.label51.AutoSize = true;
+	 this.label51.Location = new System.Drawing.Point(3, 256);
+	 this.label51.Name = "label51";
+	 this.label51.Size = new System.Drawing.Size(64, 13);
+	 this.label51.TabIndex = 18;
+	 this.label51.Text = "Damage hit:";
 	 // 
-	 // elemental_patrol
+	 // tb_damage_hit
 	 // 
-	 this.elemental_patrol.AutoSize = true;
-	 this.elemental_patrol.Checked = true;
-	 this.elemental_patrol.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.elemental_patrol.Location = new System.Drawing.Point(6, 368);
-	 this.elemental_patrol.Name = "elemental_patrol";
-	 this.elemental_patrol.Size = new System.Drawing.Size(72, 17);
-	 this.elemental_patrol.TabIndex = 76;
-	 this.elemental_patrol.Text = "Elemental";
-	 this.elemental_patrol.UseVisualStyleBackColor = true;
+	 this.tb_damage_hit.Location = new System.Drawing.Point(76, 250);
+	 this.tb_damage_hit.Name = "tb_damage_hit";
+	 this.tb_damage_hit.Size = new System.Drawing.Size(40, 20);
+	 this.tb_damage_hit.TabIndex = 17;
+	 this.tb_damage_hit.Text = "10";
 	 // 
-	 // cb_hearth_ding
+	 // label52
 	 // 
-	 this.cb_hearth_ding.AutoSize = true;
-	 this.cb_hearth_ding.Location = new System.Drawing.Point(9, 465);
-	 this.cb_hearth_ding.Name = "cb_hearth_ding";
-	 this.cb_hearth_ding.Size = new System.Drawing.Size(83, 17);
-	 this.cb_hearth_ding.TabIndex = 77;
-	 this.cb_hearth_ding.Text = "Hearth at lvl";
-	 this.cb_hearth_ding.UseVisualStyleBackColor = true;
+	 this.label52.AutoSize = true;
+	 this.label52.Location = new System.Drawing.Point(3, 281);
+	 this.label52.Name = "label52";
+	 this.label52.Size = new System.Drawing.Size(67, 13);
+	 this.label52.TabIndex = 20;
+	 this.label52.Text = "Damage SS:";
 	 // 
-	 // tb_hearthlevel
+	 // tb_damage_ss
 	 // 
-	 this.tb_hearthlevel.Location = new System.Drawing.Point(90, 463);
-	 this.tb_hearthlevel.Name = "tb_hearthlevel";
-	 this.tb_hearthlevel.Size = new System.Drawing.Size(31, 20);
-	 this.tb_hearthlevel.TabIndex = 78;
-	 this.tb_hearthlevel.Text = "8";
+	 this.tb_damage_ss.Location = new System.Drawing.Point(76, 276);
+	 this.tb_damage_ss.Name = "tb_damage_ss";
+	 this.tb_damage_ss.Size = new System.Drawing.Size(40, 20);
+	 this.tb_damage_ss.TabIndex = 19;
+	 this.tb_damage_ss.Text = "14";
 	 // 
 	 // Form1
 	 // 
@@ -3610,6 +3667,11 @@ namespace Discord
 	private CheckBox elemental_patrol;
 	private TextBox tb_hearthlevel;
 	private CheckBox cb_hearth_ding;
+	private CheckBox cb_nomurloc;
+	private Label label52;
+	private TextBox tb_damage_ss;
+	private Label label51;
+	private TextBox tb_damage_hit;
  }
 }
 

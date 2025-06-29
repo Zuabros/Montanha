@@ -262,7 +262,7 @@ namespace Discord
 	// --------------------------------------------
 	// SKILLS GERAIS (comuns ou reutilizáveis)
 	// --------------------------------------------
-	public const int AUTOATTACK = UM;     // ataque automático
+	public const int AUTOATTACK = INTERACT;     // ataque automático
 	public const int CLEARTGT = SETE;   // limpa o target
 	public const int TARGETLAST = OITO;   // retarget último inimigo
 	public const int HEARTHSTONE = N8;     // Hearthstone
@@ -408,6 +408,7 @@ namespace Discord
 	public const int TOTEM = 2;   // totem
 	public const int NONCOMBAT_PET = 3;   // mascote não-combatente
 	public const int GAS_CLOUD = 4;   // nuvem de gás
+	public const int MURLOC = 75;   // Murloc
 
 	// --------------------------------------------
 	// CÓDIGOS DE CLASSE (pixel 6 canal G)
@@ -1183,7 +1184,9 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 me.outofrange = (g_erro & 64) != 0;                  //  64 = "Out of range" ou "You are too far away!"
 
 	 if (me.wrongway)
+	 {
 		loga($"Wrong way!");
+	 }
 
 	 if (false && me.outofrange)
 		loga($"Out of range!");
@@ -1986,7 +1989,7 @@ void press(byte key)
 											// -----------------------------
 		if (true || temp % 2 == 0) // sempre
 		{
-		 if (!me.hastarget) aperta(TAB);
+		 checkme();
 
 		 if (cb_anda.Checked && !me.combat && dist(me.pos, oldloc) <= 10)
 		 {
@@ -2041,7 +2044,7 @@ void press(byte key)
 		 loga("Chamando combatloop()...");
 		 if (me.classe==ROGUE ) ComboOptimizer.categoria_atual = ComboOptimizer.EscolherCategoria(); // se for Rogue, escolhe categoria de combo points
 		 combatloop(); // entra na rotina de combate
-
+		 aperta(STOPATTACK); // para de atacar após combate
 
 		 // -----------------------------------
 		 // CHECK PÓS COMBATE 
@@ -2585,7 +2588,7 @@ void andaplanta(loc alvo)
 	 bool bomtarget()
 	 {
 		// Delay curto para garantir leitura completa
-		wait(50);  // 50ms de delay
+		//wait(50);  // 50ms de delay
 							 // Rejeita target inválido ou sem tipo
 		if (!me.hastarget || tar.type == 0) return false;
 
@@ -2599,6 +2602,7 @@ void andaplanta(loc alvo)
 		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
 		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
+		if (cb_nomurloc.Checked && tar.type == MURLOC) return false;
 
 		// Bloqueia apenas humanóides NPC
 		if (cb_nohumanoid.Checked && tar.type == HUMANOID)
@@ -2609,21 +2613,31 @@ void andaplanta(loc alvo)
 
 		if (cb_nodragonkin.Checked && tar.type == DRAGONKIN) return false;
 		if (cb_nomech.Checked && tar.type == MECHANICAL) return false;
+		
 
 		return true;
 	 }
-
+	 checkme();
 	 // pega primeiro target
-	 if (!me.hastarget) aperta(TAB, 400);
-	 checkme(); // atualiza status do segundo target
+	 
+	 
+		aperta(TAB, 150);
+		checkme(); // atualiza status do segundo target
+		if (me.hastarget) loga("Pegando target. Code 1.");
+	 
 	 int mood1 = tar.mood;
 	 bool t1_ok = bomtarget();
 	 int t1_id = tar.id;
 	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
-
-	 // pega segundo target
-	 aperta(TAB, 400);
-	 checkme(); // atualiza status do segundo target
+	 checkme(); // atualiza status após o TAB inicial
+							// pega segundo target
+	 
+		aperta(TAB, 150);
+		checkme();
+		if (me.hastarget) loga("Pegando target. Code 2."); 
+		
+	 
+	 
 	 int mood2 = tar.mood;
 	 bool t2_ok = bomtarget();
 	 int t2_id = tar.id;
@@ -2664,12 +2678,16 @@ void andaplanta(loc alvo)
 	 }
 
 	 checkme(); // atualiza status após a escolha do target
+	 if (cb_nomurloc.Checked && tar.type == MURLOC)
+	 {
+		aperta(CLEARTGT);
+		return;
+	 }
 
-
-		// --------------------------------------------
-		// CORRE ATE O MOB E ATACA (PULL)
-		// --------------------------------------------
-		int ticker = 0; // contador de ciclos
+	 // --------------------------------------------
+	 // CORRE ATE O MOB E ATACA (PULL)
+	 // --------------------------------------------
+	 int ticker = 0; // contador de ciclos
 
 		if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
 		{
@@ -2734,7 +2752,7 @@ void andaplanta(loc alvo)
 			// ---------------------------------------------
 			else if (me.classe == WARRIOR) // se for warrior
 			{
-			 aperta(AUTOATTACK);    // ativa autoattack
+			 //aperta(AUTOATTACK);    // ativa autoattack
 			 aperta(INTERACT);      // começa a andar até o mob
 			 //loga("Pala interact 114");
 			checkme();             // atualiza status
@@ -2897,7 +2915,12 @@ void andaplanta(loc alvo)
 				 int dano_ss = prehp - tar.hp;
 				 int managasta = preen - me.mana; // energia gasta pelo SS
 																					// Registra energia e dano do SS
-				 if (managasta > 15) ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
+				 if (managasta > 15)
+					ComboOptimizer.RegistrarCast(
+							atoi(tb_energy_ss),
+							(int)Math.Round(dano_ss * ((double)atoi(tb_damage_ss) - (double)atoi(tb_damage_hit)) / (double)atoi(tb_damage_ss))
+					);
+	
 				}
 			 }
 
@@ -3285,7 +3308,7 @@ void andaplanta(loc alvo)
 	void viramob()
 	{
 	 if (tar.aggro > 0 || tar.pet_aggro > 0) // se tem aggro válido
-		aperta(INTERACT, 400);
+		aperta(INTERACT, 300);
 	 para(); // para de andar antes de castar
 	}
 	// --------------------------------
@@ -3419,6 +3442,7 @@ void andaplanta(loc alvo)
 
 // Define se target tem aggro válido (em mim ou no pet)
 checkme();
+		if (tar.hp < 80) deucharge = false;
 bool tem_aggro_valido = (tar.aggro > 0) || (tar.pet_aggro > 0);
 
 // Define se deve preservar target mesmo sem aggro
@@ -3452,8 +3476,26 @@ if (tem_aggro_valido || deve_preservar)
 																		 // ------------------------------------------
 																		 // MOVIMENTO: aproximação se fora de melee
 																		 // ------------------------------------------
-		 getnear(); // aproxima o target se estiver fora de alcance de melee
-								//-----
+		 getnear(); // se aproxima do target se estiver fora de alcance de melee
+		 if (tar.aggro > 0 && !me.melee)
+		 {
+			aperta(INTERACT); // aproxima se fora de alcance
+			loga("Apertando INTERACT para mob distante.");
+		 }
+		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
+			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
+		 if (tar.aggro > 0 && me.wrongway)
+		 {
+			aperta(INTERACT); // gira para corrigir facing se necessário
+			loga("Corrigindo facing com INTERACT. devido wrong way.");
+			loga("Interact code: 253"); // loga o código de interação
+		 }
+		 if (false && tar.aggro > 0 && !(tar.type == HUMANOID && cb_nohumanoid.Checked))
+		 {
+			aperta(INTERACT);
+			loga("apertando interact de rotina (agro > 0 e nao humanoid) no combate warrior - TESTE 0002 ");
+		 }
+		 //-----
 		 if (tar.mood != 1 && !me.autoattack) // se mob não é amigável e não estou  atacando ele
 			aperta(AUTOATTACK);         // inicia ataque automático
 		 tenta_curar();                  // verifica se precisa curar e executa se necessário
@@ -3755,7 +3797,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			castslow(CORRUPTION);
 			viramob();
 		 }
-		 else if (me.mana > 30 && tar.hp > 20 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
+		 else if (me.mana > 30 && tar.hp > 30 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
 		 {
 			loga($"Status Immolate: immolate_up={wlock.immolate_up} / has_immolate={wlock.has_immolate}");
 			loga("Aplicando Immolate.");
@@ -3768,31 +3810,39 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			loga("Aplicando Siphon Life.");
 			aperta(SIPHONLIFE);
 		 }
-
 		 // ================================
 		 // CHANNELING (PRIORIDADE ALTA)
 		 // ================================
 		 else if (!me.melee) // Debuffs castados, sem melee range
 		 {
 			aperta(INTERACT); // garante que está virado para o target
-			loga("Interact por !me.melee. Cod. 001");
+			clog("Interact por !me.melee. Cod. 001");
 		 }
 
-		 // Drain Soul (se target com HP baixo)
-		 else if ((tar.hp < 40 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul &&
-				 (wlock.shards < 3 || cb_drain_soul.Checked))
-		 {
-			if (me.wandon && tar.hp < 40) stopwand(); // Para a wand se HP < 35%
-
-			loga("Target baixo. Usando Drain Soul.");
-			casta(DRAINSOUL);
-		 }
-		 // Drain Life (se HP baixo e não channeling)
+		 // Drain Life para cura (como antes)
 		 else if (me.hp < 70 && wlock.drain_life_up && !wlock.has_drain_life)
 		 {
-			loga("HP baixo. Usando Drain Life.");
+			clog("HP baixo. Usando Drain Life.");
 			castslow(DRAINLIFE);
 		 }
+
+		 // Substitui uso ofensivo do Drain Soul por Drain Life se não precisar de shard
+		 else if (tar.hp < 40 && wlock.drain_life_up && !wlock.has_drain_life && wlock.shards >= 2)
+		 {
+			if (me.wandon) stopwand(); // Interrompe wand para canalizar
+			clog("Mob morrendo e já tenho shards. Usando Drain Life.");
+			castslow(DRAINLIFE);
+		 }
+
+		 // Drain Soul real – só se estiver precisando de shard
+		 else if ((tar.hp < 40 || !cb_wand.Checked) && wlock.drain_soul_up && !wlock.has_drain_soul && wlock.shards < 2)
+		 {
+			if (me.wandon && tar.hp < 40) stopwand(); // Para wand se necessário
+			clog("Shard abaixo de 2. Usando Drain Soul.");
+			casta(DRAINSOUL);
+		 }
+
+
 
 		 // ================================
 		 // FILLER: SHADOW BOLT (SPAM)
@@ -4014,8 +4064,12 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 				 int dano_ss = prehp - tar.hp;
 				 int managasta = preen - me.mana; // energia gasta pelo SS
 																					// Registra energia e dano do SS
-				 if (managasta > 0) ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
-				 clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
+				if (managasta > 0)
+				 ComboOptimizer.RegistrarCast(
+						 atoi(tb_energy_ss),
+						 (int)Math.Round(dano_ss * ((double)atoi(tb_damage_ss) - (double)atoi(tb_damage_hit)) / (double)atoi(tb_damage_ss))
+				 );
+				clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
 				}
 			 }
 			}
@@ -4114,10 +4168,14 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 				 if (poscombo < precombo)
 				 {
 
-					ComboOptimizer.RegistrarCast(atoi(tb_energy_ss), dano_ss);
-					clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
-				 }
-				 else clog("Sinister Strike cast fail.");
+				 ComboOptimizer.RegistrarCast(
+						 atoi(tb_energy_ss),
+						 (int)Math.Round(dano_ss * ((double)atoi(tb_damage_ss) - (double)atoi(tb_damage_hit)) / (double)atoi(tb_damage_ss))
+				 );
+				 clog($"Sinister Strike: CP: {rog.combo} HP: {tar.hp}% Damage: {prehp - tar.hp}"); // loga o uso de Sinister Strike
+
+				}
+				else clog("Sinister Strike cast fail.");
 				}
 				checkme();
 
@@ -4128,10 +4186,10 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		checkme();
 
 	 } while (me.combat); // FIM DO LOOP DE COMBATE 
-
-	 //---------------------------------------------
-	 // TERMINA O COMBATE 
-	 // ---------------------------------------------
+	 aperta(STOPATTACK); // para o auto-ataque no final do combate
+											 //---------------------------------------------
+											 // TERMINA O COMBATE 
+											 // ---------------------------------------------
 	 clog($"Combate encerrado. Ciclos: {combat_ticker}");
 	 killstats("save"); // atualiza stats de kills totais 
 	 // PALADINO (reseta variaveis de combate) 
@@ -4280,7 +4338,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 	 // -----------------------
 	 // Se não há target ou aggro, não faz nada
 	 // -----------------------
-	 if (!me.hastarget || tar.aggro == 0)
+	 if (!me.hastarget || (tar.aggro == 0 && tar.pet_aggro==0))
 	 {
 		loga("getnear: Sem target ou sem aggro, retornando.");
 		return;
@@ -4303,7 +4361,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		}
 		else
 		{
-		 loga("getnear: Target em melee e facing correto — forçando INTERACT (code 223).");
+		 loga("getnear: Target em melee e facing correto — INTERACT de rotina. (code 223).");
 		 aperta(INTERACT);
 		}
 	 }
@@ -8029,6 +8087,11 @@ else
 	private void tb_timer_hours_TextChanged(object sender, EventArgs e)
 	{
 
+	}
+
+	private void cb_nomurloc_CheckedChanged(object sender, EventArgs e)
+	{
+	 if (cb_nomurloc.Checked) MessageBox.Show("Atenção: Ataque a murlocs habilitado!");
 	}
 
 
