@@ -326,20 +326,22 @@ namespace Discord
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO WARRIOR
 	// --------------------------------------------
-	public const int HEROICS = N1;              // Heroic Strike
-	public const int OVERPOWER = N2;          // OVERPOWER
-	//public const int THROW = N3;           // Arremesso (Throw) já tem no rogue, usa a mesma
-	public const int HAMSTRING = N4;       // Hamstring
-	public const int BATTLESHOUT = N5;          // Battle Shout
-	public const int BLOODRAGE = N6;       // Bloodrage
-	public const int THUNDERCLAP = N7;           // Thunder Clap
-	public const int CLEAVE = N0;          // Cleave
-	public const int DEMORALIZING = F1;            // Demoralizing Shout
-	public const int DEATHWISH = F2;       // Death Wish
-	public const int REND = F3;            // Rend
-	public const int RETALIATION = F4;     // Retaliation
-	public const int CHARGE = F5;     // Charge
-	public const int EXECUTE = F6;     // Charge
+	public const int HEROICS = N1;  // Heroic Strike
+	public const int OVERPOWER = N2;  // Overpower
+																		//public const int THROW      = N3;  // Arremesso (Throw) já tem no rogue, usa a mesma
+	public const int HAMSTRING = N4;  // Hamstring
+	public const int BATTLESHOUT = N5;  // Battle Shout
+	public const int BLOODRAGE = N6;  // Bloodrage
+	public const int THUNDERCLAP = N7;  // Thunder Clap
+	public const int SUNDERARMOR = N0;  // Sunder Armor
+	public const int CLEAVE = DOIS;  // Cleave
+	public const int DEMORALIZING = F1;  // Demoralizing Shout
+	public const int DEATHWISH = F2;  // Death Wish
+	public const int REND = F3;  // Rend
+	public const int RETALIATION = F4;  // Retaliation
+	public const int CHARGE = F5;  // Charge
+	public const int EXECUTE = F6;  // Execute
+
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO WARLOCK
@@ -363,7 +365,7 @@ namespace Discord
 	public const int LIFETAP = F5;         // Summon Imp
 	// F6 = Assist (pet) 
  public const int HEALTHSTONE = F7;         // Summon Imp
-	public const int SIPHONLIFE = N8;        // Siphon Life (DoT + cura)
+	public const int SIPHONLIFE = F1;     // Siphon Life (DoT + cura)
 
 
 
@@ -961,28 +963,29 @@ namespace Discord
 	 // -------------------------------------------
 	 // PIXEL 10 – WARRIOR (status específicos)
 	 // -------------------------------------------
-	 // R: bit 0 = charge_up      (Charge pronto e em range)
-	 // R: bit 1 = throw_up       (Throw ou Shoot Crossbow pronto e em range)
-	 // R: bit 2 = bs_up          (Battle Shout pronto e rage >= 10)
-	 // R: bit 3 = cleave_up      (Cleave pronto e rage >= 20)
-	 // R: bit 4 = demo_up        (Demoralizing Shout pronto e rage >= 10)
-	 // R: bit 5 = rend_up        (Rend pronto e rage >= 10)
-	 // R: bit 6 = thun_up        (Thunder Clap pronto e rage >= 20)
-	 // R: bit 7 = hs_up          (Heroic Strike pronto e rage >= 15)
+	 // R: bit 0 = charge_up        (Charge pronto e em range)
+	 // R: bit 1 = throw_up         (Throw ou Shoot Crossbow pronto e em range)
+	 // R: bit 2 = bs_up            (Battle Shout pronto e rage >= 10)
+	 // R: bit 3 = cleave_up        (Cleave pronto e rage >= 20)
+	 // R: bit 4 = demo_up          (Demoralizing Shout pronto e rage >= 10)
+	 // R: bit 5 = rend_up          (Rend pronto e rage >= 10)
+	 // R: bit 6 = thun_up          (Thunder Clap pronto e rage >= 20)
+	 // R: bit 7 = hs_up            (Heroic Strike pronto e rage >= 15)
 
-	 // G: bit 0 = has_cleave     (modo Cleave ativado)
-	 // G: bit 1 = ovp_up         (Overpower pronto)
-	 // G: bit 2 = bloodrage_up   (Bloodrage pronto)
-	 // G: bit 3 = hams_up        (Hamstring pronto)
-	 // G: bit 4 = retaliate_up   (Retaliation pronto)
-	 // G: bit 5 = dwish_up       (Death Wish pronto)
-	 // G: bit 6 = has_bs         (Battle Shout ativo no player)
-	 // G: bit 7 = has_rend       (Rend ativo no target)
+	 // G: bit 0 = has_cleave       (modo Cleave ativado)
+	 // G: bit 1 = ovp_up           (Overpower pronto)
+	 // G: bit 2 = bloodrage_up     (Bloodrage pronto)
+	 // G: bit 3 = hams_up          (Hamstring pronto)
+	 // G: bit 4 = retaliate_up     (Retaliation pronto)
+	 // G: bit 5 = dwish_up         (Death Wish pronto)
+	 // G: bit 6 = has_bs           (Battle Shout ativo no player)
+	 // G: bit 7 = has_rend         (Rend ativo no target)
 
-	 // B: bit 0 = hs_casting     (Heroic Strike está enfileirado como autoattack)
-	 // B: bit 1 = vazio
-	 // B: bit 2 = overpower_up	(Overpower pronto)
-	 // B: bit 3 = target has demoralizing shout  
+	 // B: bit 0 = hs_casting       (Heroic Strike enfileirado como autoattack)
+	 // B: bit 1 = little_sundered  (target com menos de 5 stacks de Sunder Armor)
+	 // B: bit 2 = execute_up       (Execute pronto e em melee range)
+	 // B: bit 3 = has_demoralizing (target com debuff Demoralizing Shout)
+	 // B: bit 4 = sunder_up        (Sunder Armor pronto, em range e com rage)
 	 // -------------------------------------------
 
 
@@ -1372,30 +1375,31 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		int g10 = pixels[10].g; // canal verde
 		int b10 = pixels[10].b; // canal azul
 
-		war.charge_up = (r10 & 1) != 0; // bit 0 = pode usar Charge?
-		war.throw_up = (r10 & 2) != 0; // bit 1 = pode tacar faca/tiro?
-		war.bs_up = (r10 & 4) != 0; // bit 2 = pode usar Battle Shout?
-		war.cleave_up = (r10 & 8) != 0; // bit 3 = pode usar Cleave?
-		war.demo_up = (r10 & 16) != 0; // bit 4 = pode usar Demoralizing Shout?
-		war.rend_up = (r10 & 32) != 0; // bit 5 = pode usar Rend?
-		war.thun_up = (r10 & 64) != 0; // bit 6 = pode usar Thunder Clap?
-		war.hs_up = (r10 & 128) != 0; // bit 7 = pode usar Heroic Strike?
+		war.charge_up = (r10 & 1) != 0;     // bit 0 = pode usar Charge?
+		war.throw_up = (r10 & 2) != 0;      // bit 1 = pode tacar faca/tiro?
+		war.bs_up = (r10 & 4) != 0;         // bit 2 = pode usar Battle Shout?
+		war.cleave_up = (r10 & 8) != 0;     // bit 3 = pode usar Cleave?
+		war.demo_up = (r10 & 16) != 0;      // bit 4 = pode usar Demoralizing Shout?
+		war.rend_up = (r10 & 32) != 0;      // bit 5 = pode usar Rend?
+		war.thun_up = (r10 & 64) != 0;      // bit 6 = pode usar Thunder Clap?
+		war.hs_up = (r10 & 128) != 0;       // bit 7 = pode usar Heroic Strike?
 
-		war.has_cleave = (g10 & 1) != 0; // bit 0 = Cleave ativado (modo ao invés de ataque)
-		war.overpower_up = (g10 & 2) != 0; // bit 1 = pode usar Overpower?
-		war.bloodrage_up = (g10 & 4) != 0; // bit 2 = pode usar Bloodrage?
-		war.hams_up = (g10 & 8) != 0; // bit 3 = pode usar Hamstring?
-		war.retaliation_up = (g10 & 16) != 0; // bit 4 = pode usar Retaliation?
-		war.dwish_up = (g10 & 32) != 0; // bit 5 = pode usar Death Wish?
-		war.has_bs = (g10 & 64) != 0; // bit 6 = battle shout ativo (buff)
-		war.has_rend = (g10 & 128) != 0; // bit 7 = target has rend
+		war.has_cleave = (g10 & 1) != 0;        // bit 0 = Cleave ativado (modo ao invés de ataque)
+		war.overpower_up = (g10 & 2) != 0;      // bit 1 = pode usar Overpower?
+		war.bloodrage_up = (g10 & 4) != 0;      // bit 2 = pode usar Bloodrage?
+		war.hams_up = (g10 & 8) != 0;           // bit 3 = pode usar Hamstring?
+		war.retaliation_up = (g10 & 16) != 0;   // bit 4 = pode usar Retaliation?
+		war.dwish_up = (g10 & 32) != 0;         // bit 5 = pode usar Death Wish?
+		war.has_bs = (g10 & 64) != 0;           // bit 6 = Battle Shout ativo no player
+		war.has_rend = (g10 & 128) != 0;        // bit 7 = target tem Rend ativo
 
-		war.hs_casting = (b10 & 1) != 0; // bit 0 = Heroic Strike enfileirado
-																		 // BIT 1b = vazio (não usado)
-		war.execute_up = (b10 & 4) != 0; // bit 2b = Execute up
-		war.has_demoralizing = (b10 & 8) != 0; // bit 3b = has demo shout
-
+		war.hs_casting = (b10 & 1) != 0;            // bit 0 = Heroic Strike enfileirado
+		war.little_sundered = (b10 & 2) != 0;       // bit 1 = target com menos de 5 stacks de Sunder Armor
+		war.execute_up = (b10 & 4) != 0;            // bit 2 = Execute pronto
+		war.has_demoralizing = (b10 & 8) != 0;      // bit 3 = Demoralizing Shout ativo no target
+		war.sunder_up = (b10 & 16) != 0;            // bit 4 = Sunder Armor pronto, em range e com rage
 	 }
+
 
 	 // -------------------------------------------
 	 // PIXEL 10 – WARLOCK
@@ -2432,7 +2436,7 @@ void andaplanta(loc alvo)
 	 // --------------------------------------------
 	 if (me.combat)
 	 {
-		// REGIÃO 1: MANA < 20% → ENTRA EM MODO SEM MANA
+		// REGIÃO 1: MANA < 20% → ENTRA EM MODO SEM MANAd
 		if (!pala.nomana && !mana(20) && cb_BOW.Checked)
 		{
 		 bless = 2;
@@ -2729,8 +2733,10 @@ void andaplanta(loc alvo)
 				 mana(4))
 			 {
 				aperta(PULA);
-				aperta(JUDGEMENT);
+			 viramob(); // gira para o mob
+			 aperta(JUDGEMENT);
 				aperta(AUTOATTACK);
+			 viramob();
 			 }
 			 else
 			 {
@@ -3309,7 +3315,7 @@ void andaplanta(loc alvo)
 	{
 	 if (tar.aggro > 0 || tar.pet_aggro > 0) // se tem aggro válido
 		aperta(INTERACT, 300);
-	 para(); // para de andar antes de castar
+	 if (me.iscaster) para(); // para de andar antes de castar
 	}
 	// --------------------------------
 	// MÉTODO COMBATLOOP - ROTINAS DE COMBATE
@@ -3368,7 +3374,7 @@ void andaplanta(loc alvo)
 		//-----------------------------------
 		// ASSIST NO TANK EM DUNGEON 
 		//-----------------------------------
-		if (dungeon && cb_assist_tank.Checked && !me.hastarget || tar.morreu)
+		if (dungeon && cb_assist_tank.Checked && (!me.hastarget || tar.morreu))
 		{
 		 aperta(F6); // limpa o target e assiste o tank
 		}
@@ -3472,12 +3478,14 @@ if (tem_aggro_valido || deve_preservar)
 		//-
 		if (me.classe == PALADIN)           //  
 		{
-		 wait_cast();                    // espera fim de cast se tiver algum
+		 checkme();
+		 getnear(); // se aproxima do target se estiver fora de alcance de melee
+		 //wait_cast();                    // espera fim de cast se tiver algum
 																		 // ------------------------------------------
 																		 // MOVIMENTO: aproximação se fora de melee
 																		 // ------------------------------------------
-		 getnear(); // se aproxima do target se estiver fora de alcance de melee
-		 if (tar.aggro > 0 && !me.melee)
+		 
+		 if (tar.aggro > 0 )
 		 {
 			aperta(INTERACT); // aproxima se fora de alcance
 			loga("Apertando INTERACT para mob distante.");
@@ -3553,6 +3561,7 @@ if (tem_aggro_valido || deve_preservar)
 
 		 if (should_judge())                                         // se condições pro Judgement estão ok
 		 {
+			aperta(INTERACT);                                 // garante que está virado para o mob
 			aperta(PULA);                                           // pula antes de atacar (visual agressivo)
 			aperta(JUDGEMENT);                                      // executa o Judgement
 		 }
@@ -3560,7 +3569,7 @@ if (tem_aggro_valido || deve_preservar)
 		 if (should_stun())                                          // verifica se deve usar stun
 			aperta(HOJ);                                            // aplica Hammer of Justice
 
-		 solta(ANDA);                                            // para de andar no final do turno
+		 
 		}
 
 		// -----------------------------------------------
@@ -3586,10 +3595,14 @@ if (tem_aggro_valido || deve_preservar)
 
 		 if (me.hp < 30 && me.hp_potion_rdy)
 			aperta(HEALTHPOTION); // poção se vida muito baixa
-// ------------------------------------------
-// EXECUTE
-// ------------------------------------------
-else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
+
+		 else if (war.overpower_up)
+			aperta(OVERPOWER); // usa Overpower se disponível
+
+		 // ------------------------------------------
+		 // EXECUTE
+		 // ------------------------------------------
+		 else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
     casta(EXECUTE);
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
@@ -3618,17 +3631,63 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // BATTLE SHOUT  (sempre)=10 rage
 		 // ------------------------------------------
 		 else if (war.bs_up && !war.has_bs)
+		 {
 			aperta(BATTLESHOUT);
-
+			clog("Battle Shout.");
+		 }
+		 // ------------------------------------------
+		 // EXECUTE
+		 // ------------------------------------------
+		 else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
+			casta(EXECUTE);
 		 // ------------------------------------------
 		 // DEMORALIZING SHOUT  
 		 // ------------------------------------------
 		 else if ((!tar.trivial || me.mobs > 1) && war.demo_up && tar.hp > 25 && !war.has_demoralizing)
+		 {
 			aperta(DEMORALIZING); // reduz dano dos mobs
-														// ------------------------------------------
-														// APLICA REND SE PERMITIDO E EFICAZ= 10 rage
-														// ------------------------------------------
-		 else if (cb_use_rend.Checked && war.rend_up && !war.has_rend
+			clog("Demoralizing Shout.");
+		 }
+
+		 // ------------------------------------------
+		 // HAMSTRING se humanoide e fugindo = 10 rage
+		 // ------------------------------------------
+		 else if (war.hams_up && (tar.type == MURLOC || (tar.type == HUMANOID && tar.hp < 35)))
+		 {
+			aperta(HAMSTRING); // impede fuga do mob 
+			clog($"Hamstring: humanoid fugindo com {tar.hp}% HP");
+		 }
+		 // ------------------------------------------
+		 // THUNDER CLAP  (multi-target) = 20 rage
+		 // ------------------------------------------
+		 else if (cb_use_thunderclap.Checked && war.thun_up      // checkbox ativa, thunderclap pronto e com rage
+			&& !war.has_thunderclap                                 // target ainda não tem debuff
+			&& me.mobs >= atoi(tb_thunderclap_count))               // tem quantidade mínima de mobs
+		 {
+			aperta(THUNDERCLAP);
+			clog($"Thunderclap: mobs={me.mobs}");
+		 }
+		 // ------------------------------------------
+		 // CLEAVE se mais de 1 mob
+		 // ------------------------------------------
+		 else if (war.cleave_up && me.mobs > 1 && !war.has_cleave)
+		 {
+			aperta(CLEAVE); // cleave para hits em área
+			clog($"Cleave: mobs={me.mobs}");
+		 }
+
+		 // ------------------------------------------
+		 // SUNDER ARMOR SPAM
+		 // ------------------------------------------
+		 else if (tar.hp > 25 && cb_sunderspam.Checked && war.sunder_up && war.little_sundered)
+		 {
+			aperta(SUNDERARMOR);
+			clog("Sunder armor.");
+		 }
+		 // ------------------------------------------
+		 // APLICA REND SE PERMITIDO E EFICAZ= 10 rage
+		 // ------------------------------------------
+		 else if (me.mobs <2 && cb_use_rend.Checked && war.rend_up && !war.has_rend
 	&& (tar.type == HUMANOID                               // sempre aplica em humanóide, pra evitar fugir. 
 		 || (
 			 (!tar.trivial
@@ -3636,40 +3695,33 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			 && tar.type != MECHANICAL                          // ignora mecânicos
 			 && tar.type != UNDEAD                              // ignora mortos-vivos
 		 ))))
+		 {
 			casta(REND);
+			clog($"Rend: aplicado em {tar.type} com {tar.hp}% HP");
+		 }
+
 		 // ------------------------------------------
-		 // HAMSTRING se humanoide e fugindo = 10 rage
+		 // HEROIC STRIKE  fallback (rage dump)
 		 // ------------------------------------------
-		 else if (war.hams_up && tar.type == HUMANOID && tar.hp < 35)
-			aperta(HAMSTRING); // impede fuga do mob 
-												 // ------------------------------------------
-												 // THUNDER CLAP  (multi-target) = 20 rage
-												 // ------------------------------------------
-		 else if (cb_use_thunderclap.Checked && war.thun_up      // checkbox ativa, thunderclap pronto e com rage
-			&& !war.has_thunderclap                                 // target ainda não tem debuff
-			&& me.mobs >= atoi(tb_thunderclap_count))               // tem quantidade mínima de mobs
-			aperta(THUNDERCLAP);
-		 // ------------------------------------------
-		 // CLEAVE se mais de 1 mob
-		 // ------------------------------------------
-		 else if (war.cleave_up && me.mobs > 1 && !war.has_cleave)
-			aperta(CLEAVE); // cleave para hits em área
-											// ------------------------------------------
-											// HEROIC STRIKE  fallback (rage dump)
-											// ------------------------------------------
 		 else if (war.hs_up && !war.hs_casting && me.mana >= atoi(tb_heroic_strike_rage) &&
+			// nao ativado sunder spam ou rage em excesso (rage dump)
 							!(tar.hp > 0 && tar.hp < 30 && war.execute_up)) // NÃO usa HS se mob < 28% HP e Execute disponível
+		 {
 			aperta(HEROICS);
+			clog($"Heroic Strike: rage={me.mana}");
+		 }
 
 		 // ------------------------------------------
 		 // BLOODRAGE  
 		 // ------------------------------------------
 		 if (!tar.trivial && me.hp > 50 && cb_use_bloodrage.Checked && me.mobs <= atoi(tb_bloorrage_maxmobs) && me.mana < 15 && war.bloodrage_up)
+		 {
 			aperta(BLOODRAGE); // ativa Bloodrage se vida > 50, rage baixa, mobs <= limite e checkbox ativo
+			clog("Bloodrage.");
+		 }
 
 
 		 //-------------------AGUARDANDO IMPLEMENTAÇÃO-------------------
-
 
 
 
@@ -3681,8 +3733,6 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 
 
 
-		 if (war.overpower_up)
-			aperta(OVERPOWER); // usa Overpower se disponível
 		}//------------FIM ROTINA DE COMBATE WARRIOR (WCR) ------------------
 
 
@@ -3763,7 +3813,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ================================
 		 // CURA DO PET (HEALTH FUNNEL)
 		 // ================================
-		 if (me.hp > 60 && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 50)
+		 if (me.hp > 60 && wlock.healhfunnel_up && wlock.pet_hp > 0 && wlock.pet_hp < 60)
 		 {
 			loga("Pet com HP baixo. Usando Health Funnel.");
 			casta(HEALTHFUNNEL);
@@ -3771,7 +3821,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			{
 			 checkme();
 			 wait(1000); // espera 1 segundo para não spam
-			} while (me.casting && me.hp > 60);
+			} while (me.casting && me.hp > 60 && wlock.pet_hp < 90);
 			// espera terminar o cast
 		 }
 
@@ -3787,7 +3837,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 // ================================
 		 // APLICAR DEBUFFS (PRIORIDADE MÁXIMA)
 		 // ================================
-		 castacurse();
+		 if (!me.casting) castacurse(); // mas nao vai parar o drain...
 		 checkme();
 
 		 // Corruption (se não tiver)
@@ -3797,7 +3847,8 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 			castslow(CORRUPTION);
 			viramob();
 		 }
-		 else if (me.mana > 30 && tar.hp > 30 && me.mobs < 2 && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
+		 // IMMOLATE
+		 else if (me.mana > 30 && tar.hp > 40 && (me.mobs < 2 || (me.mobs == 2 && wlock.has_pet)) && cb_use_immolate.Checked && wlock.immolate_up && !wlock.has_immolate)
 		 {
 			loga($"Status Immolate: immolate_up={wlock.immolate_up} / has_immolate={wlock.has_immolate}");
 			loga("Aplicando Immolate.");
@@ -4361,7 +4412,7 @@ else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		}
 		else
 		{
-		 loga("getnear: Target em melee e facing correto — INTERACT de rotina. (code 223).");
+		 //loga("getnear: Target em melee e facing correto — INTERACT de rotina. (code 223).");
 		 aperta(INTERACT);
 		}
 	 }
@@ -5059,6 +5110,12 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	{
 	 double dx = tar.x - orig.x;               // diferença no eixo X
 	 double dy = orig.y - tar.y;               // diferença no eixo Y (inverte por causa da orientação visual)
+
+	 // ⭐ CORREÇÃO DO BUG: Tolerância para posição muito próxima, evita travar se estiver exatamente em cima do ponto
+	 if (Math.Abs(dx) <= 1 && Math.Abs(dy) <= 1)
+	 {
+		return me.facing; // mantém direção atual
+	 }
 
 	 if (true || cb_humanlike.Checked)                 // se modo humanlike estiver ativado
 		dy /= 1.515;                          // divide pra compensar compressão do eixo Y
@@ -7492,18 +7549,10 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 wait(2000);
-	 on = true;
-	 int sweetspot = atoi(tb_debug);
-	 while (on)
-	 {
-		aperta(WAND);
-		wait(sweetspot);
-		aperta(STOPCAST);
-	 }
-	 sweetspot += 100; // aumenta o tempo de espera para o próximo clique
-	 tb_debug.Text = sweetspot.ToString(); // atualiza textbox de debug
-	loga("Novo sweetspot: " + sweetspot + "ms"); // loga o novo valor
+	 wait(100);
+	 checkme();
+		wait(100);
+	 loga($"stacks de sunder armor abaixo de 5: {war.little_sundered}");
 
 
 	}
@@ -7615,6 +7664,13 @@ else
 	 loga($"Claude V2: dest=({dest.x},{dest.y}) next=({next.x},{next.y})");
 
 	 checkme(); // atualiza posição atual
+
+	 // ⭐ PROTEÇÃO ADICIONAL
+	 if (dist(me.pos, dest) <= 1)
+	 {
+		loga("✅ Já está no destino!");
+		return; // sai direto sem calcular ângulos
+	 }
 
 	 const double RAIO_CURVA = 6.84;
 	 bool chegou_no_destino = false;

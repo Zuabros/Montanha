@@ -146,29 +146,32 @@ namespace Discord
  // --------------------------------
  public class warriortable
  {
-	public bool rend_up;          // pode aplicar Rend?  
-	public bool hs_up;            // pode usar Heroic Strike?  
-	public bool cleave_up;        // pode usar Cleave?  
-	public bool overpower_up;           // pode usar Overpower?  
-	public bool bs_up;            // pode usar Battle Shout?  
-	public bool bloodrage_up;     // pode usar Bloodrage?  
-	public bool demo_up;          // pode usar Demoralizing Shout?  
-	public bool thun_up;          // pode usar Thunder Clap?  
-	public bool hams_up;          // pode usar Hamstring?  
-	public bool retaliation_up;     // pode usar Retaliation?  
-	public bool dwish_up;         // pode usar Death Wish?  
-	public bool charge_up;        // pode usar Charge?  
-	public bool throw_up;         // pode tacar throw knife (range, cooldown, etc.)
-	public bool execute_up;        // pode usar Execute?
+	public bool rend_up;             // pode aplicar Rend?  
+	public bool hs_up;               // pode usar Heroic Strike?  
+	public bool cleave_up;           // pode usar Cleave?  
+	public bool overpower_up;        // pode usar Overpower?  
+	public bool bs_up;               // pode usar Battle Shout?  
+	public bool bloodrage_up;        // pode usar Bloodrage?  
+	public bool demo_up;             // pode usar Demoralizing Shout?  
+	public bool thun_up;             // pode usar Thunder Clap?  
+	public bool hams_up;             // pode usar Hamstring?  
+	public bool retaliation_up;      // pode usar Retaliation?  
+	public bool dwish_up;            // pode usar Death Wish?  
+	public bool charge_up;           // pode usar Charge?  
+	public bool throw_up;            // pode tacar throw knife (range, cooldown, etc.)
+	public bool execute_up;          // pode usar Execute?
+	public bool sunder_up;           // pode usar Sunder Armor (range + rage)?
+	public bool little_sundered;     // target com menos de 5 stacks de Sunder?
 
-	public bool has_rend;         // target tem Rend ativo?  
-	public bool has_thunderclap;  // target tem Thunder Clap ativo?
-	public bool has_demoralizing; // tem debuff 
+	public bool has_rend;            // target tem Rend ativo?  
+	public bool has_thunderclap;     // target tem Thunder Clap ativo?
+	public bool has_demoralizing;    // target tem Demoralizing Shout ativo?
 
-	public bool has_cleave;       // Cleave ativado?  
-	public bool has_bs;           // Battle Shout ativo?
-	public bool hs_casting;       // Heroic strike foi ativado?  
+	public bool has_cleave;          // Cleave ativado?  
+	public bool has_bs;              // Battle Shout ativo?
+	public bool hs_casting;          // Heroic strike foi ativado?  
  }
+
  // --------------------------------
  // CLASSE roguetable
  // --------------------------------

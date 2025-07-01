@@ -79,6 +79,7 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_nomurloc = new System.Windows.Forms.CheckBox();
 	 this.tb_hearthlevel = new System.Windows.Forms.TextBox();
 	 this.cb_hearth_ding = new System.Windows.Forms.CheckBox();
 	 this.elemental_patrol = new System.Windows.Forms.CheckBox();
@@ -104,6 +105,10 @@ namespace Discord
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
+	 this.label52 = new System.Windows.Forms.Label();
+	 this.tb_damage_ss = new System.Windows.Forms.TextBox();
+	 this.label51 = new System.Windows.Forms.Label();
+	 this.tb_damage_hit = new System.Windows.Forms.TextBox();
 	 this.label50 = new System.Windows.Forms.Label();
 	 this.tb_energy_ss = new System.Windows.Forms.TextBox();
 	 this.cb_randomize_rogue = new System.Windows.Forms.CheckBox();
@@ -163,6 +168,7 @@ namespace Discord
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
 	 this.cb_SOR = new System.Windows.Forms.CheckBox();
 	 this.tabPage5 = new System.Windows.Forms.TabPage();
+	 this.cb_sunderspam = new System.Windows.Forms.CheckBox();
 	 this.cb_random_pull_warrior = new System.Windows.Forms.CheckBox();
 	 this.tb_rest_warr = new System.Windows.Forms.TextBox();
 	 this.label29 = new System.Windows.Forms.Label();
@@ -311,11 +317,6 @@ namespace Discord
 	 this.tb_prob_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
-	 this.cb_nomurloc = new System.Windows.Forms.CheckBox();
-	 this.label51 = new System.Windows.Forms.Label();
-	 this.tb_damage_hit = new System.Windows.Forms.TextBox();
-	 this.label52 = new System.Windows.Forms.Label();
-	 this.tb_damage_ss = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -870,6 +871,19 @@ namespace Discord
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
 	 // 
+	 // cb_nomurloc
+	 // 
+	 this.cb_nomurloc.AutoSize = true;
+	 this.cb_nomurloc.Checked = true;
+	 this.cb_nomurloc.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_nomurloc.Location = new System.Drawing.Point(532, 42);
+	 this.cb_nomurloc.Name = "cb_nomurloc";
+	 this.cb_nomurloc.Size = new System.Drawing.Size(75, 17);
+	 this.cb_nomurloc.TabIndex = 79;
+	 this.cb_nomurloc.Text = "No Murloc";
+	 this.cb_nomurloc.UseVisualStyleBackColor = true;
+	 this.cb_nomurloc.CheckedChanged += new System.EventHandler(this.cb_nomurloc_CheckedChanged);
+	 // 
 	 // tb_hearthlevel
 	 // 
 	 this.tb_hearthlevel.Location = new System.Drawing.Point(90, 463);
@@ -1155,6 +1169,40 @@ namespace Discord
 	 this.tabPage4.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage4.TabIndex = 1;
 	 this.tabPage4.Text = "Rogue";
+	 // 
+	 // label52
+	 // 
+	 this.label52.AutoSize = true;
+	 this.label52.Location = new System.Drawing.Point(3, 281);
+	 this.label52.Name = "label52";
+	 this.label52.Size = new System.Drawing.Size(67, 13);
+	 this.label52.TabIndex = 20;
+	 this.label52.Text = "Damage SS:";
+	 // 
+	 // tb_damage_ss
+	 // 
+	 this.tb_damage_ss.Location = new System.Drawing.Point(76, 276);
+	 this.tb_damage_ss.Name = "tb_damage_ss";
+	 this.tb_damage_ss.Size = new System.Drawing.Size(40, 20);
+	 this.tb_damage_ss.TabIndex = 19;
+	 this.tb_damage_ss.Text = "14";
+	 // 
+	 // label51
+	 // 
+	 this.label51.AutoSize = true;
+	 this.label51.Location = new System.Drawing.Point(3, 256);
+	 this.label51.Name = "label51";
+	 this.label51.Size = new System.Drawing.Size(64, 13);
+	 this.label51.TabIndex = 18;
+	 this.label51.Text = "Damage hit:";
+	 // 
+	 // tb_damage_hit
+	 // 
+	 this.tb_damage_hit.Location = new System.Drawing.Point(76, 250);
+	 this.tb_damage_hit.Name = "tb_damage_hit";
+	 this.tb_damage_hit.Size = new System.Drawing.Size(40, 20);
+	 this.tb_damage_hit.TabIndex = 17;
+	 this.tb_damage_hit.Text = "10";
 	 // 
 	 // label50
 	 // 
@@ -1792,6 +1840,7 @@ namespace Discord
 	 // tabPage5
 	 // 
 	 this.tabPage5.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage5.Controls.Add(this.cb_sunderspam);
 	 this.tabPage5.Controls.Add(this.cb_random_pull_warrior);
 	 this.tabPage5.Controls.Add(this.tb_rest_warr);
 	 this.tabPage5.Controls.Add(this.label29);
@@ -1809,6 +1858,18 @@ namespace Discord
 	 this.tabPage5.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage5.TabIndex = 2;
 	 this.tabPage5.Text = "Warrior";
+	 // 
+	 // cb_sunderspam
+	 // 
+	 this.cb_sunderspam.AutoSize = true;
+	 this.cb_sunderspam.Checked = true;
+	 this.cb_sunderspam.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_sunderspam.Location = new System.Drawing.Point(14, 167);
+	 this.cb_sunderspam.Name = "cb_sunderspam";
+	 this.cb_sunderspam.Size = new System.Drawing.Size(120, 17);
+	 this.cb_sunderspam.TabIndex = 21;
+	 this.cb_sunderspam.Text = "Spam Sunder Armor";
+	 this.cb_sunderspam.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_random_pull_warrior
 	 // 
@@ -3262,53 +3323,6 @@ namespace Discord
 	 this.tb_prob_minus1.TabIndex = 77;
 	 this.tb_prob_minus1.Text = "33";
 	 // 
-	 // cb_nomurloc
-	 // 
-	 this.cb_nomurloc.AutoSize = true;
-	 this.cb_nomurloc.Checked = true;
-	 this.cb_nomurloc.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_nomurloc.Location = new System.Drawing.Point(532, 42);
-	 this.cb_nomurloc.Name = "cb_nomurloc";
-	 this.cb_nomurloc.Size = new System.Drawing.Size(75, 17);
-	 this.cb_nomurloc.TabIndex = 79;
-	 this.cb_nomurloc.Text = "No Murloc";
-	 this.cb_nomurloc.UseVisualStyleBackColor = true;
-	 this.cb_nomurloc.CheckedChanged += new System.EventHandler(this.cb_nomurloc_CheckedChanged);
-	 // 
-	 // label51
-	 // 
-	 this.label51.AutoSize = true;
-	 this.label51.Location = new System.Drawing.Point(3, 256);
-	 this.label51.Name = "label51";
-	 this.label51.Size = new System.Drawing.Size(64, 13);
-	 this.label51.TabIndex = 18;
-	 this.label51.Text = "Damage hit:";
-	 // 
-	 // tb_damage_hit
-	 // 
-	 this.tb_damage_hit.Location = new System.Drawing.Point(76, 250);
-	 this.tb_damage_hit.Name = "tb_damage_hit";
-	 this.tb_damage_hit.Size = new System.Drawing.Size(40, 20);
-	 this.tb_damage_hit.TabIndex = 17;
-	 this.tb_damage_hit.Text = "10";
-	 // 
-	 // label52
-	 // 
-	 this.label52.AutoSize = true;
-	 this.label52.Location = new System.Drawing.Point(3, 281);
-	 this.label52.Name = "label52";
-	 this.label52.Size = new System.Drawing.Size(67, 13);
-	 this.label52.TabIndex = 20;
-	 this.label52.Text = "Damage SS:";
-	 // 
-	 // tb_damage_ss
-	 // 
-	 this.tb_damage_ss.Location = new System.Drawing.Point(76, 276);
-	 this.tb_damage_ss.Name = "tb_damage_ss";
-	 this.tb_damage_ss.Size = new System.Drawing.Size(40, 20);
-	 this.tb_damage_ss.TabIndex = 19;
-	 this.tb_damage_ss.Text = "14";
-	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3672,6 +3686,7 @@ namespace Discord
 	private TextBox tb_damage_ss;
 	private Label label51;
 	private TextBox tb_damage_hit;
+	private CheckBox cb_sunderspam;
  }
 }
 
