@@ -3812,11 +3812,14 @@ if (tem_aggro_valido || deve_preservar)
 		 {
 			aperta(INTERACT); // INTERACT de rotina
 		 }
-
-		 // ------------------------------------------
-		 // AUTOATTACK + PULOS
-		 // ------------------------------------------
-		 if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
+		 // ASSIST NO PET 
+		 //------------------------------
+		 if ((!me.hastarget && hunt.has_pet && me.combat) || (me.mobs > 1 && hunt.has_pet))
+			aperta(ASSIST); // assiste o pet se estiver em combate sem target ou +1 mob
+			// ------------------------------------------
+			// AUTOATTACK + PULOS
+			// ------------------------------------------
+			if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
 		 {
 			aperta(AUTOATTACK);
 			loga("Autoattack iniciado.");
