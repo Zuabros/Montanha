@@ -118,6 +118,44 @@ namespace Discord
 	public bool has_demon_skin;      // bit 0 - Demon Skin ativo
  }
  // --------------------------------
+ // CLASSE huntertable - STATUS DO HUNTER
+ // --------------------------------
+ public class huntertable
+ {
+	// SPELLS PRONTAS (true se cooldown + range + mana OK)
+	public bool raptor_strike_up;         // Raptor Strike pronto (mana + range - como Heroic Strike)
+	public bool auto_shot_up;             // Auto Shot pronto e em range
+	public bool auto_shot_range_ok;       // Auto Shot range ok (verificação específica)
+
+	// STATUS ATIVO (true se ativo)
+	public bool auto_shot_ativo;          // Auto Shot ativo (como autoattack)
+	public bool raptor_strike_toggle_ativo; // Raptor Strike toggle ativo (como Heroic Strike toggle)
+
+	// PET STATUS (como Warlock - específico da classe)
+	public bool has_pet;                  // Pet vivo e ativo (como wlock.has_pet)
+	public int pet_hp;                    // HP do pet (0-100%) (como wlock.pet_hp)
+																				// NOTA: tar.pet_aggro é genérico e já existe no element
+
+	// COOLDOWNS (para futuras implementações)
+	// public int aspect_cd;              // Cooldown de aspectos
+	// public int trap_cd;                // Cooldown de armadilhas
+
+	// AMMUNITION/ARROWS (para futuras implementações)
+	// public bool has_arrows;            // Tem munição
+	// public int arrow_count;            // Quantidade de flechas
+
+	// DEBUFFS NO TARGET (para futuras implementações)
+	// public bool has_hunters_mark;      // Hunter's Mark ativo no target
+	// public bool has_serpent_sting;     // Serpent Sting ativo no target
+
+	// ASPECTS (para futuras implementações)
+	// public bool aspect_hawk;           // Aspect of the Hawk ativo
+	// public bool aspect_cheetah;        // Aspect of the Cheetah ativo
+	// public bool aspect_monkey;         // Aspect of the Monkey ativo
+ }
+
+
+ // --------------------------------
  // CLASSE priestable
  // --------------------------------
  public class priestable

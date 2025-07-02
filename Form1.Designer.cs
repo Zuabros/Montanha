@@ -310,13 +310,13 @@ namespace Discord
 	 this.lb_delta = new System.Windows.Forms.Label();
 	 this.button12 = new System.Windows.Forms.Button();
 	 this.button16 = new System.Windows.Forms.Button();
-	 this.button9 = new System.Windows.Forms.Button();
 	 this.button19 = new System.Windows.Forms.Button();
 	 this.cb_humanlike = new System.Windows.Forms.CheckBox();
 	 this.cb_cloudemove = new System.Windows.Forms.CheckBox();
 	 this.tb_prob_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
+	 this.tabPage8 = new System.Windows.Forms.TabPage();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -1133,6 +1133,7 @@ namespace Discord
 	 this.tab_buffs.Controls.Add(this.tabPage5);
 	 this.tab_buffs.Controls.Add(this.tabPage6);
 	 this.tab_buffs.Controls.Add(this.tabPage7);
+	 this.tab_buffs.Controls.Add(this.tabPage8);
 	 this.tab_buffs.Location = new System.Drawing.Point(315, 80);
 	 this.tab_buffs.Name = "tab_buffs";
 	 this.tab_buffs.SelectedIndex = 0;
@@ -3257,14 +3258,6 @@ namespace Discord
 	 this.button16.UseVisualStyleBackColor = true;
 	 this.button16.Click += new System.EventHandler(this.button16_Click);
 	 // 
-	 // button9
-	 // 
-	 this.button9.Location = new System.Drawing.Point(69, 62);
-	 this.button9.Name = "button9";
-	 this.button9.Size = new System.Drawing.Size(40, 23);
-	 this.button9.TabIndex = 0;
-	 this.button9.Click += new System.EventHandler(this.button9_Click_2);
-	 // 
 	 // button19
 	 // 
 	 this.button19.Location = new System.Drawing.Point(3, 218);
@@ -3323,6 +3316,16 @@ namespace Discord
 	 this.tb_prob_minus1.TabIndex = 77;
 	 this.tb_prob_minus1.Text = "33";
 	 // 
+	 // tabPage8
+	 // 
+	 this.tabPage8.BackColor = System.Drawing.Color.DarkGray;
+	 this.tabPage8.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+	 this.tabPage8.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage8.Name = "tabPage8";
+	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
+	 this.tabPage8.TabIndex = 5;
+	 this.tabPage8.Text = "Hunter";
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3337,7 +3340,6 @@ namespace Discord
 	 this.Controls.Add(this.cb_humanlike);
 	 this.Controls.Add(this.label48);
 	 this.Controls.Add(this.button19);
-	 this.Controls.Add(this.button9);
 	 this.Controls.Add(this.label47);
 	 this.Controls.Add(this.button16);
 	 this.Controls.Add(this.button12);
@@ -3539,7 +3541,6 @@ namespace Discord
 	private TextBox tb_JOTC_lvl;
 	private CheckBox cb_HS_timer;
 	private TextBox hs_min_left;
-	private Button button9;
 	private CheckBox cb_assist_tank;
 	private CheckBox cb_BOP;
 	private Button button17;
@@ -3687,6 +3688,7 @@ namespace Discord
 	private Label label51;
 	private TextBox tb_damage_hit;
 	private CheckBox cb_sunderspam;
+	private TabPage tabPage8;
  }
 }
 

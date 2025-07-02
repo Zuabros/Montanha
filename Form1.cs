@@ -265,6 +265,7 @@ namespace Discord
 	public const int AUTOATTACK = INTERACT;     // ataque automático
 	public const int CLEARTGT = SETE;   // limpa o target
 	public const int TARGETLAST = OITO;   // retarget último inimigo
+	public const int STONEFORM = NOVE;   // racial dos anões
 	public const int HEARTHSTONE = N8;     // Hearthstone
 	public const int HEALTHPOTION = N9;     // Poção de vida
 	//public const int MANAPOTION = N0;     // Poção de mana
@@ -314,7 +315,7 @@ namespace Discord
 
 	public const int DPROT = N1;     // Divine Protection
 	public const int LOH = N2;     // Lay on Hands
-	public const int STONEFORM = NOVE;   // racial dos anões (caso use anão paladino)
+
 
 	public const int DEVAURA = F3;     // Devotion Aura
 	public const int RETAURA = F4;     // Retribution Aura
@@ -367,9 +368,37 @@ namespace Discord
  public const int HEALTHSTONE = F7;         // Summon Imp
 	public const int SIPHONLIFE = F1;     // Siphon Life (DoT + cura)
 
+	// --------------------------------------------
+	// SKILLS EXCLUSIVAS DO HUNTER
+	// --------------------------------------------
+	// Adicionar esta seção após as outras classes (após ROGUE e antes de TIPOS DE CRIATURAS)
 
+	public const int RAPTORS = N1;           // Raptor Strike (análogo ao HEROICS do Warrior)
+	public const int AUTOSHOT = N2;          // Auto Shot (skill principal à distância)
+	public const int MONGOOSE = N3;          // Mongoose Bite (ataque especial de pet)
+	public const int HUNTERSMARK = N4;       // Hunter's Mark (para futuras implementações)
+	public const int SERPENTSTING = N5;      // Serpent Sting (para futuras implementações)
+	public const int ARCANESHOT = N6;        // Arcane Shot (para futuras implementações)
+	public const int MULTISHOT = N7;         // Multi-Shot (para futuras implementações)
+	public const int CONCUSSIVESHOT = N0;    // Concussive Shot (para futuras implementações)
 
+	// Pet commands (usar o mesmo PETATTACK do Warlock)
+	// public const int PETATTACK = F1;     // já definido no Warlock - reutilizar
+	// F6 = ASSIST (já definido globalmente)
 
+	// Aspects (para futuras implementações)
+	public const int ASPECTHAWK = F7;        // Aspect of the Hawk
+	public const int ASPECTCHEETAH = F8;     // Aspect of the Cheetah  
+	public const int ASPECTMONKEY = F9;      // Aspect of the Monkey
+
+	// Traps (para futuras implementações)
+	// public const int FREEZINGTRAP = F10;   // Freezing Trap
+	// public const int EXPLOSIVETRAP = F11;  // Explosive Trap
+	// public const int IMMOLATIONTRAP = F12; // Immolation Trap
+
+	// NOTA: Por enquanto implementamos RAPTORS, AUTOSHOT e MONGOOSE
+	// Pet usa o mesmo PETATTACK do Warlock (F1)
+	// As outras constantes ficam preparadas para futuras expansões
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO ROGUE
@@ -1486,6 +1515,44 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 }
 
 	 // -------------------------------------
+	 // PIXEL 10: HUNTER STATUS
+	 // -------------------------------------
+	 else if (me.classe == HUNTER)
+	 {
+		// ----------------------------------------
+		// HUNTER
+		// ----------------------------------------
+		// PIXEL 10 (Hunter) – Skills prontas + Status ativo
+		// ----------------------------------------
+		// R: bit 0 = raptor_strike_up      (Raptor Strike pronto - mana + range)
+		//    bit 1 = auto_shot_up          (Auto Shot pronto e em range)
+		//    bit 2 = auto_shot_range_ok    (Auto Shot range ok - verificação específica)
+		//    bits 3-7 = LIVRES (para futuras expansões)
+
+		// G: bit 0 = auto_shot_ativo       (Auto Shot ativo - como autoattack)
+		//    bits 1-7 = LIVRES (para futuras implementações)
+
+		// B: bit 0 = raptor_strike_toggle_ativo (Raptor Strike toggle ativo - como Heroic Strike)
+		//    bits 1-7 = LIVRES (para futuras expansões)
+
+		int r10 = pixels[10].r; // canal vermelho
+		int g10 = pixels[10].g; // canal verde  
+		int b10 = pixels[10].b; // canal azul
+
+		// CANAL R: Skills prontas
+		hunt.raptor_strike_up = (r10 & 1) != 0;        // bit 0 = Raptor Strike pronto (mana + range)
+		hunt.auto_shot_up = (r10 & 2) != 0;            // bit 1 = Auto Shot pronto e em range
+		hunt.auto_shot_range_ok = (r10 & 4) != 0;      // bit 2 = Auto Shot range ok
+
+		// CANAL G: Status ativo
+		hunt.auto_shot_ativo = (g10 & 1) != 0;         // bit 0 = Auto Shot ativo (como autoattack)
+
+		// CANAL B: Toggle ativo
+		hunt.raptor_strike_toggle_ativo = (b10 & 1) != 0; // bit 0 = Raptor Strike toggle ativo
+	 }
+
+
+	 // -------------------------------------
 	 // PIXEL 10: PRIEST STATUS
 	 // -------------------------------------
 	 else if (me.classe == PRIEST)
@@ -1807,6 +1874,8 @@ void press(byte key)
 	roguetable rog = new roguetable();
 	warriortable war = new warriortable();
 	locktable wlock = new locktable();  // NOVA INSTÂNCIA WARLOCK
+	huntertable hunt = new huntertable(); // Instancia do hunter 
+
 	public static priestable priest = new priestable();
 
 
@@ -2191,6 +2260,38 @@ void press(byte key)
 		 }
 
 		}
+
+		//----------------------------------
+		// RECUPERAÇÃO E PREPARO PRÉ COMBATE - HUNTER - 
+		//----------------------------------
+		// Adicionar esta seção na parte de preparo pré-combate (após Warlock):
+
+		else if (me.classe == HUNTER)
+		{
+		 // espera recuperar HP se necessário
+		 if (me.hp < 80) // mesmo limite do Warrior
+		 {
+			para(); // para de andar se estiver andando
+			loga($"Esperando recuperação de HP: {me.hp}");
+			aperta(F12); // COMIDA 
+			while (me.hp < 80 && !me.combat)
+			{
+			 espera(1);
+			}
+		 }
+
+		 // TODO: Futuramente adicionar lógica de pet
+		 // if (!hunt.has_pet && me.level >= 10)
+		 // {
+		 //     loga("Invocando pet.");
+		 //     para(); // para de andar para invocar
+		 //     // castslow(SUMMON_PET);
+		 //     checkme();
+		 // }
+		}
+
+
+
 		//----------------------------------
 		// RECUPERAÇAO E PREPARO PRÉ COMBATE - WARRIOR
 		//----------------------------------
@@ -2844,7 +2945,114 @@ void andaplanta(loc alvo)
 			 aperta(INTERACT); // continua andando até o mob
 			}
 
+			// ------------------------------------------------------------
+// ---------------------INICIO PULL HUNTER ----------------
+//--------------------------------------------------------
+else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------------
+		 {
+			loga("Iniciando pull como Hunter.");
+			aperta(AUTOATTACK);
+			aperta(INTERACT);                      // inicia aproximação
+			int t0 = Environment.TickCount;        // começa o timer global do pull
+			int lastInteract = t0;
+			int lastJump = t0;
+			bool jafalou = false; // flag para saber se já avisou
 
+			while (!me.combat && Environment.TickCount - t0 < 15000 && me.hastarget && tar.hp >= 100)
+			{
+			 checkme();
+			 if (check_stuck() >= 2) break;
+
+			 // Se entrou em range do AUTO SHOT
+			 if (hunt.auto_shot_up)
+			 {
+				loga("Em range do Auto Shot. Executando ranged pull.");
+				para(); // para de andar para esperar o mob se aproximar
+				checkme();
+				
+
+				if (hunt.auto_shot_up)
+				{
+				 // DIFERENÇA DO ROGUE: Hunter pode usar Auto Shot andando, mas para para esperar o mob
+				 if (!hunt.auto_shot_ativo) // se não está ativo, ativa
+				 {
+					casta(AUTOSHOT);
+					loga("Auto Shot ativado.");
+				 }
+
+
+				 // Espera ativa após o Auto Shot, até 15s totais
+				 loga("Esperando reação do mob após ranged pull.");
+				 while (Environment.TickCount - t0 < 10000)
+				 {
+					wait(500);
+					checkme();
+					if (!hunt.auto_shot_ativo && !hunt.raptor_strike_toggle_ativo) // nao da pois desativa o tiro 
+					 aperta(RAPTORS); // usa Raptor Strike se disponível e toggle não ativo
+					else if (!hunt.raptor_strike_toggle_ativo && !hunt.auto_shot_ativo) // nao ta fazendo nada
+					 aperta(INTERACT); // continua andando se não está atacando
+					else if (me.melee || me.mobs > 0)
+					 break;
+				 }
+				}
+				else
+				{
+				 loga("Perdeu range do Auto Shot. Fallback para melee pull.");
+				}
+
+				if (me.combat)
+				{
+				 loga("Combate iniciado após ranged pull.");
+				 return;
+				}
+			 }
+
+			 // Se estiver em melee range - FALLBACK IGUAL AO ROGUE
+			 if (me.melee)
+			 {
+				// Hunter usa Raptor Strike como ataque melee inicial
+				if (hunt.raptor_strike_up)
+				{
+				 aperta(RAPTORS);
+				 loga("Usando Raptor Strike em melee range.");
+				}
+				else
+				{
+				 // Fallback para autoattack normal
+				 if (!me.autoattack)
+					aperta(AUTOATTACK);
+				}
+			 }
+
+			 // Movimento contínuo - IGUAL AO ROGUE
+			 int now = Environment.TickCount;
+			 if (now - lastInteract >= 500)
+			 {
+				aperta(INTERACT);
+				lastInteract = now;
+			 }
+			 if (now - lastJump >= 3000)
+			 {
+				aperta(PULA, 20);
+				lastJump = now;
+			 }
+			}
+
+			// Avaliação final: combate iniciou ou não - IGUAL AO ROGUE
+			if (me.combat)
+			{
+			 para();
+			 aperta(PULA, 10);
+			 aperta(INTERACT);
+			 clog("Pull concluído com sucesso.");
+			 return;
+			}
+			else
+			{
+			 clog("Pull falhou. Não entrou em combate.");
+			 aperta(CLEARTGT); // limpa target se falhou
+			}
+		 } // ---------------- FIM PULL HUNTER ----------------
 
 
 		 //------------------------------------------------------------
@@ -3472,6 +3680,8 @@ if (tem_aggro_valido || deve_preservar)
 // MANTEM  O TARGET 
 }
 
+
+
 		//-------------------------------------------------------------------
 		//---------------------ROTINA EXCLUSIVA PALADINO --------------------
 		//-------------------------------------------------------------------
@@ -3572,9 +3782,83 @@ if (tem_aggro_valido || deve_preservar)
 		 
 		}
 
-		// -----------------------------------------------
-		// ROTINA DE COMBATE WARRIOR (WCR)
-		// -----------------------------------------------
+		//----------------------------------
+		// ROTINA DE COMBATE HUNTER (COPIADA DO ROGUE)
+		//----------------------------------
+		else if (me.classe == HUNTER)
+		{
+		 // ------------------------------------------
+		 // MOVIMENTO: aproximação se fora de melee
+		 // ------------------------------------------
+		 checkme();
+		 if (!hunt.auto_shot_range_ok && !hunt.auto_shot_ativo && me.hastarget && tar.aggro > 0 && me.melee)
+			aperta(AUTOATTACK); // garante autoattack se mob hostil e em melee
+
+		 loga($"Aggro: {tar.aggro} Ticker: {ticker}"); // loga o ticker atual
+		 if (tar.aggro > 0) aperta(INTERACT); // gira para corrigir facing se necessário
+
+		 // Aproximação (COPIADO DO GETNEAR PARA MELEE CLASSES)
+		 if (me.wrongway)
+		 {
+			loga("Hunter: Corrigindo wrongway (code 302).");
+			aperta(INTERACT);
+		 }
+		 else if (!me.melee)
+		 {
+			loga("Hunter: Corrigindo distância (fora de melee) (code 303).");
+			aperta(INTERACT);
+		 }
+		 else
+		 {
+			aperta(INTERACT); // INTERACT de rotina
+		 }
+
+		 // ------------------------------------------
+		 // AUTOATTACK + PULOS
+		 // ------------------------------------------
+		 if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
+		 {
+			aperta(AUTOATTACK);
+			loga("Autoattack iniciado.");
+		 }
+
+		 if (ticker % 6 == 0) aperta(PULA); // pulo human-like
+
+		 // ------------------------------------------
+		 // EMERGÊNCIA: POÇÃO SE MORRENDO
+		 // ------------------------------------------
+		 if (me.hp < 30 && me.hp_potion_rdy)
+		 {
+			aperta(HEALTHPOTION);
+			clog($"Emergência! HP: {me.hp}%");
+		 }
+
+		 // ------------------------------------------
+		 // STONEFORM (COPIADO DO PALADINO)
+		 // ------------------------------------------
+		 else if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
+		 {
+			int limiar = Convert.ToInt32(tb_stoneform_at.Text);          // lê o valor do limiar de HP do textbox
+			if (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease)
+			{
+			 aperta(STONEFORM);                                       // ativa Stoneform se atender condições
+			 clog($"Hunter: Stoneform usado! HP: {me.hp}% Debuffs: {me.hasother}/{me.haspoison}/{me.hasdisease}");
+			}
+		 }
+
+		 // ------------------------------------------
+		 // RAPTOR STRIKE (SUBSTITUI TODAS AS SKILLS DO ROGUE)
+		 // ------------------------------------------
+		 else if (hunt.raptor_strike_up && tar.hp > 0)
+		 {
+			aperta(RAPTORS);
+			clog($"Raptor Strike: mana={me.mana}");
+		 }
+
+		}//------------FIM ROTINA DE COMBATE HUNTER ------------------
+		 // -----------------------------------------------
+		 // ROTINA DE COMBATE WARRIOR (WCR)
+		 // -----------------------------------------------
 		else if (me.classe == WARRIOR)
 		{
 		 // ------------------------------------------
@@ -4275,6 +4559,46 @@ if (tem_aggro_valido || deve_preservar)
 		 cb_stealth_pull.Checked = random.Next(0, 2) == 1;
 		}
 	 }
+
+	 //-----------------------------------------
+	 // ROTINA DE DESCANSO PÓS-COMBATE (HUNTER)
+	 //-----------------------------------------
+	 else if (me.classe == HUNTER)
+	 {
+		// Randomização de pull (para futuras implementações)
+		// if (cb_random_pull_hunter.Checked) // RANDOMIZA TIPO DE PULL
+		// {
+		//     Random random = new Random();
+		//     // 50% de chance para cb_range_pull_hunter
+		//     cb_range_pull_hunter.Checked = random.Next(0, 2) == 1;
+		// }
+
+		int hp_ini = me.hp;                              // salva o HP inicial
+		int limite = 80;                                 // Hunter usa mesmo limite do Warrior (80%)
+																										 // TODO: Criar tb_rest_hunter quando tiver interface própria
+
+		if (hp_ini < limite)
+		{
+		 loga($"HUNTER: HP baixo após combate ({hp_ini}%). Esperando recuperação.");
+		 para(); // para de andar se estiver andando
+		 loga($"Esperando recuperação de HP: {me.hp}");
+		 aperta(F12); // COMIDA 
+		 espera(2);
+
+		 // se começou a comer, espera até 100%; senão, só até o limite normal
+		 if (me.eating)
+		 {
+			while (me.hp < 100 && !me.combat)
+			 espera(1);
+		 }
+		 else
+		 {
+			while (me.hp < limite && !me.combat)
+			 espera(1);
+		 }
+		}
+	 }// FIM ROTINA DE DESCANSO PÓS-COMBATE (HUNTER)
+
 	 //-----------------------------------------
 	 // ROTINA DE DESCANSO PÓS-COMBATE (WARRIOR)
 	 //-----------------------------------------
@@ -5922,7 +6246,9 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	// -------------------------------------------------------
 	private void button1_Click_1(object sender, EventArgs e)
 	{
+	 bt_save_cfg_Click(sender, e);
 	 {
+
 		// ATUALIZADOR EM BACKGROUND DOS STATS 
 		//StartBackgroundUpdates(); // <- ADICIONAR AQUI
 															
