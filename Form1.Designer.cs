@@ -214,6 +214,7 @@ namespace Discord
 	 this.tb_priest_combatheal = new System.Windows.Forms.TextBox();
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
+	 this.tabPage8 = new System.Windows.Forms.TabPage();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
 	 this.textBox1 = new System.Windows.Forms.TextBox();
@@ -316,7 +317,8 @@ namespace Discord
 	 this.tb_prob_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
-	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
+	 this.cb_huntersmark = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -328,6 +330,7 @@ namespace Discord
 	 this.tabPage5.SuspendLayout();
 	 this.tabPage6.SuspendLayout();
 	 this.tabPage7.SuspendLayout();
+	 this.tabPage8.SuspendLayout();
 	 this.pan_tar.SuspendLayout();
 	 this.pan_me.SuspendLayout();
 	 this.tabPage3.SuspendLayout();
@@ -837,6 +840,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_prefer_distant);
 	 this.tabPage2.Controls.Add(this.cb_nomurloc);
 	 this.tabPage2.Controls.Add(this.tb_hearthlevel);
 	 this.tabPage2.Controls.Add(this.cb_hearth_ding);
@@ -2337,6 +2341,17 @@ namespace Discord
 	 this.tb_priest_pullheal.TabIndex = 77;
 	 this.tb_priest_pullheal.Text = "70";
 	 // 
+	 // tabPage8
+	 // 
+	 this.tabPage8.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage8.Controls.Add(this.cb_huntersmark);
+	 this.tabPage8.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+	 this.tabPage8.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage8.Name = "tabPage8";
+	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
+	 this.tabPage8.TabIndex = 5;
+	 this.tabPage8.Text = "Hunter";
+	 // 
 	 // pan_tar
 	 // 
 	 this.pan_tar.Controls.Add(this.cb_killgray);
@@ -3316,15 +3331,27 @@ namespace Discord
 	 this.tb_prob_minus1.TabIndex = 77;
 	 this.tb_prob_minus1.Text = "33";
 	 // 
-	 // tabPage8
+	 // cb_prefer_distant
 	 // 
-	 this.tabPage8.BackColor = System.Drawing.Color.DarkGray;
-	 this.tabPage8.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-	 this.tabPage8.Location = new System.Drawing.Point(4, 22);
-	 this.tabPage8.Name = "tabPage8";
-	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
-	 this.tabPage8.TabIndex = 5;
-	 this.tabPage8.Text = "Hunter";
+	 this.cb_prefer_distant.AutoSize = true;
+	 this.cb_prefer_distant.Location = new System.Drawing.Point(139, 466);
+	 this.cb_prefer_distant.Name = "cb_prefer_distant";
+	 this.cb_prefer_distant.Size = new System.Drawing.Size(118, 17);
+	 this.cb_prefer_distant.TabIndex = 80;
+	 this.cb_prefer_distant.Text = "Prefer distant target";
+	 this.cb_prefer_distant.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_huntersmark
+	 // 
+	 this.cb_huntersmark.AutoSize = true;
+	 this.cb_huntersmark.Checked = true;
+	 this.cb_huntersmark.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_huntersmark.Location = new System.Drawing.Point(4, 13);
+	 this.cb_huntersmark.Name = "cb_huntersmark";
+	 this.cb_huntersmark.Size = new System.Drawing.Size(92, 17);
+	 this.cb_huntersmark.TabIndex = 0;
+	 this.cb_huntersmark.Text = "Hunter\'s Mark";
+	 this.cb_huntersmark.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -3387,6 +3414,8 @@ namespace Discord
 	 this.tabPage6.PerformLayout();
 	 this.tabPage7.ResumeLayout(false);
 	 this.tabPage7.PerformLayout();
+	 this.tabPage8.ResumeLayout(false);
+	 this.tabPage8.PerformLayout();
 	 this.pan_tar.ResumeLayout(false);
 	 this.pan_tar.PerformLayout();
 	 this.pan_me.ResumeLayout(false);
@@ -3689,6 +3718,8 @@ namespace Discord
 	private TextBox tb_damage_hit;
 	private CheckBox cb_sunderspam;
 	private TabPage tabPage8;
+	private CheckBox cb_prefer_distant;
+	private CheckBox cb_huntersmark;
  }
 }
 

@@ -368,37 +368,33 @@ namespace Discord
  public const int HEALTHSTONE = F7;         // Summon Imp
 	public const int SIPHONLIFE = F1;     // Siphon Life (DoT + cura)
 
-	// --------------------------------------------
-	// SKILLS EXCLUSIVAS DO HUNTER
-	// --------------------------------------------
+	// ============================================
+	// SKILLS EXCLUSIVAS DO HUNTER (VERSÃO EXPANDIDA)
 	// Adicionar esta seção após as outras classes (após ROGUE e antes de TIPOS DE CRIATURAS)
+	// ============================================
 
 	public const int RAPTORS = N1;           // Raptor Strike (análogo ao HEROICS do Warrior)
 	public const int AUTOSHOT = N2;          // Auto Shot (skill principal à distância)
 	public const int MONGOOSE = N3;          // Mongoose Bite (ataque especial de pet)
 	public const int HUNTERSMARK = N4;       // Hunter's Mark (para futuras implementações)
-	public const int SERPENTSTING = N5;      // Serpent Sting (para futuras implementações)
-	public const int ARCANESHOT = N6;        // Arcane Shot (para futuras implementações)
+
+	// NOVAS SKILLS ADICIONADAS
+	public const int SERPENTSTING = N5;      // Serpent Sting (DoT venenoso)
+	public const int ARCANESHOT = N6;        // Arcane Shot (tiro instantâneo)
 	public const int MULTISHOT = N7;         // Multi-Shot (para futuras implementações)
-	public const int CONCUSSIVESHOT = N0;    // Concussive Shot (para futuras implementações)
+	public const int CONCUSSIVESHOT = N0;    // Concussive Shot (slow/desacelera)
 
 	// Pet commands (usar o mesmo PETATTACK do Warlock)
 	// public const int PETATTACK = F1;     // já definido no Warlock - reutilizar
 	// F6 = ASSIST (já definido globalmente)
 
 	// Aspects (para futuras implementações)
-	public const int ASPECTHAWK = F7;        // Aspect of the Hawk
-	public const int ASPECTCHEETAH = F8;     // Aspect of the Cheetah  
-	public const int ASPECTMONKEY = F9;      // Aspect of the Monkey
+	// public const int ASPECTHAWK = F3;    // Aspect of the Hawk
+	// public const int ASPECTCHEETAH = F4; // Aspect of the Cheetah
+	// public const int ASPECTMONKEY = F5;  // Aspect of the Monkey
 
-	// Traps (para futuras implementações)
-	// public const int FREEZINGTRAP = F10;   // Freezing Trap
-	// public const int EXPLOSIVETRAP = F11;  // Explosive Trap
-	// public const int IMMOLATIONTRAP = F12; // Immolation Trap
-
-	// NOTA: Por enquanto implementamos RAPTORS, AUTOSHOT e MONGOOSE
-	// Pet usa o mesmo PETATTACK do Warlock (F1)
-	// As outras constantes ficam preparadas para futuras expansões
+	// NOTA: SUMMONPET deve usar a mesma tecla do Warlock para consistência
+	// public const int SUMMONPET = F2;     // já definido no Warlock - reutilizar
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO ROGUE
@@ -1369,34 +1365,41 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 	 }
 
 
-	 // -------------------------------------
-	 // PIXEL 9: REAÇÃO E AMEAÇA DO TARGET (com bitflags no R)
-	 // -------------------------------------
+	 // ------------------------------------------
+	 // PIXEL 9 – AGGRO FLAGS + MOOD (2 BITS)
+	 // ------------------------------------------
+	 // R: bit 0 = player_aggro (mob atacando player)
+	 //    bit 1 = pet_aggro (mob atacando pet)
+	 //    bits 2-3 = mood (2 bits):
+	 //               00 (0)  = neutro (mood = 0)
+	 //               01 (4)  = amigável (mood = 1)
+	 //               10 (8)  = hostil (mood = -1)
+	 //               11 (12) = LIVRE
+	 //    bits 4-7 = LIVRES
+	 // G: livre
+	 // B: livre
+	 // ------------------------------------------
+
 	 if (pixels.Count > 9)
 	 {
-		// lê bitflags da reação
-		bool hostile = (pixels[9].r & 1) != 0;
-		bool friendly = (pixels[9].r & 2) != 0;
-		bool neutral = (pixels[9].r & 4) != 0;
+		int r9 = pixels[9].r; // canal vermelho com as flags
 
-		// define mood do target
-		if (hostile) tar.mood = -1; // hostil
-		else if (friendly) tar.mood = 1;
-		else tar.mood = 0; // neutro
+		// Lê as flags booleanas de aggro
+		tar.player_aggro = (r9 & 1) != 0;    // bit 0 = player tem aggro
+		tar.pet_aggro = (r9 & 2) != 0;      // bit 1 = pet tem aggro
 
-		// lê threat (aggro level): 0 1 2 3
-		if ((pixels[9].r & 32) != 0) tar.aggro = 3; // threat máximo
-		else if ((pixels[9].r & 16) != 0) tar.aggro = 2; // threat médio
-		else if ((pixels[9].r & 8) != 0) tar.aggro = 1; // threat leve
-		else tar.aggro = 0; // sem threat
+		// Lê o mood do target (2 bits: 2-3)
+		int mood_bits = (r9 & 12) >> 2;     // extrai bits 2-3 e desloca para posição 0-1
 
-		// NOVO: lê pet threat
-		tar.pet_aggro = ((pixels[9].r & 64) != 0) ? 1 : 0; // bit 6
-
-		// G e B : livres (não usados atualmente)
+		// Decodifica mood baseado nos 2 bits
+		switch (mood_bits)
+		{
+		 case 0: tar.mood = 0; break;    // 00 = neutro
+		 case 1: tar.mood = 1; break;    // 01 = amigável 
+		 case 2: tar.mood = -1; break;    // 10 = hostil
+		 case 3: tar.mood = 0; break;    // 11 = reservado/padrão neutro
+		}
 	 }
-
-	 tar.trivial = !tar.iselite && (tar.hp <= 25 || tar.level <= me.level - 3);
 
 	 if (e.classe == WARRIOR) // se for Warrior, lê o Pixel 10
 	 {
@@ -1514,41 +1517,70 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		wlock.pet_hp = (int)(ar11 * 100.0 / 127.0);   // pet.hp % (0..100)
 	 }
 
-	 // -------------------------------------
-	 // PIXEL 10: HUNTER STATUS
-	 // -------------------------------------
+	 // =====================================
+	 // PIXEL 10: HUNTER STATUS (VERSÃO EXPANDIDA)
+	 // Substituir a seção existente do Hunter no método getstats
+	 // =====================================
 	 else if (me.classe == HUNTER)
 	 {
 		// ----------------------------------------
-		// HUNTER
+		// HUNTER - PIXEL 10 EXPANDIDO
 		// ----------------------------------------
-		// PIXEL 10 (Hunter) – Skills prontas + Status ativo
+		// PIXEL 10 (Hunter) – Skills prontas + Status ativo + Debuffs
 		// ----------------------------------------
 		// R: bit 0 = raptor_strike_up      (Raptor Strike pronto - mana + range)
 		//    bit 1 = auto_shot_up          (Auto Shot pronto e em range)
 		//    bit 2 = auto_shot_range_ok    (Auto Shot range ok - verificação específica)
-		//    bits 3-7 = LIVRES (para futuras expansões)
+		//    bit 3 = serpent_sting_up      (NOVO: Serpent Sting pronto)
+		//    bit 4 = concussive_shot_up    (NOVO: Concussive Shot pronto)
+		//    bit 5 = arcane_shot_up        (NOVO: Arcane Shot pronto)
+		//    bit 6 = revive_pet_up         (NOVO: Revive Pet pronto)
+		//    bit 7 = LIVRE
 
 		// G: bit 0 = auto_shot_ativo       (Auto Shot ativo - como autoattack)
-		//    bits 1-7 = LIVRES (para futuras implementações)
+		//    bit 1 = tar_serpent           (NOVO: Target tem debuff Serpent Sting)
+		//    bits 2-7 = LIVRES
 
-		// B: bit 0 = raptor_strike_toggle_ativo (Raptor Strike toggle ativo - como Heroic Strike)
-		//    bits 1-7 = LIVRES (para futuras expansões)
+		// B: bit 0 = raptor_strike_toggle_ativo (Raptor Strike toggle ativo)
+		//    bit 1 = has_pet               (Pet vivo e ativo)
+		//    bits 2-7 = LIVRES
 
 		int r10 = pixels[10].r; // canal vermelho
 		int g10 = pixels[10].g; // canal verde  
 		int b10 = pixels[10].b; // canal azul
 
+		// ================================
 		// CANAL R: Skills prontas
-		hunt.raptor_strike_up = (r10 & 1) != 0;        // bit 0 = Raptor Strike pronto (mana + range)
+		// ================================
+		hunt.raptor_strike_up = (r10 & 1) != 0;        // bit 0 = Raptor Strike pronto (mana + range + toggle nao ativo)
 		hunt.auto_shot_up = (r10 & 2) != 0;            // bit 1 = Auto Shot pronto e em range
 		hunt.auto_shot_range_ok = (r10 & 4) != 0;      // bit 2 = Auto Shot range ok
 
-		// CANAL G: Status ativo
-		hunt.auto_shot_ativo = (g10 & 1) != 0;         // bit 0 = Auto Shot ativo (como autoattack)
+		// NOVAS SKILLS
+		hunt.serpent_sting_up = (r10 & 8) != 0;        // bit 3 = Serpent Sting pronto
+		hunt.concussive_shot_up = (r10 & 16) != 0;     // bit 4 = Concussive Shot pronto
+		hunt.arcane_shot_up = (r10 & 32) != 0;         // bit 5 = Arcane Shot pronto
+		hunt.revive_pet_up = (r10 & 64) != 0;          // bit 6 = Revive Pet pronto
 
-		// CANAL B: Toggle ativo
-		hunt.raptor_strike_toggle_ativo = (b10 & 1) != 0; // bit 0 = Raptor Strike toggle ativo
+		// ================================
+		// CANAL G: Status ativo e debuffs
+		// ================================
+		hunt.auto_shot_ativo = (g10 & 1) != 0;         // bit 0 = Auto Shot ativo (como autoattack)
+		hunt.tar_serpent = (g10 & 2) != 0;             // bit 1 = Target tem debuff Serpent Sting
+
+		// ================================
+		// CANAL B: Toggle ativo e pet status
+		// ================================
+		hunt.has_pet = (b10 & 2) != 0;                     // bit 1 = Pet vivo e ativo
+
+		// ================================
+		// PIXEL 11: PET HP (como Warlock)
+		// ================================
+		if (pixels.Count > 11)
+		{
+		 int ar11 = pixels[11].r;   // R = pet.hp % (base 127 → 0..127)
+		 hunt.pet_hp = (int)(ar11 * 100.0 / 127.0);   // pet.hp % (0..100)
+		}
 	 }
 
 
@@ -2280,14 +2312,17 @@ void press(byte key)
 			}
 		 }
 
-		 // TODO: Futuramente adicionar lógica de pet
-		 // if (!hunt.has_pet && me.level >= 10)
-		 // {
-		 //     loga("Invocando pet.");
-		 //     para(); // para de andar para invocar
-		 //     // castslow(SUMMON_PET);
-		 //     checkme();
-		 // }
+		 
+		  if (!hunt.has_pet && me.level >= 10 && !me.combat && hunt.revive_pet_up) // sem pet
+		 {
+			
+
+			loga("Invocando pet.");
+
+			para(); // para de andar para invocar
+		       castslow(SUMMONPET);
+		      checkme();
+		  }
 		}
 
 
@@ -2726,30 +2761,28 @@ void andaplanta(loc alvo)
 	 // pega primeiro target
 	 
 	 
-		aperta(TAB, 150);
+		aperta(TAB, 250);
 		checkme(); // atualiza status do segundo target
 		if (me.hastarget) loga("Pegando target. Code 1.");
-	 
+
 	 int mood1 = tar.mood;
 	 bool t1_ok = bomtarget();
 	 int t1_id = tar.id;
 	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 	 checkme(); // atualiza status após o TAB inicial
 							// pega segundo target
-	 
-		aperta(TAB, 150);
-		checkme();
-		if (me.hastarget) loga("Pegando target. Code 2."); 
-		
-	 
-	 
+	 loga($"Target 1 mood: {mood1}");
+	 aperta(TAB, 250);
+	 checkme();
+	 if (me.hastarget) loga("Pegando target. Code 2.");
+
 	 int mood2 = tar.mood;
+	 loga($"Target 2 mood: {mood2}");
 	 bool t2_ok = bomtarget();
 	 int t2_id = tar.id;
 	 if (t2_id != t1_id) scan_elites(); // verifica se tem target novo
-
 	 if (t1_id == 0) // se nenhum target foi encontrado inicialmente
-		loga("Procurando targets.");
+	 loga("Procurando targets.");
 	 else if (!t1_ok && !t2_ok) // nenhum dos dois é válido
 	 {
 		loga("Nenhum dos dois targets é válido. Limpando o target.");
@@ -2766,8 +2799,15 @@ void andaplanta(loc alvo)
 		loga("Apenas o segundo target é válido. Mantido.");
 	 else if (mood1 == mood2) // mesmo comportamento (hostis ou pacíficos)
 	 {
-		loga("Dois targets com mesmo comportamento. Priorizando o mais próximo.");
-		aperta(TARGETLAST);
+
+		if ((cb_prefer_distant.Checked && me.classe == HUNTER && mood1 == 0))
+		 loga("Escolhendo o mais distante para ranged class.");
+		else
+		{
+		 loga("Dois targets com mesmo comportamento. Priorizando o mais próximo.");
+		 aperta(TARGETLAST);
+		}
+		
 	 }
 	 else if (mood1 < mood2) // primeiro é mais hostil
 	 {
@@ -2781,7 +2821,6 @@ void andaplanta(loc alvo)
 		loga("Empate total inesperado. Escolhendo o primeiro.");
 		aperta(TARGETLAST);
 	 }
-
 	 checkme(); // atualiza status após a escolha do target
 	 if (cb_nomurloc.Checked && tar.type == MURLOC)
 	 {
@@ -2789,10 +2828,11 @@ void andaplanta(loc alvo)
 		return;
 	 }
 
-	 // --------------------------------------------
-	 // CORRE ATE O MOB E ATACA (PULL)
-	 // --------------------------------------------
-	 int ticker = 0; // contador de ciclos
+	 
+		// --------------------------------------------
+		// CORRE ATE O MOB E ATACA (PULL)
+		// --------------------------------------------
+		int ticker = 0; // contador de ciclos
 
 		if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
 		{
@@ -2945,72 +2985,84 @@ void andaplanta(loc alvo)
 			 aperta(INTERACT); // continua andando até o mob
 			}
 
-			// ------------------------------------------------------------
-// ---------------------INICIO PULL HUNTER ----------------
-//--------------------------------------------------------
-else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------------
+		 // --------------------------------------
+		 // PULL HUNTER REFEITO - WOW CLASSIC HC
+		 // --------------------------------------
+		 else if (me.classe == HUNTER) // inicio pull hunter
 		 {
 			loga("Iniciando pull como Hunter.");
-			aperta(AUTOATTACK);
-			aperta(INTERACT);                      // inicia aproximação
-			int t0 = Environment.TickCount;        // começa o timer global do pull
-			int lastInteract = t0;
-			int lastJump = t0;
-			bool jafalou = false; // flag para saber se já avisou
-
-			while (!me.combat && Environment.TickCount - t0 < 15000 && me.hastarget && tar.hp >= 100)
+			aperta(AUTOATTACK); // ativa auto attack
+			aperta(INTERACT); // começa a andar para o mob
+			int t0 = Environment.TickCount; // marca o tempo inicial
+			int lastInteract = t0; // controle de interações
+			int lastJump = t0; // controle de pulos
+			bool jafalou = false; // flag de log
+			while (!me.combat && Environment.TickCount - t0 < 6000 && me.hastarget && tar.hp >= 100)
 			{
-			 checkme();
-			 if (check_stuck() >= 2) break;
-
-			 // Se entrou em range do AUTO SHOT
+			 checkme(); // atualiza estado
+			 if (check_stuck() >= 2) break; // verifica stuck
+																			// verifica se auto shot está pronto para ranged pull
 			 if (hunt.auto_shot_up)
 			 {
-				loga("Em range do Auto Shot. Executando ranged pull.");
-				para(); // para de andar para esperar o mob se aproximar
+				clog("Em range do Auto Shot. Executando ranged pull.");
+				para(); // para de andar
 				checkme();
-				
-
-				if (hunt.auto_shot_up)
+				if (hunt.auto_shot_up && !hunt.auto_shot_ativo) // se não está ativo, ativa
 				{
-				 // DIFERENÇA DO ROGUE: Hunter pode usar Auto Shot andando, mas para para esperar o mob
-				 if (!hunt.auto_shot_ativo) // se não está ativo, ativa
+				 if (me.level >= 8 && cb_huntersmark.Checked && !tar.trivial) casta(HUNTERSMARK);
+				 casta(AUTOSHOT);
+				 
+				 loga("Auto Shot ativado.");
+				 wait(1000); // espera 2s para garantir que o Auto Shot está ativo
+				}
+				clog("Esperando aproximação do mob após ranged pull.");
+				// espera ativa de até 6s
+				while (!me.melee && me.mobs == 0 && Environment.TickCount - t0 < 10000)
+				{
+				 checkme(); // atualiza estado
+										// se auto shot parou, já prepara o raptor strike
+				 if (!hunt.auto_shot_range_ok && hunt.raptor_strike_up)
 				 {
-					casta(AUTOSHOT);
-					loga("Auto Shot ativado.");
+					aperta(RAPTORS);
+					clog($"Sem range após {(Environment.TickCount - t0) / 1000}s! Preparando Raptor Strike.");
+					break;
 				 }
 
-
-				 // Espera ativa após o Auto Shot, até 15s totais
-				 loga("Esperando reação do mob após ranged pull.");
-				 while (Environment.TickCount - t0 < 10000)
+				 // se tiver arcane shot pronto, pode castar aqui
+				 if (hunt.serpent_sting_up)
 				 {
-					wait(500);
-					checkme();
-					if (!hunt.auto_shot_ativo && !hunt.raptor_strike_toggle_ativo) // nao da pois desativa o tiro 
-					 aperta(RAPTORS); // usa Raptor Strike se disponível e toggle não ativo
-					else if (!hunt.raptor_strike_toggle_ativo && !hunt.auto_shot_ativo) // nao ta fazendo nada
-					 aperta(INTERACT); // continua andando se não está atacando
-					else if (me.melee || me.mobs > 0)
-					 break;
+					aperta(SERPENTSTING); // (comentado: ainda não aprendeu)
+					clog("Casting Serpent Sting.");
 				 }
-				}
-				else
-				{
-				 loga("Perdeu range do Auto Shot. Fallback para melee pull.");
-				}
+				 else if (hunt.arcane_shot_up)
+				 {
+					aperta(ARCANESHOT); // (comentado: ainda não aprendeu)
+					clog("Casting Arcane Shot.");
+				 }
+			 
 
-				if (me.combat)
+				 // se tiver serpent sting pronto, pode castar aqui
+				 
+				}
+				if (me.melee || me.mobs > 0)
+				{
+				 if (hunt.raptor_strike_up)
+				 {
+					aperta(RAPTORS); // se não está no dead zone, usa Raptor Strike
+					aperta(INTERACT); // engaja mob
+					loga("Usando Raptor Strike em melee range.");
+				 }
+				 break; // mob chegou
+				}
+				if (me.combat) // se combate iniciou após ranged
 				{
 				 loga("Combate iniciado após ranged pull.");
 				 return;
 				}
 			 }
-
-			 // Se estiver em melee range - FALLBACK IGUAL AO ROGUE
+			 // fallback para melee caso não tenha ranged
 			 if (me.melee)
 			 {
-				// Hunter usa Raptor Strike como ataque melee inicial
 				if (hunt.raptor_strike_up)
 				{
 				 aperta(RAPTORS);
@@ -3018,13 +3070,11 @@ else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------
 				}
 				else
 				{
-				 // Fallback para autoattack normal
 				 if (!me.autoattack)
 					aperta(AUTOATTACK);
 				}
 			 }
-
-			 // Movimento contínuo - IGUAL AO ROGUE
+			 // movimento contínuo: interact e pulo
 			 int now = Environment.TickCount;
 			 if (now - lastInteract >= 500)
 			 {
@@ -3037,22 +3087,27 @@ else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------
 				lastJump = now;
 			 }
 			}
-
-			// Avaliação final: combate iniciou ou não - IGUAL AO ROGUE
-			if (me.combat)
+			// avaliação final do pull
+			if (!hunt.auto_shot_range_ok || me.melee || me.mobs > 0)
 			{
 			 para();
-			 aperta(PULA, 10);
-			 aperta(INTERACT);
+			 //aperta(PULA, 10);
+			 //aperta(INTERACT);
+			 checkme();
+			 if (hunt.raptor_strike_up)
+			 {
+				aperta(RAPTORS); // usa Raptor Strike se não estiver no dead zone
+				clog("Last chance raptor strike.");
+			 }
 			 clog("Pull concluído com sucesso.");
 			 return;
 			}
 			else
 			{
 			 clog("Pull falhou. Não entrou em combate.");
-			 aperta(CLEARTGT); // limpa target se falhou
+			 aperta(CLEARTGT);
 			}
-		 } // ---------------- FIM PULL HUNTER ----------------
+		 } // fim pull hunter
 
 
 		 //------------------------------------------------------------
@@ -3467,7 +3522,7 @@ else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------
 	private void rastreia_mob_combate()
 	{
 	 // só adiciona se target válido, com aggro, e levou porrada significativa
-	 if (me.hastarget && (tar.aggro > 0 || tar.pet_aggro > 0) && tar.hp < 50)
+	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro ) && tar.hp < 50)
 	 {
 		// verifica se é mob skinnable
 		if (tar.type == HUMANOID || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
@@ -3521,7 +3576,7 @@ else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------
 	// --------------------------------
 	void viramob()
 	{
-	 if (tar.aggro > 0 || tar.pet_aggro > 0) // se tem aggro válido
+	 if (tar.player_aggro || tar.pet_aggro ) // se tem aggro válido
 		aperta(INTERACT, 300);
 	 if (me.iscaster) para(); // para de andar antes de castar
 	}
@@ -3633,7 +3688,7 @@ else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------
 		if (!dungeon && me.wrongway && cb_wrong_gira.Checked)
 		{
 		 aperta(INTERACT);
-		 //roda(25); // gira pra manter face no inimigo
+		 roda(20); // gira pra manter face no inimigo
 		 loga("De costas para o alvo! Ativando correção.");
 		 loga("Interact code: 252"); // loga o código de interação
 																 // wait(2000); // espera 2s para não ficar girando muito
@@ -3657,15 +3712,17 @@ else if (me.classe == HUNTER) // ---------------- INÍCIO PULL HUNTER ----------
 // Define se target tem aggro válido (em mim ou no pet)
 checkme();
 		if (tar.hp < 80) deucharge = false;
-bool tem_aggro_valido = (tar.aggro > 0) || (tar.pet_aggro > 0);
+bool tem_aggro_valido = (tar.player_aggro || tar.pet_aggro);
 
 // Define se deve preservar target mesmo sem aggro
 bool deve_preservar = dungeon || deucharge;
 
 // Limpa target SE: não tem aggro válido E não deve preservar
+
 if (!tem_aggro_valido && !deve_preservar)
 {
-    aperta(CLEARTGT);
+		 loga($"PET AGGRO: {tar.pet_aggro}, ME AGGRO: {tar.player_aggro}");
+		 aperta(CLEARTGT);
     loga("Target sem aggro válido. Limpando.");
     checkme();
 }
@@ -3695,20 +3752,20 @@ if (tem_aggro_valido || deve_preservar)
 																		 // MOVIMENTO: aproximação se fora de melee
 																		 // ------------------------------------------
 		 
-		 if (tar.aggro > 0 )
+		 if (tar.player_aggro  )
 		 {
 			aperta(INTERACT); // aproxima se fora de alcance
 			loga("Apertando INTERACT para mob distante.");
 		 }
-		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
+		 if (me.hastarget && tar.player_aggro  && !me.autoattack)
 			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
-		 if (tar.aggro > 0 && me.wrongway)
+		 if (tar.player_aggro  && me.wrongway)
 		 {
 			aperta(INTERACT); // gira para corrigir facing se necessário
 			loga("Corrigindo facing com INTERACT. devido wrong way.");
 			loga("Interact code: 253"); // loga o código de interação
 		 }
-		 if (false && tar.aggro > 0 && !(tar.type == HUMANOID && cb_nohumanoid.Checked))
+		 if (false && tar.player_aggro && !(tar.type == HUMANOID && cb_nohumanoid.Checked))
 		 {
 			aperta(INTERACT);
 			loga("apertando interact de rotina (agro > 0 e nao humanoid) no combate warrior - TESTE 0002 ");
@@ -3791,11 +3848,8 @@ if (tem_aggro_valido || deve_preservar)
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
 		 checkme();
-		 if (!hunt.auto_shot_range_ok && !hunt.auto_shot_ativo && me.hastarget && tar.aggro > 0 && me.melee)
-			aperta(AUTOATTACK); // garante autoattack se mob hostil e em melee
 
-		 loga($"Aggro: {tar.aggro} Ticker: {ticker}"); // loga o ticker atual
-		 if (tar.aggro > 0) aperta(INTERACT); // gira para corrigir facing se necessário
+		 getnear();
 
 		 // Aproximação (COPIADO DO GETNEAR PARA MELEE CLASSES)
 		 if (me.wrongway)
@@ -3803,23 +3857,24 @@ if (tem_aggro_valido || deve_preservar)
 			loga("Hunter: Corrigindo wrongway (code 302).");
 			aperta(INTERACT);
 		 }
-		 else if (!me.melee)
+		 if (me.hastarget && (tar.pet_aggro || tar.player_aggro))
 		 {
-			loga("Hunter: Corrigindo distância (fora de melee) (code 303).");
+			if (!me.melee)
+			 loga("Hunter: Corrigindo distância (fora de melee) (code 303).");
+			else
+			 loga("Interact de rotina: 305."); // loga o código de interação
 			aperta(INTERACT);
 		 }
-		 else
-		 {
-			aperta(INTERACT); // INTERACT de rotina
-		 }
+
 		 // ASSIST NO PET 
 		 //------------------------------
 		 if ((!me.hastarget && hunt.has_pet && me.combat) || (me.mobs > 1 && hunt.has_pet))
 			aperta(ASSIST); // assiste o pet se estiver em combate sem target ou +1 mob
-			// ------------------------------------------
-			// AUTOATTACK + PULOS
-			// ------------------------------------------
-			if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
+
+		 // ------------------------------------------
+		 // AUTOATTACK + PULOS
+		 // ------------------------------------------
+		 if (me.hastarget && tar.player_aggro && tar.mood != 1 && !me.autoattack)
 		 {
 			aperta(AUTOATTACK);
 			loga("Autoattack iniciado.");
@@ -3848,20 +3903,37 @@ if (tem_aggro_valido || deve_preservar)
 			 clog($"Hunter: Stoneform usado! HP: {me.hp}% Debuffs: {me.hasother}/{me.haspoison}/{me.hasdisease}");
 			}
 		 }
-
+		 // ------------------------------------------
+		 // RANGED TRY
+		 // ------------------------------------------
+		 checkme();
+		 if (hunt.serpent_sting_up && !me.melee)
+		 {
+			aperta(SERPENTSTING); // (comentado: ainda não aprendeu)
+			clog("Casting Serpent Sting.");
+		 }
+		 else if (hunt.arcane_shot_up && !me.melee)
+		 {
+			aperta(ARCANESHOT); // (comentado: ainda não aprendeu)
+			clog("Casting Arcane Shot.");
+		 }
 		 // ------------------------------------------
 		 // RAPTOR STRIKE (SUBSTITUI TODAS AS SKILLS DO ROGUE)
 		 // ------------------------------------------
 		 else if (hunt.raptor_strike_up && tar.hp > 0)
 		 {
-			aperta(RAPTORS);
+			checkme();
+			if (hunt.raptor_strike_up) aperta(RAPTORS);
 			clog($"Raptor Strike: mana={me.mana}");
 		 }
 
+
+
 		}//------------FIM ROTINA DE COMBATE HUNTER ------------------
-		 // -----------------------------------------------
-		 // ROTINA DE COMBATE WARRIOR (WCR)
-		 // -----------------------------------------------
+
+		// -----------------------------------------------
+		// ROTINA DE COMBATE WARRIOR (WCR)
+		// -----------------------------------------------
 		else if (me.classe == WARRIOR)
 		{
 		 // ------------------------------------------
@@ -3895,20 +3967,20 @@ if (tem_aggro_valido || deve_preservar)
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
 		 getnear(); // se aproxima do target se estiver fora de alcance de melee
-		 if (tar.aggro > 0 && !me.melee)
+		 if (tar.player_aggro  && !me.melee)
 		 {
 			aperta(INTERACT); // aproxima se fora de alcance
 			loga("Apertando INTERACT para mob distante.");
 		 }
-		 if (me.hastarget && tar.aggro > 0 && !me.autoattack)
+		 if (me.hastarget && tar.player_aggro  && !me.autoattack)
 			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
-		 if (tar.aggro > 0 && me.wrongway)
+		 if (tar.player_aggro  && me.wrongway)
 		 {
 			aperta(INTERACT); // gira para corrigir facing se necessário
 			loga("Corrigindo facing com INTERACT. devido wrong way.");
 			loga("Interact code: 253"); // loga o código de interação
 		 }
-		 if (false && tar.aggro > 0 && !(tar.type == HUMANOID && cb_nohumanoid.Checked))
+		 if (false && tar.player_aggro  && !(tar.type == HUMANOID && cb_nohumanoid.Checked))
 		 {
 			aperta(INTERACT);
 			loga("apertando interact de rotina (agro > 0 e nao humanoid) no combate warrior - TESTE 0002 ");
@@ -4055,7 +4127,7 @@ if (tem_aggro_valido || deve_preservar)
 		 // FACE NO TARGET 
 		 //------------------------------
 		 getnear(false); // se aproxima do target se estiver fora de alcance de melee
-		 if (me.wrongway && (tar.aggro > 0 || tar.pet_aggro > 0))
+		 if (me.wrongway && (tar.player_aggro  || tar.pet_aggro ))
 		 {
 			casta(INTERACT); // gira para corrigir facing se necessário
 			loga("Interact code: 254"); // loga o código de interação
@@ -4318,13 +4390,13 @@ if (tem_aggro_valido || deve_preservar)
 			// MOVIMENTO: aproximação se fora de melee
 			// ------------------------------------------
 			checkme();
-			loga($"Aggro: {tar.aggro} Ticker: {ticker}"); // loga o ticker atual
-			if (tar.aggro > 0) aperta(INTERACT); // gira para corrigir facing se necessário
+			loga($"Aggro: {tar.player_aggro} Ticker: {ticker}"); // loga o ticker atual
+			if (tar.player_aggro ) aperta(INTERACT); // gira para corrigir facing se necessário
 																					 //getnear();// Aproxima do target se necessário
 																					 // ------------------------------------------
 																					 // AUTOATTACK + PULOS
 																					 // ------------------------------------------
-			if (me.hastarget && tar.aggro > 0 && tar.mood != 1 && !me.autoattack)
+			if (me.hastarget && tar.player_aggro  && tar.mood != 1 && !me.autoattack)
 			{
 			 aperta(AUTOATTACK);
 			 loga("Autoattack iniciado. Cod 323");
@@ -4563,44 +4635,102 @@ if (tem_aggro_valido || deve_preservar)
 		}
 	 }
 
-	 //-----------------------------------------
-	 // ROTINA DE DESCANSO PÓS-COMBATE (HUNTER)
-	 //-----------------------------------------
+	 // ================================
+	 // ROTINA PÓS COMBATE - HUNTER (ATUALIZADA)
+	 // Adicionar esta seção na rotina pós combate do Hunter, após o código de recuperação de HP
+	 // ================================
 	 else if (me.classe == HUNTER)
 	 {
-		// Randomização de pull (para futuras implementações)
-		// if (cb_random_pull_hunter.Checked) // RANDOMIZA TIPO DE PULL
-		// {
-		//     Random random = new Random();
-		//     // 50% de chance para cb_range_pull_hunter
-		//     cb_range_pull_hunter.Checked = random.Next(0, 2) == 1;
-		// }
+		// ================================
+		// LÓGICA INTELIGENTE DE PET
+		// ================================
+		if (me.level >= 10) // Hunter ganha pet no level 10
+		{
+		 // CASO 1: Pet morto (has_pet = true mas pet_hp = 0)
+		 if (!hunt.has_pet  && hunt.revive_pet_up)
+		 {
+			loga("Pet morto detectado. Revivendo pet.");
+			para(); // para de andar para reviver
 
-		int hp_ini = me.hp;                              // salva o HP inicial
+			// Aguarda um momento para garantir que parou
+			wait(500);
+
+			// Verifica se tem mana suficiente (Revive Pet custa mana)
+			if (me.mana < 50)
+			{
+			 loga("Mana insuficiente para reviver pet. Esperando recuperação.");
+			 aperta(F12); // COMIDA/BEBIDA para recuperar mana
+			 while (me.mana < 50 && !me.combat)
+			 {
+				wait(1000);
+				checkme();
+			 }
+			}
+
+			// Revive o pet
+			loga("Revivendo pet...");
+			casta(SUMMONPET); // usa o método casta para reviver o pet
+
+			// Aguarda um pouco para o pet ser revivido
+			wait(3000);
+			checkme(); // atualiza status para verificar se o pet foi revivido
+
+			if (hunt.has_pet && hunt.pet_hp > 0)
+			{
+			 loga("Pet revivido com sucesso!");
+			}
+			else
+			{
+			 loga("Falha ao reviver pet. Tentativa será repetida no próximo ciclo.");
+			}
+		 }
+		 // CASO 2: Sem pet (has_pet = false) - não faz nada
+		 else if (!hunt.has_pet && !hunt.revive_pet_up)
+		 {
+			loga("Hunter sem pet. Precisa fazer tame primeiro.");
+			// Não tenta invocar nada - precisa fazer tame de um animal
+		 }
+		 // CASO 3: Pet vivo (has_pet = true e pet_hp > 0) - tudo ok
+		 else if (hunt.has_pet && hunt.pet_hp > 0) // ALIMENTA O PET
+		 {
+			// X = mesmo do botão de apagar cinza (5)
+			// Y = botão de apagar cinza (5) + 10 pixels = 15
+			loc botao_feed_pet = new loc(5, 15);
+
+			loga("Alimentando pet...");
+			clica(botao_feed_pet, 1); // clica no botão de alimentar pet existente
+			wait(50); // pequena pausa para evitar spam
+		 }
+		}
+
+	
+		// ================================
+		// RECUPERAÇÃO DE HP (código existente)
+		// ================================
+		int hp_ini = Math.Min(me.hp,hunt.pet_hp);                              // salva o HP inicial
 		int limite = 80;                                 // Hunter usa mesmo limite do Warrior (80%)
-																										 // TODO: Criar tb_rest_hunter quando tiver interface própria
 
 		if (hp_ini < limite)
 		{
-		 loga($"HUNTER: HP baixo após combate ({hp_ini}%). Esperando recuperação.");
+		 loga($"HUNTER: HP baixo após combate ({Math.Min(me.hp, hunt.pet_hp)}%). Esperando recuperação.");
 		 para(); // para de andar se estiver andando
-		 loga($"Esperando recuperação de HP: {me.hp}");
+		 loga($"Esperando recuperação de HP: {Math.Min(me.hp, hunt.pet_hp)}");
 		 aperta(F12); // COMIDA 
 		 espera(2);
 
 		 // se começou a comer, espera até 100%; senão, só até o limite normal
 		 if (me.eating)
 		 {
-			while (me.hp < 100 && !me.combat)
+			while (Math.Min(me.hp, hunt.pet_hp) < 100 && !me.combat)
 			 espera(1);
 		 }
 		 else
 		 {
-			while (me.hp < limite && !me.combat)
+			while (Math.Min(me.hp, hunt.pet_hp) < limite && !me.combat)
 			 espera(1);
 		 }
 		}
-	 }// FIM ROTINA DE DESCANSO PÓS-COMBATE (HUNTER)
+	 }//-------------FIM DA ROTINA DE PÓS COMBATE HUNTER ------------------
 
 	 //-----------------------------------------
 	 // ROTINA DE DESCANSO PÓS-COMBATE (WARRIOR)
@@ -4706,6 +4836,8 @@ if (tem_aggro_valido || deve_preservar)
 	// --------------------------------
 	void getnear(bool melee = true)
 	{
+	 if (me.classe == HUNTER) return; // não aproxima em hunter
+
 	 if (dungeon) return; // não aproxima em dungeons
 
 	 // -----------------------
@@ -4716,7 +4848,7 @@ if (tem_aggro_valido || deve_preservar)
 	 // -----------------------
 	 // Se não há target ou aggro, não faz nada
 	 // -----------------------
-	 if (!me.hastarget || (tar.aggro == 0 && tar.pet_aggro==0))
+	 if (!me.hastarget || (!tar.player_aggro  && !tar.pet_aggro))
 	 {
 		loga("getnear: Sem target ou sem aggro, retornando.");
 		return;
@@ -7878,10 +8010,12 @@ else
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 wait(100);
+	 
 	 checkme();
-		wait(100);
-	 loga($"stacks de sunder armor abaixo de 5: {war.little_sundered}");
+	 loga($"PET AGGRO: {tar.pet_aggro}, ME AGGRO: {tar.player_aggro} HAS PET: {hunt.has_pet} REVIVE READY: {hunt.revive_pet_up}");
+	 
+
+
 
 
 	}

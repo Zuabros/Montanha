@@ -60,8 +60,8 @@ namespace Discord
 
 
 	// ----------- específicos do target (tar) -----------
-	public int aggro;         // >= 2 me atacando, 1 agro secundario, 0 nao estou em combate com mob 
-	public int pet_aggro;     // pet tem threat com o target (0 ou 1)
+	public bool player_aggro;        // Player tem aggro (mob atacando player) - bit 0
+	public bool pet_aggro;           // Pet tem aggro (mob atacando pet) - bit 1
 	public bool israre;          // criatura rara (bit 64 no 7G)
 	public bool iselite;         // criatura elite (bit 32 no 7G)
 	public bool trivial;        // criatura trivial  
@@ -118,37 +118,61 @@ namespace Discord
 	public bool has_demon_skin;      // bit 0 - Demon Skin ativo
  }
  // --------------------------------
- // CLASSE huntertable - STATUS DO HUNTER
+ // CLASSE huntertable - STATUS DO HUNTER (VERSÃO ATUALIZADA)
  // --------------------------------
  public class huntertable
  {
+	// ================================
 	// SPELLS PRONTAS (true se cooldown + range + mana OK)
+	// ================================
 	public bool raptor_strike_up;         // Raptor Strike pronto (mana + range - como Heroic Strike)
 	public bool auto_shot_up;             // Auto Shot pronto e em range
 	public bool auto_shot_range_ok;       // Auto Shot range ok (verificação específica)
 
-	// STATUS ATIVO (true se ativo)
-	public bool auto_shot_ativo;          // Auto Shot ativo (como autoattack)
-	public bool raptor_strike_toggle_ativo; // Raptor Strike toggle ativo (como Heroic Strike toggle)
+	// NOVAS SKILLS ADICIONADAS
+	public bool serpent_sting_up;         // Serpent Sting pronto (spellready + manarange)
+	public bool concussive_shot_up;       // Concussive Shot pronto (spellready + manarange)
+	public bool arcane_shot_up;           // Arcane Shot pronto (spellready + manarange)
+	public bool revive_pet_up;            // Revive Pet pronto (spellready + manarange)
 
+	// ================================
+	// STATUS ATIVO (true se ativo)
+	// ================================
+	public bool auto_shot_ativo;          // Auto Shot ativo (como autoattack)
+	
+	// ================================
+	// DEBUFFS NO TARGET
+	// ================================
+	public bool tar_serpent;              // Target tem debuff Serpent Sting
+
+	// ================================
 	// PET STATUS (como Warlock - específico da classe)
+	// ================================
 	public bool has_pet;                  // Pet vivo e ativo (como wlock.has_pet)
 	public int pet_hp;                    // HP do pet (0-100%) (como wlock.pet_hp)
 																				// NOTA: tar.pet_aggro é genérico e já existe no element
 
+	// ================================
 	// COOLDOWNS (para futuras implementações)
+	// ================================
 	// public int aspect_cd;              // Cooldown de aspectos
 	// public int trap_cd;                // Cooldown de armadilhas
 
+	// ================================
 	// AMMUNITION/ARROWS (para futuras implementações)
+	// ================================
 	// public bool has_arrows;            // Tem munição
 	// public int arrow_count;            // Quantidade de flechas
 
-	// DEBUFFS NO TARGET (para futuras implementações)
+	// ================================
+	// OUTROS DEBUFFS NO TARGET (para futuras implementações)
+	// ================================
 	// public bool has_hunters_mark;      // Hunter's Mark ativo no target
-	// public bool has_serpent_sting;     // Serpent Sting ativo no target
+	// public bool has_concussive_shot;   // Concussive Shot ativo no target
 
+	// ================================
 	// ASPECTS (para futuras implementações)
+	// ================================
 	// public bool aspect_hawk;           // Aspect of the Hawk ativo
 	// public bool aspect_cheetah;        // Aspect of the Cheetah ativo
 	// public bool aspect_monkey;         // Aspect of the Monkey ativo
