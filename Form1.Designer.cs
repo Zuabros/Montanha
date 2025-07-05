@@ -79,6 +79,7 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
 	 this.cb_nomurloc = new System.Windows.Forms.CheckBox();
 	 this.tb_hearthlevel = new System.Windows.Forms.TextBox();
 	 this.cb_hearth_ding = new System.Windows.Forms.CheckBox();
@@ -172,7 +173,6 @@ namespace Discord
 	 this.cb_random_pull_warrior = new System.Windows.Forms.CheckBox();
 	 this.tb_rest_warr = new System.Windows.Forms.TextBox();
 	 this.label29 = new System.Windows.Forms.Label();
-	 this.tb_bloorrage_maxmobs = new System.Windows.Forms.TextBox();
 	 this.cb_use_bloodrage = new System.Windows.Forms.CheckBox();
 	 this.cb_use_rend = new System.Windows.Forms.CheckBox();
 	 this.tb_heroic_strike_rage = new System.Windows.Forms.TextBox();
@@ -215,6 +215,7 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_huntersmark = new System.Windows.Forms.CheckBox();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
 	 this.textBox1 = new System.Windows.Forms.TextBox();
@@ -317,8 +318,9 @@ namespace Discord
 	 this.tb_prob_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
-	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
-	 this.cb_huntersmark = new System.Windows.Forms.CheckBox();
+	 this.cb_slam = new System.Windows.Forms.CheckBox();
+	 this.tb_demoshoutat = new System.Windows.Forms.TextBox();
+	 this.cb_use_demoshout = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -874,6 +876,16 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_prefer_distant
+	 // 
+	 this.cb_prefer_distant.AutoSize = true;
+	 this.cb_prefer_distant.Location = new System.Drawing.Point(139, 466);
+	 this.cb_prefer_distant.Name = "cb_prefer_distant";
+	 this.cb_prefer_distant.Size = new System.Drawing.Size(118, 17);
+	 this.cb_prefer_distant.TabIndex = 80;
+	 this.cb_prefer_distant.Text = "Prefer distant target";
+	 this.cb_prefer_distant.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_nomurloc
 	 // 
@@ -1845,11 +1857,13 @@ namespace Discord
 	 // tabPage5
 	 // 
 	 this.tabPage5.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage5.Controls.Add(this.tb_demoshoutat);
+	 this.tabPage5.Controls.Add(this.cb_use_demoshout);
+	 this.tabPage5.Controls.Add(this.cb_slam);
 	 this.tabPage5.Controls.Add(this.cb_sunderspam);
 	 this.tabPage5.Controls.Add(this.cb_random_pull_warrior);
 	 this.tabPage5.Controls.Add(this.tb_rest_warr);
 	 this.tabPage5.Controls.Add(this.label29);
-	 this.tabPage5.Controls.Add(this.tb_bloorrage_maxmobs);
 	 this.tabPage5.Controls.Add(this.cb_use_bloodrage);
 	 this.tabPage5.Controls.Add(this.cb_use_rend);
 	 this.tabPage5.Controls.Add(this.tb_heroic_strike_rage);
@@ -1871,9 +1885,9 @@ namespace Discord
 	 this.cb_sunderspam.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cb_sunderspam.Location = new System.Drawing.Point(14, 167);
 	 this.cb_sunderspam.Name = "cb_sunderspam";
-	 this.cb_sunderspam.Size = new System.Drawing.Size(120, 17);
+	 this.cb_sunderspam.Size = new System.Drawing.Size(90, 17);
 	 this.cb_sunderspam.TabIndex = 21;
-	 this.cb_sunderspam.Text = "Spam Sunder Armor";
+	 this.cb_sunderspam.Text = "Sunder Armor";
 	 this.cb_sunderspam.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_random_pull_warrior
@@ -1905,14 +1919,6 @@ namespace Discord
 	 this.label29.TabIndex = 9;
 	 this.label29.Text = "Rest at:";
 	 // 
-	 // tb_bloorrage_maxmobs
-	 // 
-	 this.tb_bloorrage_maxmobs.Location = new System.Drawing.Point(136, 114);
-	 this.tb_bloorrage_maxmobs.Name = "tb_bloorrage_maxmobs";
-	 this.tb_bloorrage_maxmobs.Size = new System.Drawing.Size(15, 20);
-	 this.tb_bloorrage_maxmobs.TabIndex = 8;
-	 this.tb_bloorrage_maxmobs.Text = "1";
-	 // 
 	 // cb_use_bloodrage
 	 // 
 	 this.cb_use_bloodrage.AutoSize = true;
@@ -1920,9 +1926,9 @@ namespace Discord
 	 this.cb_use_bloodrage.CheckState = System.Windows.Forms.CheckState.Checked;
 	 this.cb_use_bloodrage.Location = new System.Drawing.Point(13, 116);
 	 this.cb_use_bloodrage.Name = "cb_use_bloodrage";
-	 this.cb_use_bloodrage.Size = new System.Drawing.Size(121, 17);
+	 this.cb_use_bloodrage.Size = new System.Drawing.Size(74, 17);
 	 this.cb_use_bloodrage.TabIndex = 7;
-	 this.cb_use_bloodrage.Text = "Bloorrage max mobs";
+	 this.cb_use_bloodrage.Text = "Bloorrage ";
 	 this.cb_use_bloodrage.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_use_rend
@@ -2351,6 +2357,18 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // cb_huntersmark
+	 // 
+	 this.cb_huntersmark.AutoSize = true;
+	 this.cb_huntersmark.Checked = true;
+	 this.cb_huntersmark.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_huntersmark.Location = new System.Drawing.Point(4, 13);
+	 this.cb_huntersmark.Name = "cb_huntersmark";
+	 this.cb_huntersmark.Size = new System.Drawing.Size(92, 17);
+	 this.cb_huntersmark.TabIndex = 0;
+	 this.cb_huntersmark.Text = "Hunter\'s Mark";
+	 this.cb_huntersmark.UseVisualStyleBackColor = true;
 	 // 
 	 // pan_tar
 	 // 
@@ -3331,27 +3349,37 @@ namespace Discord
 	 this.tb_prob_minus1.TabIndex = 77;
 	 this.tb_prob_minus1.Text = "33";
 	 // 
-	 // cb_prefer_distant
+	 // cb_slam
 	 // 
-	 this.cb_prefer_distant.AutoSize = true;
-	 this.cb_prefer_distant.Location = new System.Drawing.Point(139, 466);
-	 this.cb_prefer_distant.Name = "cb_prefer_distant";
-	 this.cb_prefer_distant.Size = new System.Drawing.Size(118, 17);
-	 this.cb_prefer_distant.TabIndex = 80;
-	 this.cb_prefer_distant.Text = "Prefer distant target";
-	 this.cb_prefer_distant.UseVisualStyleBackColor = true;
+	 this.cb_slam.AutoSize = true;
+	 this.cb_slam.Checked = true;
+	 this.cb_slam.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_slam.Location = new System.Drawing.Point(14, 186);
+	 this.cb_slam.Name = "cb_slam";
+	 this.cb_slam.Size = new System.Drawing.Size(49, 17);
+	 this.cb_slam.TabIndex = 22;
+	 this.cb_slam.Text = "Slam";
+	 this.cb_slam.UseVisualStyleBackColor = true;
 	 // 
-	 // cb_huntersmark
+	 // tb_demoshoutat
 	 // 
-	 this.cb_huntersmark.AutoSize = true;
-	 this.cb_huntersmark.Checked = true;
-	 this.cb_huntersmark.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_huntersmark.Location = new System.Drawing.Point(4, 13);
-	 this.cb_huntersmark.Name = "cb_huntersmark";
-	 this.cb_huntersmark.Size = new System.Drawing.Size(92, 17);
-	 this.cb_huntersmark.TabIndex = 0;
-	 this.cb_huntersmark.Text = "Hunter\'s Mark";
-	 this.cb_huntersmark.UseVisualStyleBackColor = true;
+	 this.tb_demoshoutat.Location = new System.Drawing.Point(104, 206);
+	 this.tb_demoshoutat.Name = "tb_demoshoutat";
+	 this.tb_demoshoutat.Size = new System.Drawing.Size(15, 20);
+	 this.tb_demoshoutat.TabIndex = 24;
+	 this.tb_demoshoutat.Text = "2";
+	 // 
+	 // cb_use_demoshout
+	 // 
+	 this.cb_use_demoshout.AutoSize = true;
+	 this.cb_use_demoshout.Checked = true;
+	 this.cb_use_demoshout.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_demoshout.Location = new System.Drawing.Point(16, 209);
+	 this.cb_use_demoshout.Name = "cb_use_demoshout";
+	 this.cb_use_demoshout.Size = new System.Drawing.Size(90, 17);
+	 this.cb_use_demoshout.TabIndex = 23;
+	 this.cb_use_demoshout.Text = "Demoralize at";
+	 this.cb_use_demoshout.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -3620,7 +3648,6 @@ namespace Discord
 	private TextBox tb_heroic_strike_rage;
 	private Label label27;
 	private CheckBox cb_use_rend;
-	private TextBox tb_bloorrage_maxmobs;
 	private CheckBox cb_use_bloodrage;
 	private CheckBox cb_range_pull;
 	private CheckBox cb_evis_auto;
@@ -3720,6 +3747,9 @@ namespace Discord
 	private TabPage tabPage8;
 	private CheckBox cb_prefer_distant;
 	private CheckBox cb_huntersmark;
+	private CheckBox cb_slam;
+	private TextBox tb_demoshoutat;
+	private CheckBox cb_use_demoshout;
  }
 }
 

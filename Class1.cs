@@ -223,7 +223,7 @@ namespace Discord
 	public bool throw_up;            // pode tacar throw knife (range, cooldown, etc.)
 	public bool execute_up;          // pode usar Execute?
 	public bool sunder_up;           // pode usar Sunder Armor (range + rage)?
-	public bool little_sundered;     // target com menos de 5 stacks de Sunder?
+	public bool slam_up;             // pode usar Slam? (range + rage)?
 
 	public bool has_rend;            // target tem Rend ativo?  
 	public bool has_thunderclap;     // target tem Thunder Clap ativo?
