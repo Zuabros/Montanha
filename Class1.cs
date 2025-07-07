@@ -224,14 +224,21 @@ namespace Discord
 	public bool execute_up;          // pode usar Execute?
 	public bool sunder_up;           // pode usar Sunder Armor (range + rage)?
 	public bool slam_up;             // pode usar Slam? (range + rage)?
-
+	public bool sweep_up;            // pode usar Sweeping Strikes? 
+	public bool sweeping;            // Sweeping Strikes ativo?
+	public bool revenge_up;          // pode usar Revenge?
+	public bool shield_block_up;     // pode usar Shield Block e não tem aura ativa?
+	public bool shield_wall_ready;   // pode usar Shield Wall?
+	public bool stance;              // stance atual (0 = Battle, 1 = Defensive)
+	public bool shield_bash_ready;   // pode usar Shield Bash?
+	public bool disarm_ready;        // pode usar Disarm?
 	public bool has_rend;            // target tem Rend ativo?  
-	public bool has_thunderclap;     // target tem Thunder Clap ativo?
 	public bool has_demoralizing;    // target tem Demoralizing Shout ativo?
-
 	public bool has_cleave;          // Cleave ativado?  
 	public bool has_bs;              // Battle Shout ativo?
-	public bool hs_casting;          // Heroic strike foi ativado?  
+	public bool hs_casting;          // Heroic strike foi ativado?
+	public bool revenge_proc;        // Revenge com (proc ativo)
+	public bool has_shield;        // Tenho shield equipado
  }
 
  // --------------------------------

@@ -169,6 +169,9 @@ namespace Discord
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
 	 this.cb_SOR = new System.Windows.Forms.CheckBox();
 	 this.tabPage5 = new System.Windows.Forms.TabPage();
+	 this.tb_demoshoutat = new System.Windows.Forms.TextBox();
+	 this.cb_use_demoshout = new System.Windows.Forms.CheckBox();
+	 this.cb_slam = new System.Windows.Forms.CheckBox();
 	 this.cb_sunderspam = new System.Windows.Forms.CheckBox();
 	 this.cb_random_pull_warrior = new System.Windows.Forms.CheckBox();
 	 this.tb_rest_warr = new System.Windows.Forms.TextBox();
@@ -180,7 +183,7 @@ namespace Discord
 	 this.tb_thunderclap_count = new System.Windows.Forms.TextBox();
 	 this.cb_use_thunderclap = new System.Windows.Forms.CheckBox();
 	 this.cb_war_rangepull = new System.Windows.Forms.CheckBox();
-	 this.cb_bersek = new System.Windows.Forms.CheckBox();
+	 this.cb_autostance = new System.Windows.Forms.CheckBox();
 	 this.tabPage6 = new System.Windows.Forms.TabPage();
 	 this.cb_autocurse = new System.Windows.Forms.CheckBox();
 	 this.cb_sendpet = new System.Windows.Forms.CheckBox();
@@ -296,7 +299,6 @@ namespace Discord
 	 this.cb_HS_timer = new System.Windows.Forms.CheckBox();
 	 this.hs_min_left = new System.Windows.Forms.TextBox();
 	 this.bt_onoff = new System.Windows.Forms.Button();
-	 this.bt_loadWP = new System.Windows.Forms.Button();
 	 this.bt_anda = new System.Windows.Forms.Button();
 	 this.tb_y = new System.Windows.Forms.TextBox();
 	 this.tb_x = new System.Windows.Forms.TextBox();
@@ -318,9 +320,12 @@ namespace Discord
 	 this.tb_prob_plus1 = new System.Windows.Forms.TextBox();
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
-	 this.cb_slam = new System.Windows.Forms.CheckBox();
-	 this.tb_demoshoutat = new System.Windows.Forms.TextBox();
-	 this.cb_use_demoshout = new System.Windows.Forms.CheckBox();
+	 this.bt_loadWP = new System.Windows.Forms.Button();
+	 this.cb_allowcleave = new System.Windows.Forms.CheckBox();
+	 this.cb_sweep = new System.Windows.Forms.CheckBox();
+	 this.label53 = new System.Windows.Forms.Label();
+	 this.cb_deathwish = new System.Windows.Forms.CheckBox();
+	 this.tb_deathwish_at = new System.Windows.Forms.TextBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -842,6 +847,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_allowcleave);
 	 this.tabPage2.Controls.Add(this.cb_prefer_distant);
 	 this.tabPage2.Controls.Add(this.cb_nomurloc);
 	 this.tabPage2.Controls.Add(this.tb_hearthlevel);
@@ -1857,6 +1863,10 @@ namespace Discord
 	 // tabPage5
 	 // 
 	 this.tabPage5.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage5.Controls.Add(this.tb_deathwish_at);
+	 this.tabPage5.Controls.Add(this.cb_deathwish);
+	 this.tabPage5.Controls.Add(this.label53);
+	 this.tabPage5.Controls.Add(this.cb_sweep);
 	 this.tabPage5.Controls.Add(this.tb_demoshoutat);
 	 this.tabPage5.Controls.Add(this.cb_use_demoshout);
 	 this.tabPage5.Controls.Add(this.cb_slam);
@@ -1871,12 +1881,44 @@ namespace Discord
 	 this.tabPage5.Controls.Add(this.tb_thunderclap_count);
 	 this.tabPage5.Controls.Add(this.cb_use_thunderclap);
 	 this.tabPage5.Controls.Add(this.cb_war_rangepull);
-	 this.tabPage5.Controls.Add(this.cb_bersek);
+	 this.tabPage5.Controls.Add(this.cb_autostance);
 	 this.tabPage5.Location = new System.Drawing.Point(4, 22);
 	 this.tabPage5.Name = "tabPage5";
 	 this.tabPage5.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage5.TabIndex = 2;
 	 this.tabPage5.Text = "Warrior";
+	 // 
+	 // tb_demoshoutat
+	 // 
+	 this.tb_demoshoutat.Location = new System.Drawing.Point(104, 255);
+	 this.tb_demoshoutat.Name = "tb_demoshoutat";
+	 this.tb_demoshoutat.Size = new System.Drawing.Size(15, 20);
+	 this.tb_demoshoutat.TabIndex = 24;
+	 this.tb_demoshoutat.Text = "2";
+	 // 
+	 // cb_use_demoshout
+	 // 
+	 this.cb_use_demoshout.AutoSize = true;
+	 this.cb_use_demoshout.Checked = true;
+	 this.cb_use_demoshout.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_use_demoshout.Location = new System.Drawing.Point(16, 258);
+	 this.cb_use_demoshout.Name = "cb_use_demoshout";
+	 this.cb_use_demoshout.Size = new System.Drawing.Size(90, 17);
+	 this.cb_use_demoshout.TabIndex = 23;
+	 this.cb_use_demoshout.Text = "Demoralize at";
+	 this.cb_use_demoshout.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_slam
+	 // 
+	 this.cb_slam.AutoSize = true;
+	 this.cb_slam.Checked = true;
+	 this.cb_slam.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_slam.Location = new System.Drawing.Point(14, 186);
+	 this.cb_slam.Name = "cb_slam";
+	 this.cb_slam.Size = new System.Drawing.Size(49, 17);
+	 this.cb_slam.TabIndex = 22;
+	 this.cb_slam.Text = "Slam";
+	 this.cb_slam.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_sunderspam
 	 // 
@@ -1962,7 +2004,7 @@ namespace Discord
 	 // 
 	 // tb_thunderclap_count
 	 // 
-	 this.tb_thunderclap_count.Location = new System.Drawing.Point(104, 52);
+	 this.tb_thunderclap_count.Location = new System.Drawing.Point(107, 278);
 	 this.tb_thunderclap_count.Name = "tb_thunderclap_count";
 	 this.tb_thunderclap_count.Size = new System.Drawing.Size(15, 20);
 	 this.tb_thunderclap_count.TabIndex = 3;
@@ -1973,7 +2015,7 @@ namespace Discord
 	 this.cb_use_thunderclap.AutoSize = true;
 	 this.cb_use_thunderclap.Checked = true;
 	 this.cb_use_thunderclap.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_use_thunderclap.Location = new System.Drawing.Point(13, 55);
+	 this.cb_use_thunderclap.Location = new System.Drawing.Point(16, 281);
 	 this.cb_use_thunderclap.Name = "cb_use_thunderclap";
 	 this.cb_use_thunderclap.Size = new System.Drawing.Size(95, 17);
 	 this.cb_use_thunderclap.TabIndex = 2;
@@ -1990,15 +2032,15 @@ namespace Discord
 	 this.cb_war_rangepull.Text = "Ranged pull (Crossbow)";
 	 this.cb_war_rangepull.UseVisualStyleBackColor = true;
 	 // 
-	 // cb_bersek
+	 // cb_autostance
 	 // 
-	 this.cb_bersek.AutoSize = true;
-	 this.cb_bersek.Location = new System.Drawing.Point(13, 15);
-	 this.cb_bersek.Name = "cb_bersek";
-	 this.cb_bersek.Size = new System.Drawing.Size(89, 17);
-	 this.cb_bersek.TabIndex = 0;
-	 this.cb_bersek.Text = "Bersek Mode";
-	 this.cb_bersek.UseVisualStyleBackColor = true;
+	 this.cb_autostance.AutoSize = true;
+	 this.cb_autostance.Location = new System.Drawing.Point(13, 15);
+	 this.cb_autostance.Name = "cb_autostance";
+	 this.cb_autostance.Size = new System.Drawing.Size(85, 17);
+	 this.cb_autostance.TabIndex = 0;
+	 this.cb_autostance.Text = "Auto Stance";
+	 this.cb_autostance.UseVisualStyleBackColor = true;
 	 // 
 	 // tabPage6
 	 // 
@@ -3150,16 +3192,6 @@ namespace Discord
 	 this.bt_onoff.UseVisualStyleBackColor = true;
 	 this.bt_onoff.Click += new System.EventHandler(this.button1_Click);
 	 // 
-	 // bt_loadWP
-	 // 
-	 this.bt_loadWP.Location = new System.Drawing.Point(58, 38);
-	 this.bt_loadWP.Name = "bt_loadWP";
-	 this.bt_loadWP.Size = new System.Drawing.Size(75, 23);
-	 this.bt_loadWP.TabIndex = 26;
-	 this.bt_loadWP.Text = "Load List";
-	 this.bt_loadWP.UseVisualStyleBackColor = true;
-	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
-	 // 
 	 // bt_anda
 	 // 
 	 this.bt_anda.Location = new System.Drawing.Point(2, 38);
@@ -3349,37 +3381,68 @@ namespace Discord
 	 this.tb_prob_minus1.TabIndex = 77;
 	 this.tb_prob_minus1.Text = "33";
 	 // 
-	 // cb_slam
+	 // bt_loadWP
 	 // 
-	 this.cb_slam.AutoSize = true;
-	 this.cb_slam.Checked = true;
-	 this.cb_slam.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_slam.Location = new System.Drawing.Point(14, 186);
-	 this.cb_slam.Name = "cb_slam";
-	 this.cb_slam.Size = new System.Drawing.Size(49, 17);
-	 this.cb_slam.TabIndex = 22;
-	 this.cb_slam.Text = "Slam";
-	 this.cb_slam.UseVisualStyleBackColor = true;
+	 this.bt_loadWP.Location = new System.Drawing.Point(58, 38);
+	 this.bt_loadWP.Name = "bt_loadWP";
+	 this.bt_loadWP.Size = new System.Drawing.Size(75, 23);
+	 this.bt_loadWP.TabIndex = 26;
+	 this.bt_loadWP.Text = "Load List";
+	 this.bt_loadWP.UseVisualStyleBackColor = true;
+	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // tb_demoshoutat
+	 // cb_allowcleave
 	 // 
-	 this.tb_demoshoutat.Location = new System.Drawing.Point(104, 206);
-	 this.tb_demoshoutat.Name = "tb_demoshoutat";
-	 this.tb_demoshoutat.Size = new System.Drawing.Size(15, 20);
-	 this.tb_demoshoutat.TabIndex = 24;
-	 this.tb_demoshoutat.Text = "2";
+	 this.cb_allowcleave.AutoSize = true;
+	 this.cb_allowcleave.Checked = true;
+	 this.cb_allowcleave.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_allowcleave.Location = new System.Drawing.Point(263, 466);
+	 this.cb_allowcleave.Name = "cb_allowcleave";
+	 this.cb_allowcleave.Size = new System.Drawing.Size(120, 17);
+	 this.cb_allowcleave.TabIndex = 81;
+	 this.cb_allowcleave.Text = "Allow Cleave / AOE";
+	 this.cb_allowcleave.UseVisualStyleBackColor = true;
 	 // 
-	 // cb_use_demoshout
+	 // cb_sweep
 	 // 
-	 this.cb_use_demoshout.AutoSize = true;
-	 this.cb_use_demoshout.Checked = true;
-	 this.cb_use_demoshout.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_use_demoshout.Location = new System.Drawing.Point(16, 209);
-	 this.cb_use_demoshout.Name = "cb_use_demoshout";
-	 this.cb_use_demoshout.Size = new System.Drawing.Size(90, 17);
-	 this.cb_use_demoshout.TabIndex = 23;
-	 this.cb_use_demoshout.Text = "Demoralize at";
-	 this.cb_use_demoshout.UseVisualStyleBackColor = true;
+	 this.cb_sweep.AutoSize = true;
+	 this.cb_sweep.Checked = true;
+	 this.cb_sweep.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_sweep.Location = new System.Drawing.Point(16, 303);
+	 this.cb_sweep.Name = "cb_sweep";
+	 this.cb_sweep.Size = new System.Drawing.Size(108, 17);
+	 this.cb_sweep.TabIndex = 25;
+	 this.cb_sweep.Text = "Sweeping Strikes";
+	 this.cb_sweep.UseVisualStyleBackColor = true;
+	 // 
+	 // label53
+	 // 
+	 this.label53.AutoSize = true;
+	 this.label53.Location = new System.Drawing.Point(16, 239);
+	 this.label53.Name = "label53";
+	 this.label53.Size = new System.Drawing.Size(86, 13);
+	 this.label53.TabIndex = 26;
+	 this.label53.Text = "Cleave and AOE";
+	 // 
+	 // cb_deathwish
+	 // 
+	 this.cb_deathwish.AutoSize = true;
+	 this.cb_deathwish.Checked = true;
+	 this.cb_deathwish.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_deathwish.Location = new System.Drawing.Point(14, 210);
+	 this.cb_deathwish.Name = "cb_deathwish";
+	 this.cb_deathwish.Size = new System.Drawing.Size(128, 17);
+	 this.cb_deathwish.TabIndex = 27;
+	 this.cb_deathwish.Text = "Death Wish level cap";
+	 this.cb_deathwish.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_deathwish_at
+	 // 
+	 this.tb_deathwish_at.Location = new System.Drawing.Point(137, 207);
+	 this.tb_deathwish_at.Name = "tb_deathwish_at";
+	 this.tb_deathwish_at.Size = new System.Drawing.Size(15, 20);
+	 this.tb_deathwish_at.TabIndex = 28;
+	 this.tb_deathwish_at.Text = "0";
 	 // 
 	 // Form1
 	 // 
@@ -3533,7 +3596,6 @@ namespace Discord
 	private System.Windows.Forms.CheckBox cb_use_hammer;
 	private System.Windows.Forms.Label label19;
 	private System.Windows.Forms.TextBox tb_interrupt_at;
-	private System.Windows.Forms.Button bt_loadWP;
 	private System.Windows.Forms.TextBox tb_filename;
 	private System.Windows.Forms.Button bt_saveWPas;
 		private System.Windows.Forms.Button button11;
@@ -3641,7 +3703,7 @@ namespace Discord
 	private Label label26;
 	private CheckBox cb_noelite;
 	private TabPage tabPage5;
-	private CheckBox cb_bersek;
+	private CheckBox cb_autostance;
 	private CheckBox cb_war_rangepull;
 	private CheckBox cb_use_thunderclap;
 	private TextBox tb_thunderclap_count;
@@ -3750,6 +3812,12 @@ namespace Discord
 	private CheckBox cb_slam;
 	private TextBox tb_demoshoutat;
 	private CheckBox cb_use_demoshout;
+	private Button bt_loadWP;
+	private CheckBox cb_allowcleave;
+	private Label label53;
+	private CheckBox cb_sweep;
+	private CheckBox cb_deathwish;
+	private TextBox tb_deathwish_at;
  }
 }
 

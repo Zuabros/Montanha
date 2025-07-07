@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -166,7 +167,7 @@ namespace Discord
 
 	[DllImport("user32.dll")]
 	private static extern bool SetForegroundWindow(IntPtr hWnd);
-	
+
 
 	[DllImport("user32.dll")]
 	private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
@@ -268,7 +269,7 @@ namespace Discord
 	public const int STONEFORM = NOVE;   // racial dos anões
 	public const int HEARTHSTONE = N8;     // Hearthstone
 	public const int HEALTHPOTION = N9;     // Poção de vida
-	//public const int MANAPOTION = N0;     // Poção de mana
+																					//public const int MANAPOTION = N0;     // Poção de mana
 	public const int ANDA = WKEY;   // comando de andar
 	public const int SLOW = F2;     // debuff de lentidão (genérico)
 	public const int ASSIST = F6;     // debuff de lentidão (genérico)
@@ -337,11 +338,28 @@ namespace Discord
 	public const int SUNDERARMOR = N0;  // Sunder Armor
 	public const int CLEAVE = DOIS;  // Cleave
 	public const int DEMORALIZING = F1;  // Demoralizing Shout
-	public const int SLAM = F2;  // Death Wish
-	public const int REND = F3;  // Rend
-	public const int RETALIATION = F4;  // Retaliation
-	public const int CHARGE = F5;  // Charge
-	public const int EXECUTE = F6;  // Execute
+	public const int SLAM = F2;
+	public const int REND = F3;
+	public const int RETALIATION = F4;
+	public const int CHARGE = F5;
+	public const int EXECUTE = F6;
+	public const int SWEEP = F7;  // Sweeping strikes
+	public const int SHIELDBASH = F8;
+	public const bool BATTLE = false; // Battle Stance (stance ativo)
+	public const bool DEFENSIVE = true; // Battle Stance (stance ativo)
+	public const int DEATHWISH = F10; // Death Wish
+
+	public const int BATTLESTANCE = TRES; // Battle Stance (stance ativo)
+	public const int DEFENSIVESTANCE = QUATRO; // Battle Stance (stance ativo)
+	public const int EQUIP2H = CINCO; // Battle Stance (stance ativo)
+	public const int EQUIP1H = SEIS; // Battle Stance (stance ativo)
+	//---------------------------------------------
+	// WARRIOR DEFENSIVE STANCE
+	// --------------------------------------------
+	public const int SHIELDWALL = F4;
+	public const int REVENGE = F5;
+	public const int SHIELDBLOCK = F6;
+	public const int DISARM = F9;
 
 
 	// --------------------------------------------
@@ -362,10 +380,10 @@ namespace Discord
 	public const int PETATTACK = F1;         // Summon Imp
 	public const int SUMMONPET = F2;         // Summon Imp
 	public const int DEMONSKIN = F3;         // Summon Imp
-	//public const int WAND = F4;         // ja tem no priest 
+																					 //public const int WAND = F4;         // ja tem no priest 
 	public const int LIFETAP = F5;         // Summon Imp
-	// F6 = Assist (pet) 
- public const int HEALTHSTONE = F7;         // Summon Imp
+																				 // F6 = Assist (pet) 
+	public const int HEALTHSTONE = F7;         // Summon Imp
 	public const int SIPHONLIFE = F1;     // Siphon Life (DoT + cura)
 
 	// ============================================
@@ -408,13 +426,13 @@ namespace Discord
 	public const int EVASION = N6;          // Evasion
 	public const int SAD = N7;              // Slice and Dice
 	public const int EXPOSE_ARMOR = N0;     // Expose Armor
-	
+
 	public const int KICK = F1;             // Kick
 	public const int VANISH = F2;           // Vanish
 	public const int GOUGE = F3;            // Gouge
 	public const int RIPOSTE = F4;          // Riposte
 	public const int RUPTURE = F5;          // Rupture
-	// F6 reservado para Assist
+																					// F6 reservado para Assist
 
 	// --------------------------------------------
 	// TIPOS DE CRIATURAS
@@ -727,7 +745,7 @@ namespace Discord
 	 InitializeComponent();
 	 ComboOptimizer.form_instance = this;
 
-	 
+
 	 // DEFINE MONITOR DA DIREITA PARA NASCER----
 	 // Para aparecer no monitor da direita (assumindo que seja o segundo monitor):
 	 Screen[] screens = Screen.AllScreens;
@@ -750,7 +768,7 @@ namespace Discord
 	 lb_combatlog.Clear(); // limpa todos os itens da ListBox combatlog
 	 carrega_loot(); // carrega frequencia de pontos de loot 
 	 checkme(); // verifica se o player está em combate e ativa o botao de stop
-	 if (me.level >=12) cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
+	 if (me.level >= 12) cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
 	 killstats("load"); // carrega estatísticas de kills do arquivo
 
 
@@ -784,10 +802,10 @@ namespace Discord
 	private void inicializa()
 	{
 
-	 
+
 	 // CARREGA COORDENADAS DEFINE LOCAL DOS QUADRADINHOS 
 	 int res_y = Screen.PrimaryScreen.Bounds.Height;
-	 
+
 
 	 // --------------------------------
 	 // M17 - MÉTODO CALIBRARPIXELS - DETECTA PRATOS E DEFINE Y CENTRAL DOS HAMBÚRGUERES
@@ -1002,7 +1020,7 @@ namespace Discord
 	 // G: bit 2 = bloodrage_up     (Bloodrage pronto)
 	 // G: bit 3 = hams_up          (Hamstring pronto)
 	 // G: bit 4 = retaliate_up     (Retaliation pronto)
-	 // G: bit 5 = dwish_up         (Death Wish pronto)
+	 // G: bit 5 = has_shield 		(player com escudo equipado)
 	 // G: bit 6 = has_bs           (Battle Shout ativo no player)
 	 // G: bit 7 = has_rend         (Rend ativo no target)
 
@@ -1022,107 +1040,107 @@ namespace Discord
 	// M17 - MÉTODO CALIBRAPIXELS - DETECTA PRATOS E CALCULA HAMBÚRGUERES ENTRE ELES
 	// --------------------------------
 	void calibrarpixels(List<pixel> pixels)
-{
-focawow();                                      // foca a janela do jogo
-int x = 2;                                      // coluna fixa dos pixels
-List<int> pratos = new List<int>();              // lista de y dos pratos
-int lastprato = 5000;                           // último prato (inicial fora de alcance)
-int max_y = res_y - 1;                           // maior y (topo da tela)
-bool primeiro_carne = false;                    // flag: primeiro pixel é carne?
-int nao_prato_count = 0;                        // contador de não-pratos consecutivos
-int limite_nao_prato = 10;                      // limite para encerrar busca
-	 
-
-// verifica se o maior y é carne
-Color c = GetColorAt(x, max_y);                 // lê cor do topo
-if (!isprato(c))                                // não é prato?
- primeiro_carne = true;                      // marca como carneGetColorAt
-
-// varre pixels de cima pra baixo
-for (int y = max_y; y >= max_y - 100; y--)      // começa no topo até 100 pixels abaixo
-{
- c = GetColorAt(x, y);                       // lê cor atual
- if (isprato(c))                              // é prato?
- {
-	if (Math.Abs(lastprato - y) > 1)         // diferença maior que 1?
 	{
-	 pratos.Add(y);                      // adiciona prato
-	 lastprato = y;                      // atualiza último prato
-	 if (false )
-		loga("prato cor " + c.R + "," + c.G + "," + c.B + " em y=" + y);
+	 focawow();                                      // foca a janela do jogo
+	 int x = 2;                                      // coluna fixa dos pixels
+	 List<int> pratos = new List<int>();              // lista de y dos pratos
+	 int lastprato = 5000;                           // último prato (inicial fora de alcance)
+	 int max_y = res_y - 1;                           // maior y (topo da tela)
+	 bool primeiro_carne = false;                    // flag: primeiro pixel é carne?
+	 int nao_prato_count = 0;                        // contador de não-pratos consecutivos
+	 int limite_nao_prato = 10;                      // limite para encerrar busca
+
+
+	 // verifica se o maior y é carne
+	 Color c = GetColorAt(x, max_y);                 // lê cor do topo
+	 if (!isprato(c))                                // não é prato?
+		primeiro_carne = true;                      // marca como carneGetColorAt
+
+	 // varre pixels de cima pra baixo
+	 for (int y = max_y; y >= max_y - 100; y--)      // começa no topo até 100 pixels abaixo
+	 {
+		c = GetColorAt(x, y);                       // lê cor atual
+		if (isprato(c))                              // é prato?
+		{
+		 if (Math.Abs(lastprato - y) > 1)         // diferença maior que 1?
+		 {
+			pratos.Add(y);                      // adiciona prato
+			lastprato = y;                      // atualiza último prato
+			if (false)
+			 loga("prato cor " + c.R + "," + c.G + "," + c.B + " em y=" + y);
+		 }
+		 else
+			if (false) loga("prato " + y + " ignorado");    // prato duplicado
+		 nao_prato_count = 0;                    // reseta contador de não-pratos
+		}
+		else                                         // não é prato
+		{
+		 nao_prato_count++;                      // incrementa contador de não-pratos
+		 if (nao_prato_count >= limite_nao_prato) // atingiu o limite?
+		 {
+			if (false)
+			 loga("encerrando busca por não encontrar pratos por " + limite_nao_prato + " pixels.");
+			break;                              // encerra a busca
+		 }
+		}
+	 }
+
+	 // calcula hambúrgueres
+	 pixels.Clear();                                   // limpa lista de pixels
+	 int count = 0;                                   // contador de hambúrgueres
+
+	 // primeiro hambúrguer
+	 int y1 = primeiro_carne ? max_y : pratos[0];    // topo: max_y ou primeiro prato
+	 int y2 = pratos[primeiro_carne ? 0 : 1];         // próximo prato
+	 int ycarne = (int)Math.Round((y1 + y2) / 2.0);    // centro da carne
+	 pixels.Add(new pixel(x, ycarne));               // adiciona hambúrguer
+	 count++;                                        // incrementa contador
+	 if (false) // codigo desabilitado
+	 {
+		c = GetColorAt(x, ycarne);                   // lê cor da carne
+		loga("hamburger " + count.ToString("d2") + ": cor " + c.R + "," + c.G + "," + c.B + " calculado em y=" + ycarne);
+	 }
+
+	 // demais hambúrgueres
+	 for (int i = primeiro_carne ? 0 : 1; i < pratos.Count - 1; i++)
+	 {
+		y1 = pratos[i];                             // prato inferior
+		y2 = pratos[i + 1];                         // prato superior
+		ycarne = (int)Math.Round((y1 + y2) / 2.0);    // centro da carne
+		pixels.Add(new pixel(x, ycarne));           // adiciona hambúrguer
+		count++;                                    // incrementa contador
+		if (false) // codigo desabilitado pra nao sujar interface
+		{
+		 c = GetColorAt(x, ycarne);               // lê cor da carne
+		 loga("hamburger " + count.ToString("d2") + ": cor " + c.R + "," + c.G + "," + c.B + " calculado em y=" + ycarne);
+		}
+	 }
+
+	 // log final (removido para evitar logs desnecessários)
+	 // loga(count + " hamburgeres localizados entre " + pratos.Count + " pratos detectados.");
 	}
-	else
-	 if (false) loga("prato " + y + " ignorado");    // prato duplicado
-	nao_prato_count = 0;                    // reseta contador de não-pratos
- }
- else                                         // não é prato
- {
-	nao_prato_count++;                      // incrementa contador de não-pratos
-	if (nao_prato_count >= limite_nao_prato) // atingiu o limite?
+
+
+	// --------------------------------
+	// M19 - MÉTODO READPIXELS - LÊ CORES DOS HAMBÚRGUERES E ATUALIZA A LISTA
+	// --------------------------------
+	void readpixels(List<pixel> pixels)
 	{
-	 if (false )
-		loga("encerrando busca por não encontrar pratos por " + limite_nao_prato + " pixels.");
-	 break;                              // encerra a busca
+	 focawow();                     // foca a janela do WoW
+
+	 for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
+	 {
+		var p = pixels[i];              // pega referência ao pixel
+		Color cor = GetColorAt(p.x, p.y);       // lê a cor da tela naquele ponto
+
+		pixels[i].r = cor.R;            // salva canal vermelho
+		pixels[i].g = cor.G;            // salva canal verde
+		pixels[i].b = cor.B;            // salva canal azul
+
+		if (false)  // se debug e loga estiverem marcados
+		 loga("hamburger " + i + ": R=" + p.r + " G=" + p.g + " B=" + p.b); // mostra cor lida
+	 }
 	}
- }
-}
-
-// calcula hambúrgueres
-pixels.Clear();                                   // limpa lista de pixels
-int count = 0;                                   // contador de hambúrgueres
-
-// primeiro hambúrguer
-int y1 = primeiro_carne ? max_y : pratos[0];    // topo: max_y ou primeiro prato
-int y2 = pratos[primeiro_carne ? 0 : 1];         // próximo prato
-int ycarne = (int)Math.Round((y1 + y2) / 2.0);    // centro da carne
-pixels.Add(new pixel(x, ycarne));               // adiciona hambúrguer
-count++;                                        // incrementa contador
-if (false ) // codigo desabilitado
-{
- c = GetColorAt(x, ycarne);                   // lê cor da carne
- loga("hamburger " + count.ToString("d2") + ": cor " + c.R + "," + c.G + "," + c.B + " calculado em y=" + ycarne);
-}
-
-// demais hambúrgueres
-for (int i = primeiro_carne ? 0 : 1; i < pratos.Count - 1; i++)
-{
- y1 = pratos[i];                             // prato inferior
- y2 = pratos[i + 1];                         // prato superior
- ycarne = (int)Math.Round((y1 + y2) / 2.0);    // centro da carne
- pixels.Add(new pixel(x, ycarne));           // adiciona hambúrguer
- count++;                                    // incrementa contador
- if (false) // codigo desabilitado pra nao sujar interface
- {
-	c = GetColorAt(x, ycarne);               // lê cor da carne
-	loga("hamburger " + count.ToString("d2") + ": cor " + c.R + "," + c.G + "," + c.B + " calculado em y=" + ycarne);
- }
-}
-
-// log final (removido para evitar logs desnecessários)
-// loga(count + " hamburgeres localizados entre " + pratos.Count + " pratos detectados.");
-}
-
-
-// --------------------------------
-// M19 - MÉTODO READPIXELS - LÊ CORES DOS HAMBÚRGUERES E ATUALIZA A LISTA
-// --------------------------------
-void readpixels(List<pixel> pixels)
-{
-focawow();                     // foca a janela do WoW
-
-for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
-{
- var p = pixels[i];              // pega referência ao pixel
- Color cor = GetColorAt(p.x, p.y);       // lê a cor da tela naquele ponto
-
- pixels[i].r = cor.R;            // salva canal vermelho
- pixels[i].g = cor.G;            // salva canal verde
- pixels[i].b = cor.B;            // salva canal azul
-
- if (false)  // se debug e loga estiverem marcados
-	loga("hamburger " + i + ": R=" + p.r + " G=" + p.g + " B=" + p.b); // mostra cor lida
-}
-}
 	// --------------------------------
 	// M16 - MÉTODO GETSTATS - CAPTURA STATUS DO PERSONAGEM
 	// --------------------------------
@@ -1332,7 +1350,7 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		e.casting = e.castbar > 0; // 'e.casting' agora é derivado de 'e.castbar'
 															 // e.spell = ((char)pixels[10].b).ToString(); // REMOVIDO: Leitura de nome da spell
 															 // e.spellid = 0; // REMOVIDO/Não necessário aqui
-    me.ready = e.casting; // Atualiza o estado de "pronto" do player 
+		me.ready = e.casting; // Atualiza o estado de "pronto" do player 
 
 		pb_playercast.Value = e.castbar; // Atualiza progressbar (0-100)
 	 }
@@ -1403,12 +1421,9 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 	 // DEFINIÇAO DE TRIVIAL - NAO APAGAR AO EDITAR O PIXEL 9
 	 tar.trivial = !tar.iselite && (tar.hp <= 25 || tar.level <= me.level - 3);
-
-	 if (e.classe == WARRIOR) // se for Warrior, lê o Pixel 10
+	 if (e.classe == WARRIOR) // se for Warrior, lê o Pixel 10 e 11
 	 {
 		int r10 = pixels[10].r; // canal vermelho
-		int g10 = pixels[10].g; // canal verde
-		int b10 = pixels[10].b; // canal azul
 
 		war.charge_up = (r10 & 1) != 0;      // bit 0 = pode usar Charge?
 		war.throw_up = (r10 & 2) != 0;      // bit 1 = pode usar ranged (throw)
@@ -1419,20 +1434,43 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 		war.thun_up = (r10 & 64) != 0;     // bit 6 = pode usar Thunder Clap?
 		war.hs_up = (r10 & 128) != 0;    // bit 7 = pode usar Heroic Strike?
 
+		int g10 = pixels[10].g; // canal verde
+		
+
 		war.has_cleave = (g10 & 1) != 0;      // bit 0 = Cleave toggle ativo
 		war.overpower_up = (g10 & 2) != 0;      // bit 1 = Overpower pronto
 		war.bloodrage_up = (g10 & 4) != 0;      // bit 2 = Bloodrage pronto
 		war.hams_up = (g10 & 8) != 0;      // bit 3 = Hamstring pronto
 		war.retaliation_up = (g10 & 16) != 0;     // bit 4 = Retaliation pronto
-		war.dwish_up = (g10 & 32) != 0;     // bit 5 = Death Wish pronto
+		war.has_shield = (g10 & 32) != 0;     // bit 5 = tem shield equipado (Pixel 10)
 		war.has_bs = (g10 & 64) != 0;     // bit 6 = Battle Shout buff ativo
 		war.has_rend = (g10 & 128) != 0;    // bit 7 = target tem Rend
+
+		int b10 = pixels[10].b; // canal azul
 
 		war.hs_casting = (b10 & 1) != 0;      // bit 0 = Heroic Strike toggle ativo
 		war.slam_up = (b10 & 2) != 0;      // bit 1 = Slam pronto e em range
 		war.execute_up = (b10 & 4) != 0;      // bit 2 = Execute pronto
 		war.has_demoralizing = (b10 & 8) != 0;      // bit 3 = target com Demoralizing Shout
 		war.sunder_up = (b10 & 16) != 0;     // bit 4 = Sunder Armor pronto e stacks < 5
+		war.sweep_up = (b10 & 32) != 0;     // bit 5 = Sweeping Strikes pronto
+		war.sweeping = (b10 & 64) != 0;     // bit 6 = Sweeping Strikes buff ativo
+		war.revenge_up = (b10 & 128) != 0;    // bit 7 = Revenge pronto
+
+		// PIXEL 11 - Skills defensivas
+		int r11 = pixels[11].r; // canal vermelho
+		
+		war.shield_block_up = (r11 & 1) != 0;      // bit 0 = Shield Block pronto e sem aura
+		war.shield_wall_ready = (r11 & 2) != 0;    // bit 1 = Shield Wall pronto
+		war.stance = (r11 & 4) != 0;               // bit 2 = stance (0=Battle, 1=Defensive)
+		war.shield_bash_ready = (r11 & 8) != 0;    // bit 3 = Shield Bash pronto
+		war.disarm_ready = (r11 & 16) != 0;        // bit 4 = Disarm pronto
+		war.revenge_proc = (r11 & 32) != 0;        // bit 5 = Revenge proc ativo
+		war.dwish_up = (r11 & 64) != 0;            // bit 6 = Death Wish ativo
+
+		int g11 = pixels[11].g; // canal verde
+		int b11 = pixels[11].b; // canal azul
+
 	 }
 
 
@@ -1816,21 +1854,21 @@ for (int i = 0; i < pixels.Count; i++)       // percorre todos os pixels
 
 	// M03 - MÉTODO WAIT - ESPERA SEM TRAVAR A JANELA.
 	public void wait(int milliseconds)
-{
-System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew(); // Inicia cronômetro para medir tempo
-while (sw.ElapsedMilliseconds <= milliseconds) // Continua até atingir o tempo especificado
-{
- Application.DoEvents(); // Processa eventos da interface para evitar travamento
- System.Threading.Thread.Sleep(1); // Pausa breve para reduzir uso de CPU
-}
-}
+	{
+	 System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew(); // Inicia cronômetro para medir tempo
+	 while (sw.ElapsedMilliseconds <= milliseconds) // Continua até atingir o tempo especificado
+	 {
+		Application.DoEvents(); // Processa eventos da interface para evitar travamento
+		System.Threading.Thread.Sleep(1); // Pausa breve para reduzir uso de CPU
+	 }
+	}
 
 
 
 
-// M05 - MÉTODO APERTA - ENVIA UM PRESSIONAMENTO DE TECLA PARA O WOW.
-public void aperta(byte key, int time = 40) // time 0 = pressiona, time 2 = solta
-{
+	// M05 - MÉTODO APERTA - ENVIA UM PRESSIONAMENTO DE TECLA PARA O WOW.
+	public void aperta(byte key, int time = 40) // time 0 = pressiona, time 2 = solta
+	{
 	 if (key == 255) return; // ignora teclas nulas (usamos 255 como código de "nada")
 	 focawow(); // Garante que a janela do WoW está em foco
 	 if (time == 2) // codigo de soltar a tecla
@@ -1840,13 +1878,13 @@ public void aperta(byte key, int time = 40) // time 0 = pressiona, time 2 = solt
 	 }
 	 keybd_event(key, 0, KEYEVENTF_EXTENDEDKEY, 0); // Simula pressionamento da tecla
 	 if (time > 0)
-	 { 
+	 {
 		wait(time);
 		keybd_event(key, 0, KEYEVENTF_KEYUP, 0); // Simula soltura da tecla
 	 }
-}
-// MINI METODOS AUXILIARES DE APERTA: PRESS e SOLTA 
-void press(byte key)
+	}
+	// MINI METODOS AUXILIARES DE APERTA: PRESS e SOLTA 
+	void press(byte key)
 	{
 	 keybd_event(key, 0, KEYEVENTF_EXTENDEDKEY, 0); // Simula pressionamento da tecla
 	}
@@ -1855,7 +1893,7 @@ void press(byte key)
 	{
 	 keybd_event(key, 0, KEYEVENTF_KEYUP, 0); // Simula soltura da tecla
 	}
-	
+
 
 
 
@@ -1868,9 +1906,9 @@ void press(byte key)
 
 
 	bool permitido_giro = false; // variável para controlar se pode girar ou não
-													// --------------------------------
-													// MÉTODO GIRALVO 5.2 - GIRA O PERSONAGEM PARA A COORDENADA ALVO (versão 0–360)
-													// --------------------------------
+															 // --------------------------------
+															 // MÉTODO GIRALVO 5.2 - GIRA O PERSONAGEM PARA A COORDENADA ALVO (versão 0–360)
+															 // --------------------------------
 	public void giralvo(loc alvo)
 	{
 	 giraface(getyaw(me.pos, alvo), dist(me.pos, alvo));
@@ -1925,7 +1963,7 @@ void press(byte key)
 	// =====================================================
 
 	// Variáveis globais para o sistema de otimização
-	
+
 
 
 
@@ -1969,7 +2007,7 @@ void press(byte key)
 	 if (Environment.TickCount - last_kill_time > 300000) // 5 min sem kill
 	 {
 		loga("Inatividade de 5 minutos. Usando Hearthstone.");
-		HS();
+		loga("Usando HS - timer 5 minutos expirado.");
 	 }
 
 	 //------------------------------
@@ -2029,7 +2067,7 @@ void press(byte key)
 		loc planta = new loc(0, 0); // inicializa planta
 		if (cb_herbalism.Checked)
 		{
-		 
+
 		 planta = find_plants();
 		 if (!catando_planta && planta.x != 0 && near_hash(planta, hash_planta) > 20)
 		 {
@@ -2055,7 +2093,7 @@ void press(byte key)
 
 		// ROGUE 
 		// ainda não implementado, mas pode ser feito aqui
-//------------------------		
+		//------------------------		
 		// -----------------------------
 		// ANDAR (direção e pulo)
 		// -----------------------------
@@ -2107,8 +2145,8 @@ void press(byte key)
 			//if (cb_log.Checked) loga("enrosco lvl " + stuckcount);
 			if (stuckcount > 0)
 			{
-			// unstuck();       // executa pulo + giro se necessário
-												//stuckcount = 0;  // reseta após tentativa
+			 // unstuck();       // executa pulo + giro se necessário
+			 //stuckcount = 0;  // reseta após tentativa
 			}
 		 }
 		 else
@@ -2152,7 +2190,7 @@ void press(byte key)
 		 clog("Entrou em combate!");
 		 if (!on) return; // se desligado, sai do loop
 		 loga("Chamando combatloop()...");
-		 if (me.classe==ROGUE ) ComboOptimizer.categoria_atual = ComboOptimizer.EscolherCategoria(); // se for Rogue, escolhe categoria de combo points
+		 if (me.classe == ROGUE) ComboOptimizer.categoria_atual = ComboOptimizer.EscolherCategoria(); // se for Rogue, escolhe categoria de combo points
 		 combatloop(); // entra na rotina de combate
 		 aperta(STOPATTACK); // para de atacar após combate
 
@@ -2163,32 +2201,32 @@ void press(byte key)
 		 //------------
 		 // if paladino.... 
 		 if (me.classe == PALADIN)
-		 { 
-		 if (me.hp < atoi(tb_preheal))
 		 {
-			if (mana(20) && (me.hp < 60 || !cb_flashheal.Checked))
+			if (me.hp < atoi(tb_preheal))
 			{
-			 aperta(HLIGHT); wait(2500);
-			 logacura("HOly Light", "HP > 60, MANA > 20, HP < 60 || Flashheal unckecked");
-			}
-			else
-			 casta(FLASHHEAL);
+			 if (mana(20) && (me.hp < 60 || !cb_flashheal.Checked))
+			 {
+				aperta(HLIGHT); wait(2500);
+				logacura("HOly Light", "HP > 60, MANA > 20, HP < 60 || Flashheal unckecked");
+			 }
+			 else
+				casta(FLASHHEAL);
 
 			 bless(me);
+			}
+			checkme();
+			//----------------LIMPA POISONS-------------
+			if (me.level >= 8 // checa level
+				&& cb_purify.Checked // checkbox ativo
+				&& (me.haspoison || me.hasdisease) // tem debuff
+				&& mana(30) // tem mana
+				)
+			 aperta(PURIFY, GCD); // ativa o purify
 		 }
-		 checkme();
-		 //----------------LIMPA POISONS-------------
-		 if (me.level >= 8 // checa level
-			 && cb_purify.Checked // checkbox ativo
-			 && (me.haspoison || me.hasdisease) // tem debuff
-			 && mana(30) // tem mana
-			 )
-			aperta(PURIFY, GCD); // ativa o purify
-			 }
 		 // -----------------------------------
 		 // LOOT 
 		 // -----------------------------------
-		 
+
 		 scan_elites(); // verifica se tem elite no mapa antes de clicar na tela 
 
 		 if (cb_apagacinza.Checked)
@@ -2196,7 +2234,7 @@ void press(byte key)
 			clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
 			wait(50); // espera 10ms para evitar spam
 			clica(new loc(5, 5), 1); // APAGA UM ITEM CINZA DA BAG, SE TIVER (botão criado pelo addon de apagar itens cinzas)
-		 
+
 		 }
 		 if (has(me.freeslots) || cb_loot_cloth.Checked) // só loota se estiver ativado, e se tiver espaço ou for loot de pano
 
@@ -2213,7 +2251,7 @@ void press(byte key)
 				int max_scans = calcula_max_scans(); // <<<< NOVA LÓGICA AQUI!
 				primeira_tentativa_sessao = true;     // reseta flag para nova sessão
 				ultimo_tipo_loot = 0;                 // limpa tipo anterior
-				//loga("Nova sessão de loot iniciada.");
+																							//loga("Nova sessão de loot iniciada.");
 
 
 
@@ -2264,21 +2302,27 @@ void press(byte key)
 		 // -----------------------------------
 		 else if (cb_hearth_bagfull.Checked) // SEM ESPAÇO NA BAG - HEARTHSTONE ?
 		 {
+			loga("Bags cheias ou arma quebrada. Usando Hearthstone.");
 			HS(); // usa a pedra de lar se não tiver espaço na bag
+
 		 }
 		 if (me.armabroken) // ARMA QUEBRADA – MAIN OU OFFHAND
 		 {
 			loga("Arma quebrada detectada. Usando Hearthstone.");
 			HS(); // retorna pra reparar
 		 }
-		 if (cb_hearth_ding.Checked && me.level >= atoi(tb_hearthlevel)) // HEARTHSTONE SE LEVEL UP
+		 if (cb_hearth_ding.Checked && me.level == atoi(tb_hearthlevel)) // HEARTHSTONE SE LEVEL UP
+		 {
+			loga($"Usando HS - Atingido nível {atoi(tb_hearthlevel)}");
 			HS(); // usa a pedra de lar se atingiu o level definido
-		 
-
-			//if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
+		 }
 
 
-		 } // FIM DA ROTINA PÓS COMBATE (LOOT / SKIN)
+
+		 //if (cb_anda.Checked) aperta(WKEY, 0); // retoma andar se permitido
+
+
+		} // FIM DA ROTINA PÓS COMBATE (LOOT / SKIN)
 
 		//----------------------------------
 		// RECUPERAÇAO E PREPARO PRÉ COMBATE - PALADINO
@@ -2317,26 +2361,27 @@ void press(byte key)
 			}
 		 }
 
-		 
-		  if (!hunt.has_pet && me.level >= 10 && !me.combat && hunt.revive_pet_up) // sem pet
+
+		 if (!hunt.has_pet && me.level >= 10 && !me.combat && hunt.revive_pet_up) // sem pet
 		 {
-			
+
 
 			loga("Invocando pet.");
 
 			para(); // para de andar para invocar
-		       castslow(SUMMONPET);
-		      checkme();
-		  }
+			castslow(SUMMONPET);
+			checkme();
+		 }
 		}
 
 
 
 		//----------------------------------
-		// RECUPERAÇAO E PREPARO PRÉ COMBATE - WARRIOR
+		// RECUPERAÇAO E PREPARO PÓS COMBATE - WARRIOR
 		//----------------------------------
 		else if (me.classe == WARRIOR)
 		{
+		 setstance();
 		 // espera recuperar energia
 		 if (me.hp < atoi(tb_rest_warr))
 		 {
@@ -2348,6 +2393,7 @@ void press(byte key)
 			 espera(1);
 
 			}
+			setstance();
 		 }
 		}
 
@@ -2403,15 +2449,15 @@ void press(byte key)
 		 }
 		 else // auto
 		 {
-			while (me.mana < 85 && me.hp>me.mana && me.hp >= atoi(tb_pull_hp_lock) && !me.combat)
+			while (me.mana < 85 && me.hp > me.mana && me.hp >= atoi(tb_pull_hp_lock) && !me.combat)
 			{
 			 casta(LIFETAP); // ativa Life Tap
 			 checkme(); // atualiza status
 			}
 		 }
-		 
+
 		 // VIDA BAIXA 
-		 while (!me.combat && me.hp < atoi(tb_pull_hp_lock) )
+		 while (!me.combat && me.hp < atoi(tb_pull_hp_lock))
 		 {
 			espera(1);
 			checkme();
@@ -2443,14 +2489,14 @@ void press(byte key)
 			 aperta(STEALTH); // desativa stealth se stealth ativo
 		 }
 		}
-		
+
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
 	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
 
 	 loga("Waypoint atingido. Partindo para proximo.");
-	 if (catando_planta) catando_planta= false; // chegou na planta 
+	 if (catando_planta) catando_planta = false; // chegou na planta 
 
 	 //aperta(WKEY, 2); // solta W ao chegar no destino
 	}
@@ -2481,20 +2527,20 @@ void press(byte key)
 
 
 
-void andaplanta(loc alvo)
+	void andaplanta(loc alvo)
 	{
 	 solta(ANDA); // para de andar
 	 aperta(F2); // anda devagar ate a planta 
 	 int ticker = 0; // contador de ticks
 	 press(ANDA); // anda devagar até a planta
-	 
-		while (dist(me.pos, alvo) > 10)
+
+	 while (dist(me.pos, alvo) > 10)
 	 {
 		checkme();
 		wait(500);
 		giralvo(alvo); // gira para a planta
-		 if (ticker % 5 == 0) aperta(PULA); // pula
-		 if (me.combat || ticker++ > 30) break; // se entrar em combate, sai do loop
+		if (ticker % 5 == 0) aperta(PULA); // pula
+		if (me.combat || ticker++ > 30) break; // se entrar em combate, sai do loop
 	 }
 	 solta(ANDA); // para de andar
 	 aperta(F2); // Volta andar rapido 
@@ -2508,7 +2554,7 @@ void andaplanta(loc alvo)
 	void cataplanta(loc planta)
 	{
 	 catando_planta = true; // ativa flag de catando planta
-	 
+
 	 moveto(planta); // anda até perto da planta
 	 andaplanta(planta); // anda devagar até a planta
 
@@ -2669,7 +2715,7 @@ void andaplanta(loc alvo)
 	// ----------------------------------------
 	void scan_elites()
 	{
-	 if (!cb_scan_elite.Checked) return; 
+	 if (!cb_scan_elite.Checked) return;
 
 
 
@@ -2701,15 +2747,15 @@ void andaplanta(loc alvo)
 		espera(seg); // aguarda o tempo configurado
 	 }
 	 //else
-	//	loga("Nenhum elite ou patrulha detectado.");
+	 //	loga("Nenhum elite ou patrulha detectado.");
 	}
 
 
-		 bool deucharge = false; // flag para indicar se Charge foi usada
-	// --------------------------------------------
-	// MÉTODO puxa - Versão Paladino com verificação organizada
-	// Inicia o combate apenas se o target for válido
-	// --------------------------------------------
+	bool deucharge = false; // flag para indicar se Charge foi usada
+													// --------------------------------------------
+													// MÉTODO puxa - Versão Paladino com verificação organizada
+													// Inicia o combate apenas se o target for válido
+													// --------------------------------------------
 	void puxa()
 	{
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum Seal
@@ -2734,7 +2780,7 @@ void andaplanta(loc alvo)
 	 {
 		// Delay curto para garantir leitura completa
 		//wait(50);  // 50ms de delay
-							 // Rejeita target inválido ou sem tipo
+		// Rejeita target inválido ou sem tipo
 		if (!me.hastarget || tar.type == 0) return false;
 
 		// Log de depuração
@@ -2758,17 +2804,17 @@ void andaplanta(loc alvo)
 
 		if (cb_nodragonkin.Checked && tar.type == DRAGONKIN) return false;
 		if (cb_nomech.Checked && tar.type == MECHANICAL) return false;
-		
+
 
 		return true;
 	 }
 	 checkme();
 	 // pega primeiro target
-	 
-	 
-		aperta(TAB, 120);
-		checkme(); // atualiza status do segundo target
-		if (me.hastarget) loga("Pegando target. Code 1.");
+
+
+	 aperta(TAB, 120);
+	 checkme(); // atualiza status do segundo target
+	 if (me.hastarget) loga("Pegando target. Code 1.");
 
 	 int mood1 = tar.mood;
 	 bool t1_ok = bomtarget();
@@ -2787,7 +2833,7 @@ void andaplanta(loc alvo)
 	 int t2_id = tar.id;
 	 if (t2_id != t1_id) scan_elites(); // verifica se tem target novo
 	 if (t1_id == 0) // se nenhum target foi encontrado inicialmente
-	 loga("Procurando targets.");
+		loga("Procurando targets.");
 	 else if (!t1_ok && !t2_ok) // nenhum dos dois é válido
 	 {
 		loga("Nenhum dos dois targets é válido. Limpando o target.");
@@ -2812,7 +2858,7 @@ void andaplanta(loc alvo)
 		 loga("Dois targets com mesmo comportamento. Priorizando o mais próximo.");
 		 aperta(TARGETLAST);
 		}
-		
+
 	 }
 	 else if (mood1 < mood2) // primeiro é mais hostil
 	 {
@@ -2833,162 +2879,166 @@ void andaplanta(loc alvo)
 		return;
 	 }
 
-	 
-		// --------------------------------------------
-		// CORRE ATE O MOB E ATACA (PULL)
-		// --------------------------------------------
-		int ticker = 0; // contador de ciclos
 
-		if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
-		{
+	 // --------------------------------------------
+	 // CORRE ATE O MOB E ATACA (PULL)
+	 // --------------------------------------------
+	 int ticker = 0; // contador de ciclos
+
+	 if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
+	 {
 		loga($"Target type: {tar.type}.");
 		loga("Target locked. Iniciando pull.");
-		 do // while (me.hastarget && !me.combat && tar.hp == 100) // alvo válido e ainda fora de combate
+		do // while (me.hastarget && !me.combat && tar.hp == 100) // alvo válido e ainda fora de combate
+		{
+		 checkme();
+
+		 // NAO DEIXA AFOGAR 
+		 //------------------------------
+		 nao_afoga(); // nada para cima se estiver afogando
+
+		 //------------------------------- PULL PALADINO ----------------
+		 if (me.classe == PALADIN)
 		 {
-			checkme();
+			aperta(best_seal()); // aplica o melhor seal fora de combate
+													 // verifica se pode puxar com EXORCISM
+			bool pode_exorcism = cb_use_exorcism.Checked
+				&& me.level >= 20
+				&& (tar.type == 150 || tar.type == 200)  // undead ou demon
+				&& pala.exorcism_up
+				&& pala.exorcism_range
+				&& mana(8);
 
-			// NAO DEIXA AFOGAR 
-			//------------------------------
-			nao_afoga(); // nada para cima se estiver afogando
-
-			//------------------------------- PULL PALADINO ----------------
-			if (me.classe == PALADIN)
+			// se pode, usa EXORCISM no lugar do Judgement
+			if (pode_exorcism)
 			{
-			 aperta(best_seal()); // aplica o melhor seal fora de combate
-														// verifica se pode puxar com EXORCISM
-			 bool pode_exorcism = cb_use_exorcism.Checked
-				 && me.level >= 20
-				 && (tar.type == 150 || tar.type == 200)  // undead ou demon
-				 && pala.exorcism_up
-				 && pala.exorcism_range
-				 && mana(8);
-
-			 // se pode, usa EXORCISM no lugar do Judgement
-			 if (pode_exorcism)
-			 {
-				aperta(PULA);        // interrompe qualquer cast se necessário
-				aperta(EXORCISM);        // tecla de Exorcism
-				aperta(AUTOATTACK);  // inicia ataque automático
-			 }
-			 // senão, tenta puxar com JUDGEMENT
-			 else if (
-				 me.level >= 4 &&
-				 has_seal() &&
-				 pala.jud_range &&
-				 pala.judge_cd == 0 &&
-				 mana(4))
-			 {
-				aperta(PULA);
+			 aperta(PULA);        // interrompe qualquer cast se necessário
+			 aperta(EXORCISM);        // tecla de Exorcism
+			 aperta(AUTOATTACK);  // inicia ataque automático
+			}
+			// senão, tenta puxar com JUDGEMENT
+			else if (
+				me.level >= 4 &&
+				has_seal() &&
+				pala.jud_range &&
+				pala.judge_cd == 0 &&
+				mana(4))
+			{
+			 aperta(PULA);
 			 viramob(); // gira para o mob
 			 aperta(JUDGEMENT);
-				aperta(AUTOATTACK);
+			 aperta(AUTOATTACK);
 			 viramob();
+			}
+			else
+			{
+			 aperta(AUTOATTACK); // ataca direto se nenhuma opção acima for válida
+			 aperta(INTERACT); // anda até o mob11
+			 loga("Pala interact 112");
+			}
+
+			if (ticker++ % 8 == 0)
+			 aperta(PULA); // pulo de simulação humana a cada 2s
+
+			aperta(INTERACT); // anda até o mob11
+												//loga("Pala interact 113");
+			wait(200);   // aguarda meio segundo
+			checkme();   // atualiza status
+		 }
+		 // ---------------------------------------------
+		 // WARRIOR
+		 // ---------------------------------------------
+		 else if (me.classe == WARRIOR) // se for warrior
+		 {
+			//aperta(AUTOATTACK);    // ativa autoattack
+			aperta(INTERACT);      // começa a andar até o mob
+														 //loga("Pala interact 114");
+			checkme();             // atualiza status
+
+			// ---------------------------------------------
+			// PULL COM ARREMESSO (Throw)
+			// ---------------------------------------------
+			if (war.throw_up && cb_war_rangepull.Checked || war.stance == DEFENSIVE) // se pode usar arremesso (range, cooldown etc.)
+			{
+
+			 // ---------------------------------------------
+			 // PULL COM FACA
+			 // ---------------------------------------------
+			 loga("Parando para usar besta.");
+			 para(); // para de andar
+
+			 if (!war.throw_up) // perdeu o range, FALLBACK PARA CHARGE
+			 {
+				loga("Muito perto da faca. Avaliando Stealth.");
+				if (war.charge_up)
+				{
+				 loga("Dando Charge após perder range da besta");
+				 aperta(CHARGE);
+				 espera(1);
+				 if (me.melee) return; // se entrou em combate, sai do loop
+				}
+				aperta(INTERACT); // segue andando stealth ou normal
 			 }
 			 else
 			 {
-				aperta(AUTOATTACK); // ataca direto se nenhuma opção acima for válida
-				aperta(INTERACT); // anda até o mob11
-			 loga("Pala interact 112");
+				casta(THROW); // Usa best 
+				for (int i = 0; i < 15; i++) // 10 ciclos de 500ms = 5 segundos
+				{
+				 wait(300);      // espera 0.5s
+				 checkme();      // atualiza status
+				 if (me.melee || me.mobs > 0)  // se entrou em combate, sai do loop
+					break;
+				}
+				if (me.combat)
+				{
+				 return; // sai do pull se nao conseguiu engajar
+				}
+				else aperta(CLEARTGT);
+
 			 }
 
-			 if (ticker++ % 8 == 0)
-				aperta(PULA); // pulo de simulação humana a cada 2s
 
-			 aperta(INTERACT); // anda até o mob11
-			//loga("Pala interact 113");
-			wait(200);   // aguarda meio segundo
-			 checkme();   // atualiza status
+
+
+
+
 			}
 			// ---------------------------------------------
-			// WARRIOR
+			// PULL COM CHARGE
 			// ---------------------------------------------
-			else if (me.classe == WARRIOR) // se for warrior
+			else if (war.charge_up)
 			{
-			 //aperta(AUTOATTACK);    // ativa autoattack
-			 aperta(INTERACT);      // começa a andar até o mob
-			 //loga("Pala interact 114");
-			checkme();             // atualiza status
+			 clog("Pull com charge.");
 
-			 // ---------------------------------------------
-			 // PULL COM ARREMESSO (Throw)
-			 // ---------------------------------------------
-			 if (war.throw_up && cb_war_rangepull.Checked) // se pode usar arremesso (range, cooldown etc.)
+			 aperta(ANDA); // retoma andar após Charge	
+			 casta(CHARGE);    // usa Charge
+			 deucharge = true; // ativa flag de Charge usada
+			 aperta(AUTOATTACK);
+			 for (int i = 0; i < 10; i++) // espera 5s para entrar em combate
 			 {
-
-				// ---------------------------------------------
-				// PULL COM FACA
-				// ---------------------------------------------
-				loga("Parando para usar besta.");
-				para(); // para de andar
-
-				if (!war.throw_up) // perdeu o range, FALLBACK PARA CHARGE
-				{
-				 loga("Muito perto da faca. Avaliando Stealth.");
-				 if (war.charge_up)
-				 {
-					loga("Dando Charge após perder range da besta");
-					aperta(CHARGE);
-					espera(1);
-					if (me.melee) return; // se entrou em combate, sai do loop
-				 }
-				 aperta(INTERACT); // segue andando stealth ou normal
-				}
-				else
-				{
-				 casta(THROW); // Usa best 
-				 for (int i = 0; i < 15; i++) // 10 ciclos de 500ms = 5 segundos
-				 {
-					wait(300);      // espera 0.5s
-					checkme();      // atualiza status
-					if (me.melee || me.mobs > 0)  // se entrou em combate, sai do loop
-					 break;
-				 }
-				 if (me.combat)
-				 {
-					return; // sai do pull se nao conseguiu engajar
-				 }
-				 else aperta(CLEARTGT);
-
-				}
-
-
-
-
-
-
+				wait(500); // espera 0.3s para evitar problemas de lag
+				checkme();
+				if (me.combat || me.melee) return; // se entrou em combate, sai do loop
 			 }
-			 // ---------------------------------------------
-			 // PULL COM CHARGE
-			 // ---------------------------------------------
-			 else if (war.charge_up)
+			 if (!me.combat) // nao puxou nada... vai dar pau 
 			 {
-				clog("Pull com charge.");
-
-				aperta(ANDA); // retoma andar após Charge	
-				casta(CHARGE);    // usa Charge
-				deucharge = true; // ativa flag de Charge usada
-				aperta(AUTOATTACK);
-				for (int i = 0; i < 10; i++) // espera 5s para entrar em combate
-				{
-				 wait(500); // espera 0.3s para evitar problemas de lag
-				 checkme();
-				 if (me.combat || me.melee) return; // se entrou em combate, sai do loop
-				}
-
-
+				aperta(CLEARTGT); // limpa o target se nao conseguiu puxar nada (e se estiver preso?) 
+				roda(180);
 			 }
 
-			 // ---------------------------------------------
-			 // PULL COM HEROIC STRIKE OU BODY PULL
-			 // ---------------------------------------------
-			 if (war.hs_up) aperta(HEROICS); // se já tem rage, tenta abrir com HS
-
-			 checkme();
-			 if (me.combat) return;
-
-			 if (ticker++ % 16 == 0) aperta(PULA); // pulo humano a cada ~2s
-			 aperta(INTERACT); // continua andando até o mob
 			}
+
+			// ---------------------------------------------
+			// PULL COM HEROIC STRIKE OU BODY PULL
+			// ---------------------------------------------
+			if (war.hs_up) aperta(HEROICS); // se já tem rage, tenta abrir com HS
+
+			checkme();
+			if (me.combat) return;
+
+			if (ticker++ % 16 == 0) aperta(PULA); // pulo humano a cada ~2s
+			aperta(INTERACT); // continua andando até o mob
+		 }
 
 		 // --------------------------------------
 		 // PULL HUNTER REFEITO - WOW CLASSIC HC
@@ -3016,7 +3066,7 @@ void andaplanta(loc alvo)
 				{
 				 if (me.level >= 8 && cb_huntersmark.Checked && !tar.trivial) casta(HUNTERSMARK);
 				 casta(AUTOSHOT);
-				 
+
 				 loga("Auto Shot ativado.");
 				 wait(1000); // espera 2s para garantir que o Auto Shot está ativo
 				}
@@ -3044,10 +3094,10 @@ void andaplanta(loc alvo)
 					aperta(ARCANESHOT); // (comentado: ainda não aprendeu)
 					clog("Casting Arcane Shot.");
 				 }
-			 
+
 
 				 // se tiver serpent sting pronto, pode castar aqui
-				 
+
 				}
 				if (me.melee || me.mobs > 0)
 				{
@@ -3126,7 +3176,7 @@ void andaplanta(loc alvo)
 			int t0 = Environment.TickCount;        // começa o timer global do pull
 			int lastInteract = t0;
 			int lastJump = t0;
-			bool jafalou= false; // flag para saber se já avisou
+			bool jafalou = false; // flag para saber se já avisou
 			while (!me.combat && Environment.TickCount - t0 < 15000 && me.hastarget && tar.hp >= 100)
 			{
 			 checkme();
@@ -3174,7 +3224,7 @@ void andaplanta(loc alvo)
 				 checkme();
 				}
 			 }
-			
+
 			 // Se estiver em melee range
 			 if (me.melee)
 			 {
@@ -3194,7 +3244,7 @@ void andaplanta(loc alvo)
 							atoi(tb_energy_ss),
 							(int)Math.Round(dano_ss * ((double)atoi(tb_damage_ss) - (double)atoi(tb_damage_hit)) / (double)atoi(tb_damage_ss))
 					);
-	
+
 				}
 			 }
 
@@ -3238,7 +3288,7 @@ void andaplanta(loc alvo)
 			// ================================
 			// CONTROLE DE PULOS (ANTI-TRAVAMENTO)
 			// ================================
-			 int warlock_ticker = 0; // contador estático para persistir entre chamadas
+			int warlock_ticker = 0; // contador estático para persistir entre chamadas
 			warlock_ticker++;
 
 			// Log apenas na primeira vez ou a cada 10 ciclos para evitar spam
@@ -3279,7 +3329,7 @@ void andaplanta(loc alvo)
 			 // ESCOLHA DA SKILL PRIORITÁRIA
 			 // ================================
 			 // Prioridade 1: Immolate (se checkbox ativo e spell disponível)
-			 if (cb_use_immolate.Checked && wlock.immolate_up )
+			 if (cb_use_immolate.Checked && wlock.immolate_up)
 			 {
 				myskill = IMMOLATE;
 			 }
@@ -3317,7 +3367,7 @@ void andaplanta(loc alvo)
 
 				if (me.wrongway)
 				{
-				 
+
 				 aperta(INTERACT, 200);
 				 para(); // para de andar após o cast
 				 aperta((byte)myskill, 2000); // tenta novamente se andou errado
@@ -3417,15 +3467,15 @@ void andaplanta(loc alvo)
 			 }
 
 			 // Aproximar do target
-			 aperta(INTERACT,200);
+			 aperta(INTERACT, 200);
 
 			 // Se estiver em range, castar spell de pull
 			 if (me.wand_up || priest.smite_up || priest.swp_up)
 			 {
 				para(); // para de andar
-        
+
 				shieldme(); // aplica PWS se checkbox ativo
-				// Preferir Shadow Word: Pain se disponível
+										// Preferir Shadow Word: Pain se disponível
 				if (priest.swp_up && !priest.has_swp)
 				{
 				 clog("Priest Pull: Usando Shadow Word: Pain");
@@ -3434,10 +3484,10 @@ void andaplanta(loc alvo)
 				 if (me.combat)
 				 {
 					loga("Pull com SWP com sucesso. Saindo do pull.");
-					
+
 					return; // se entrou em combate, sai do loop
 				 }
-				  }
+				}
 				// Senão usar Smite
 				else if (priest.smite_up)
 				{
@@ -3449,7 +3499,7 @@ void andaplanta(loc alvo)
 				 if (me.combat)
 				 {
 					loga("Pull com smite com sucesso. Saindo do pull.");
-					
+
 					return; // se entrou em combate, sai do loop
 				 }
 				}
@@ -3460,17 +3510,17 @@ void andaplanta(loc alvo)
 				 if (me.combat)
 				 {
 					loga("Pull com WAND com sucesso. Saindo do pull.");
-					
+
 					return; // se entrou em combate, sai do loop
 				 }
 				}
-				
+
 				// Espera um pouco para ver se entra em combate
 				wait(500);
 				checkme();
 				if (me.combat)
 				{
-				 
+
 				 return;
 				}
 			 }
@@ -3488,18 +3538,18 @@ void andaplanta(loc alvo)
 
 
 		 checkme();
-			if (ticker > 10 && !me.combat) // passou 5s e não entrou em combate
-			{
-			 aperta(CLEARTGT); // limpa target e aborta pull
-			 break;
-			}
-		 } while (me.hastarget && !me.combat && tar.hp == 100); // alvo válido e ainda fora de combate
+		 if (ticker > 10 && !me.combat) // passou 5s e não entrou em combate
+		 {
+			aperta(CLEARTGT); // limpa target e aborta pull
+			break;
+		 }
+		} while (me.hastarget && !me.combat && tar.hp == 100); // alvo válido e ainda fora de combate
 
-		 if (me.combat) para();
+		if (me.combat) para();
 
 
-		}
 	 }
+	}
 	//------------
 	// METODO PARA
 	//------------
@@ -3507,7 +3557,7 @@ void andaplanta(loc alvo)
 	{
 	 if (me.spd > 0) // se estiver andando
 	 {
-		aperta(SKEY,20); // pequeno toque para trás
+		aperta(SKEY, 20); // pequeno toque para trás
 		solta(WKEY); // para de andar para frente
 		checkme(); // atualiza status
 	 }
@@ -3527,7 +3577,7 @@ void andaplanta(loc alvo)
 	private void rastreia_mob_combate()
 	{
 	 // só adiciona se target válido, com aggro, e levou porrada significativa
-	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro ) && tar.hp < 50)
+	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro) && tar.hp < 50)
 	 {
 		// verifica se é mob skinnable
 		if (tar.type == HUMANOID || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
@@ -3571,7 +3621,7 @@ void andaplanta(loc alvo)
 
 	 loga($"Mobs mortos: {killed_noskin.Count} normais + {killed_skin.Count} skinnable = {max_scans} scans máximos");
 
-	  return max_scans;
+	 return max_scans;
 	}
 
 
@@ -3581,7 +3631,7 @@ void andaplanta(loc alvo)
 	// --------------------------------
 	void viramob()
 	{
-	 if (tar.player_aggro || tar.pet_aggro ) // se tem aggro válido
+	 if (tar.player_aggro || tar.pet_aggro) // se tem aggro válido
 		aperta(INTERACT, 300);
 	 if (me.iscaster) para(); // para de andar antes de castar
 	}
@@ -3608,17 +3658,17 @@ void andaplanta(loc alvo)
 		emCombate = true;
 	 }
 	 int ticker = 0; // contador de ciclos
-	 //----------------------------------
-	 // ROTINAS PRÉ LOOP DE COMBATE
-	 //-----------------------------------
-	 // LIMPA MOB COUNT (USADO PARA LOOT E SKIN) 
-	  killed_skin.Clear();        // zera lista de mobs skinnable
-    killed_noskin.Clear();      // zera lista de mobs normais
-    loga("Tracking de mobs reiniciado para novo combate.");
-	 
+									 //----------------------------------
+									 // ROTINAS PRÉ LOOP DE COMBATE
+									 //-----------------------------------
+									 // LIMPA MOB COUNT (USADO PARA LOOT E SKIN) 
+	 killed_skin.Clear();        // zera lista de mobs skinnable
+	 killed_noskin.Clear();      // zera lista de mobs normais
+	 loga("Tracking de mobs reiniciado para novo combate.");
+
 	 do // while me.combat
 	 {
-		
+
 		if (!on) return; // se o bot estiver desligado, sai do loop
 		combat_ticker++; // incrementa contador de combate 
 		ticker++;
@@ -3639,9 +3689,9 @@ void andaplanta(loc alvo)
 		// NAO DEIXA AFOGAR 
 		//------------------------------
 		if (!dungeon) nao_afoga(); // nada para cima se estiver afogando; permite nadar em dungeons
-		//-----------------------------------
-		// ASSIST NO TANK EM DUNGEON 
-		//-----------------------------------
+															 //-----------------------------------
+															 // ASSIST NO TANK EM DUNGEON 
+															 //-----------------------------------
 		if (dungeon && cb_assist_tank.Checked && (!me.hastarget || tar.morreu))
 		{
 		 aperta(F6); // limpa o target e assiste o tank
@@ -3706,41 +3756,41 @@ void andaplanta(loc alvo)
 		//wait(100);
 		checkme();
 		rastreia_mob_combate(); // registra o mob no tracking count  PARA LOOT/SKIN se necessário
-		// --------------------------------
-		// SAI SE FIM DE COMBATE
-		// --------------------------------
-			if (!me.combat) break; // combate terminou, sai do loop
-// --------------------------------
-// LIMPA ALVO INVALIDO OU MORTO
-// --------------------------------
+														// --------------------------------
+														// SAI SE FIM DE COMBATE
+														// --------------------------------
+		if (!me.combat) break; // combate terminou, sai do loop
+													 // --------------------------------
+													 // LIMPA ALVO INVALIDO OU MORTO
+													 // --------------------------------
 
-// Define se target tem aggro válido (em mim ou no pet)
-checkme();
+		// Define se target tem aggro válido (em mim ou no pet)
+		checkme();
 		if (tar.hp < 80) deucharge = false;
-bool tem_aggro_valido = (tar.player_aggro || tar.pet_aggro);
+		bool tem_aggro_valido = (tar.player_aggro || tar.pet_aggro);
 
-// Define se deve preservar target mesmo sem aggro
-bool deve_preservar = dungeon || deucharge;
+		// Define se deve preservar target mesmo sem aggro
+		bool deve_preservar = dungeon || deucharge;
 
-// Limpa target SE: não tem aggro válido E não deve preservar
+		// Limpa target SE: não tem aggro válido E não deve preservar
 
-if (!tem_aggro_valido && !deve_preservar)
-{
+		if (!tem_aggro_valido && !deve_preservar)
+		{
 		 loga($"PET AGGRO: {tar.pet_aggro}, ME AGGRO: {tar.player_aggro}");
 		 aperta(CLEARTGT);
-    loga("Target sem aggro válido. Limpando.");
-    checkme();
-}
-// Reseta flag do charge se ela estava ativa
-else if (deucharge)
-    deucharge = false; // permite limpar target nos próximos ciclos
+		 loga("Target sem aggro válido. Limpando.");
+		 checkme();
+		}
+		// Reseta flag do charge se ela estava ativa
+		else if (deucharge)
+		 deucharge = false; // permite limpar target nos próximos ciclos
 
-// Target válido - continua o combate
-if (tem_aggro_valido || deve_preservar)
-{
-    
-// MANTEM  O TARGET 
-}
+		// Target válido - continua o combate
+		if (tem_aggro_valido || deve_preservar)
+		{
+
+		 // MANTEM  O TARGET 
+		}
 
 
 
@@ -3752,19 +3802,19 @@ if (tem_aggro_valido || deve_preservar)
 		{
 		 checkme();
 		 getnear(); // se aproxima do target se estiver fora de alcance de melee
-		 //wait_cast();                    // espera fim de cast se tiver algum
-																		 // ------------------------------------------
-																		 // MOVIMENTO: aproximação se fora de melee
-																		 // ------------------------------------------
-		 
-		 if (tar.player_aggro  )
+								//wait_cast();                    // espera fim de cast se tiver algum
+								// ------------------------------------------
+								// MOVIMENTO: aproximação se fora de melee
+								// ------------------------------------------
+
+		 if (tar.player_aggro)
 		 {
 			aperta(INTERACT); // aproxima se fora de alcance
 			loga("Apertando INTERACT para mob distante.");
 		 }
-		 if (me.hastarget && tar.player_aggro  && !me.autoattack)
+		 if (me.hastarget && tar.player_aggro && !me.autoattack)
 			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
-		 if (tar.player_aggro  && me.wrongway)
+		 if (tar.player_aggro && me.wrongway)
 		 {
 			aperta(INTERACT); // gira para corrigir facing se necessário
 			loga("Corrigindo facing com INTERACT. devido wrong way.");
@@ -3841,7 +3891,7 @@ if (tem_aggro_valido || deve_preservar)
 		 if (should_stun())                                          // verifica se deve usar stun
 			aperta(HOJ);                                            // aplica Hammer of Justice
 
-		 
+
 		}
 
 		//----------------------------------
@@ -3941,6 +3991,8 @@ if (tem_aggro_valido || deve_preservar)
 		// -----------------------------------------------
 		else if (me.classe == WARRIOR)
 		{
+		 setstance(); // garante stance correta (Battle ou Defensive)
+
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
@@ -3948,43 +4000,83 @@ if (tem_aggro_valido || deve_preservar)
 		 if (ticker % 6 == 0 && !me.casting) aperta(PULA);                        // pulo human-like
 
 		 // -----------------------------------------------
-		 // DEFESA: RETALIATION E POTION
+		 // DEFESA: RETALIATION / SHIELD WALL E POTION
 		 // -----------------------------------------------
-		 if ((!me.hp_potion_rdy && war.retaliation_up) && // sem potion e skill pronta
-			 	((me.hp < 50 && me.mobs >= 2) ||   // vida < 50 e 2+ mobs
+		 if ((!me.hp_potion_rdy && (war.retaliation_up || war.shield_wall_ready)) && // sem potion e skill pronta
+				((me.hp < 50 && me.mobs >= 2) ||   // vida < 50 e 2+ mobs
 				 (me.hp < 65 && me.mobs >= 3) ||   // vida < 65 e 3+ mobs
 				 (me.hp < 45 && me.mobs == 1)))      // vida < 30 com 1 mob
-			 casta(RETALIATION);                  // aciona Retaliation
-
-
-		 if (war.overpower_up)
-			aperta(OVERPOWER); // usa Overpower se disponível
-
-		 if (me.hp < 30 && me.hp_potion_rdy)
-			aperta(HEALTHPOTION); // poção se vida muito baixa
-
-
-
-		 // ------------------------------------------
-		 // EXECUTE
-		 // ------------------------------------------
-		 else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
 		 {
-			//clog($"Slam: {war.slam_up}");
-			casta(EXECUTE);
+			if (war.retaliation_up)
+			 casta(RETALIATION);                  // aciona Retaliation (Battle Stance)
+			else if (war.shield_wall_ready)
+			 casta(SHIELDWALL);                   // aciona Shield Wall (Defensive Stance)
+		 }
+		 else if (me.hp < 30 && me.hp_potion_rdy)
+			aperta(HEALTHPOTION); // poção se vida muito baixa
+// ------------------------------------------
+// PRIORIDADES MÁXIMAS - PROCS
+// ------------------------------------------
+// ------------------------------------------
+// EXECUTE
+// ------------------------------------------
+else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
+{
+			clog($"Execute: HP do alvo: {tar.hp}%");
+			aperta(EXECUTE);
+   
+}
+else if (war.overpower_up)
+{
+   aperta(OVERPOWER);
+   clog($"Overpower: Rage disponível, usando proc");
+}
+else if (war.shield_bash_ready && tar.casting)
+{
+   aperta(SHIELDBASH);
+   clog($"Shield Bash: Familia: {tar.type}");
+}
+else if (war.disarm_ready && (me.mobs > 1 || !tar.trivial) && tar.type == HUMANOID)
+{
+   aperta(DISARM);
+   clog($"Disarm: Mobs={me.mobs}, Target humanóide, Trivial={tar.trivial}");
+}
+else if (war.revenge_up)
+{
+   aperta(REVENGE);
+   clog($"Revenge: Usando proc de vingança");
+}
+else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
+{
+   aperta(SHIELDBLOCK);
+   clog($"Shield Block.");
+}
+
+		 // ------------------------------------------
+		 // EQUIPA ARMAS CORRETAS
+		 // ------------------------------------------
+		 if (war.has_shield && (tar.trivial || tafacil()))
+		 {
+			aperta(EQUIP2H);                             // troca para 2H se mob trivial ou fácil e estiver de escudo
+			loga("Equipando 2H para mob trivial ou fácil.");
+		 }
+		 else if (!war.has_shield && (!tar.trivial && !tafacil()))
+		 {
+			aperta(EQUIP1H);                             // troca para 1H se mob não trivial e não estiver fácil, e sem escudo
+			loga("Equipando 1H para mob não trivial e difícil.");
 		 }
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
 		 getnear(); // se aproxima do target se estiver fora de alcance de melee
-		 if (tar.player_aggro  && !me.melee)
+		 if (tar.player_aggro && !me.melee)
 		 {
 			aperta(INTERACT); // aproxima se fora de alcance
 			loga("Apertando INTERACT para mob distante.");
 		 }
-		 if (me.hastarget && tar.player_aggro  && !me.autoattack)
+		 if (me.hastarget && tar.player_aggro && !me.autoattack)
 			aperta(AUTOATTACK); // inicia ataque automático se tem target e não está atacando
-		 if (tar.player_aggro  && me.wrongway)
+		 if (tar.player_aggro && me.wrongway)
 		 {
 			aperta(INTERACT); // gira para corrigir facing se necessário
 			loga("Corrigindo facing com INTERACT. devido wrong way.");
@@ -3999,35 +4091,45 @@ if (tem_aggro_valido || deve_preservar)
 		 // ------------------------------------------
 		 // BATTLE SHOUT  (sempre)=10 rage
 		 // ------------------------------------------
-		 else if (war.bs_up && !war.has_bs)
+		 else if (war.bs_up && !war.has_bs && canspendrage(10))
 		 {
 			aperta(BATTLESHOUT);
 			clog("Battle Shout.");
-			
 		 }
 		 // ------------------------------------------
 		 // EXECUTE
 		 // ------------------------------------------
+		 /*
 		 else if (tar.hp > 0 && war.execute_up && tar.hp <= 20)
+		 {
+			//aperta(PULA);
 			casta(EXECUTE);
+		 }*/
 		 // ------------------------------------------
 		 // DEMORALIZING SHOUT  
 		 // ------------------------------------------
 		 else if (
-				 cb_use_demoshout.Checked &&                                      // checkbox ativado
+				 cb_use_demoshout.Checked && cb_allowcleave.Checked &&                                  // checkbox ativado
 				 me.mobs >= atoi(tb_demoshoutat) &&                          // número de mobs >= valor do textbox
 				 ((!tar.trivial || me.mobs > 1) && war.demo_up && !war.has_demoralizing) // condições do Demo Shout
 		 )
 		 {
 			aperta(DEMORALIZING); // reduz dano dos mobs
 			clog("Demoralizing Shout.");
-			
-		 }
 
+		 }
+		 // ------------------------------------------
+		 // DEATH WISH (USO OFENSIVO CONTROLADO)
+		 // ------------------------------------------
+		 else if (!tar.trivial && me.hp > 85 && me.mobs == 1 && tar.hp > 80 && war.dwish_up && cb_deathwish.Checked && (tar.level + atoi(tb_deathwish_at) <= me.level))
+		 {
+			aperta(DEATHWISH);
+			clog("Death Wish.");
+		 }
 		 // ------------------------------------------
 		 // HAMSTRING se humanoide e fugindo = 10 rage
 		 // ------------------------------------------
-		 else if (war.hams_up && (tar.type == MURLOC || (tar.type == HUMANOID && tar.hp < 35)))
+		 else if (war.hams_up && (tar.type == MURLOC || (tar.type == HUMANOID && tar.hp < 35)) && canspendrage(10))
 		 {
 			aperta(HAMSTRING); // impede fuga do mob 
 			clog($"Hamstring: humanoid fugindo com {tar.hp}% HP");
@@ -4035,55 +4137,64 @@ if (tem_aggro_valido || deve_preservar)
 		 // ------------------------------------------
 		 // THUNDER CLAP  (multi-target) = 20 rage
 		 // ------------------------------------------
-		 else if (cb_use_thunderclap.Checked && war.thun_up      // checkbox ativa, thunderclap pronto e com rage
-			&& !war.has_thunderclap                                 // target ainda não tem debuff
-			&& me.mobs >= atoi(tb_thunderclap_count))               // tem quantidade mínima de mobs
+		 else if (cb_allowcleave.Checked && cb_use_thunderclap.Checked && war.thun_up      // checkbox ativa, thunderclap pronto e com rage
+						&& me.mobs >= atoi(tb_thunderclap_count))               // tem quantidade mínima de mobs
 		 {
 			aperta(THUNDERCLAP);
 			clog($"Thunderclap: mobs={me.mobs}");
 		 }
 		 // ------------------------------------------
-		 // CLEAVE se mais de 1 mob
+		 // SWEEPING STRIKES (multi-target) = 30 rage
 		 // ------------------------------------------
-		 else if (war.cleave_up && me.mobs > 1 && !war.has_cleave)
+		 else if (cb_allowcleave.Checked && war.sweep_up && me.mana >= 30 && me.mobs > 1)
+		 {
+			aperta(SWEEP); // cleave para hits em área
+			clog($"Sweeping strikes: mobs={me.mobs}");
+		 }
+
+		 // ------------------------------------------
+		 // CLEAVE se mais de 1 mob (20 rage)
+		 // ------------------------------------------
+		 else if (cb_allowcleave.Checked && war.cleave_up && me.mobs > 1 && !war.has_cleave && canspendrage(20))
 		 {
 			aperta(CLEAVE); // cleave para hits em área
 			clog($"Cleave: mobs={me.mobs}");
-			
+
 		 }
 		 // ------------------------------------------
 		 // SLAM sempre que possivel e nao for castar sunder armor
 		 // ------------------------------------------
-		 else if (cb_slam.Checked && tar.hp >= 20 && me.mobs == 1 && war.slam_up && (tar.hp <= 60 || !cb_sunderspam.Checked))
+		 else if (cb_slam.Checked && tar.hp >= 20 && me.mobs == 1 && war.slam_up && (tar.hp <= 60 || !cb_sunderspam.Checked) && canspendrage(15))
 		 {
-			
+
 			casta(SLAM);
 			clog("Slam!");
 		 }
 
-		 // ------------------------------------------
-		 // SUNDER ARMOR SPAM
-		 // ------------------------------------------
-		 else if (tar.hp > (cb_slam.Checked ? 60 : 40) && war.sunder_up && cb_sunderspam.Checked)
-		 {
-			aperta(SUNDERARMOR);
-			clog("Sunder armor.");
-			
-		 }
+
 		 // ------------------------------------------
 		 // APLICA REND SE PERMITIDO E EFICAZ= 10 rage
 		 // ------------------------------------------
 		 else if (me.mobs < 2 && cb_use_rend.Checked && war.rend_up && !war.has_rend
 	&& (tar.type == HUMANOID                               // sempre aplica em humanóide, pra evitar fugir. 
 		 || (
-			 (!tar.trivial
+			 ((!tar.trivial || tar.hp > 70)
 			 && tar.type != ELEMENTAL                           // ignora elementais
 			 && tar.type != MECHANICAL                          // ignora mecânicos
 			 && tar.type != UNDEAD                              // ignora mortos-vivos
-		 ))))
+		 ))) && canspendrage(10))
 		 {
 			casta(REND);
 			clog($"Rend: aplicado em {tar.type} com {tar.hp}% HP  Trivial: {tar.trivial}");
+		 }
+
+		 // ------------------------------------------
+		 // SUNDER ARMOR SPAM
+		 // ------------------------------------------
+		 else if (tar.hp > 60 && war.sunder_up && cb_sunderspam.Checked && canspendrage(15))
+		 {
+			aperta(SUNDERARMOR);
+			clog("Sunder armor.");
 		 }
 
 		 // ------------------------------------------
@@ -4091,7 +4202,7 @@ if (tem_aggro_valido || deve_preservar)
 		 // ------------------------------------------
 		 else if (war.hs_up && !war.hs_casting && me.mana >= atoi(tb_heroic_strike_rage) &&
 							// nao ativado sunder spam ou rage em excesso (rage dump)
-							!(tar.hp > 0 && tar.hp < 30 && war.execute_up)) // NÃO usa HS se mob < 28% HP e Execute disponível
+							!(tar.hp > 0 && tar.hp < 30 && war.execute_up) && canspendrage(atoi(tb_heroic_strike_rage))) // NÃO usa HS se mob < 28% HP e Execute disponível
 		 {
 			aperta(HEROICS);
 			clog($"Heroic Strike: rage={me.mana}");
@@ -4103,15 +4214,36 @@ if (tem_aggro_valido || deve_preservar)
 			clog("Bloodrage.");
 		 }
 
+		 //-------------------FUNÇOES USADAS SÓ AQUI NA ROTINA-------------------
+		 // FUNÇÃO: canspendrage - verifica se pode gastar rage em outras skills
+		 // Retorna true se pode gastar rage livremente, false se deve economizar para Sweeping Strikes
+		 bool canspendrage(int rage = 30)
+		 {
+			if (rage == 30)
+			{
+			 // Se não aprendeu Sweeping Strikes, não precisa economizar
+			 if (!war.sweep_up)
+				return true;
 
-		 //-------------------AGUARDANDO IMPLEMENTAÇÃO-------------------
+			 // Se só tem 1 mob, não precisa de Sweeping Strikes
+			 if (me.mobs < 2)
+				return true;
 
+			 // Se já está usando Sweeping Strikes, pode gastar rage
+			 if (war.sweeping)
+				return true;
 
+			 // Se não deve usar Sweeping Strikes (checkbox desmarcado), não precisa economizar
+			 if (!cb_allowcleave.Checked)
+				return true;
 
+			 // Deve economizar rage para Sweeping Strikes
+			 return false;
+			}
 
-
-
-
+			// Para outros valores de rage, retorna true por enquanto
+			return true;
+		 }
 		}//------------FIM ROTINA DE COMBATE WARRIOR (WCR) ------------------
 
 
@@ -4772,6 +4904,7 @@ if (tem_aggro_valido || deve_preservar)
 
 		if (hp_ini < limite)
 		{
+		 
 		 loga($"WARRIOR: HP baixo após combate ({hp_ini}%). Esperando recuperação.");
 		 aperta(F12); // ativa comida
 		 espera(2);
@@ -4787,6 +4920,7 @@ if (tem_aggro_valido || deve_preservar)
 			 espera(1);
 		 }
 		}
+		setstance();
 	 }// FIM ROTINA DE DESCANSO PÓS-COMBATE (WARRIOR)
 		//----------------------------------
 		// RECUPERAÇÃO E PREPARO PRÉ COMBATE - PRIEST
@@ -4925,8 +5059,33 @@ if (tem_aggro_valido || deve_preservar)
 		}
 	 }
 	}
+	// VERIFICA SE TÁ FACIL 
+	bool tafacil()
+	{
+	 return (me.hp > 60 && (tar.trivial || me.mobs < 2));
+	}
 
-
+	// ------------------------------------------
+	// SETA STANCE AUTOMÁTICO COM TAFÁCIL
+	// ------------------------------------------
+	void setstance()
+	{
+	 if (cb_autostance.Checked)
+	 {
+		// Se tá fácil e está em Defensive → troca para Battle Stance
+		if (tafacil() && war.stance == DEFENSIVE)
+		{
+		 aperta(BATTLESTANCE);            // ativa Battle Stance
+		 clog("Setando Battle Stance (fácil).");
+		}
+		// Se não tá fácil e está em Battle → troca para Defensive Stance
+		else if (!tafacil() && war.stance == BATTLE)
+		{
+		 aperta(DEFENSIVESTANCE);         // ativa Defensive Stance
+		 clog("Setando Defensive Stance (difícil).");
+		}
+	 }
+	}
 
 	// --------------------------------
 	// MÉTODO STOPWAND: Para wand (sem retorno)
@@ -6465,9 +6624,12 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 			hs_tick = Environment.TickCount;
 
 			DateTime fim;
-			if (DateTime.TryParse(hs_min_left.Text, out fim))
-			 if (DateTime.Now >= fim)
-				HS(); // executa a finalização
+			 if (DateTime.TryParse(hs_min_left.Text, out fim))
+				if (DateTime.Now >= fim)
+				{
+				 HS(); // executa a finalização
+				 loga("Usando HS - timer 6 minutos expirado.");
+				}
 		 }
 
 		//-----------------------------
@@ -8032,7 +8194,8 @@ else
 	{
 	 
 	 checkme();
-	 clog("mobs: " + me.mobs);
+	 clog("Revenge: " + war.revenge_up);
+	 clog("Shield block: " + war.shield_block_up);
 
 
 
