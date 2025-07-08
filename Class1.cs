@@ -238,7 +238,7 @@ namespace Discord
 	public bool has_bs;              // Battle Shout ativo?
 	public bool hs_casting;          // Heroic strike foi ativado?
 	public bool revenge_proc;        // Revenge com (proc ativo)
-	public bool has_shield;        // Tenho shield equipado
+	public bool has_shield_or_offhand;        // Tenho shield equipado
  }
 
  // --------------------------------

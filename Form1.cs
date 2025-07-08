@@ -1442,7 +1442,7 @@ namespace Discord
 		war.bloodrage_up = (g10 & 4) != 0;      // bit 2 = Bloodrage pronto
 		war.hams_up = (g10 & 8) != 0;      // bit 3 = Hamstring pronto
 		war.retaliation_up = (g10 & 16) != 0;     // bit 4 = Retaliation pronto
-		war.has_shield = (g10 & 32) != 0;     // bit 5 = tem shield equipado (Pixel 10)
+		war.has_shield_or_offhand = (g10 & 32) != 0;     // bit 5 = tem shield equipado (Pixel 10)
 		war.has_bs = (g10 & 64) != 0;     // bit 6 = Battle Shout buff ativo
 		war.has_rend = (g10 & 128) != 0;    // bit 7 = target tem Rend
 
@@ -3062,6 +3062,7 @@ namespace Discord
 				clog("Em range do Auto Shot. Executando ranged pull.");
 				para(); // para de andar
 				checkme();
+
 				if (hunt.auto_shot_up && !hunt.auto_shot_ativo) // se não está ativo, ativa
 				{
 				 if (me.level >= 8 && cb_huntersmark.Checked && !tar.trivial) casta(HUNTERSMARK);
@@ -3084,7 +3085,7 @@ namespace Discord
 				 }
 
 				 // se tiver arcane shot pronto, pode castar aqui
-				 if (hunt.serpent_sting_up)
+				 if (hunt.serpent_sting_up && tar.type != MECHANICAL && tar.type != ELEMENTAL)
 				 {
 					aperta(SERPENTSTING); // (comentado: ainda não aprendeu)
 					clog("Casting Serpent Sting.");
@@ -3652,6 +3653,7 @@ namespace Discord
 	 int generic_ticker = 0; // contador de ciclos genérico
 	 bool ja_deu_backpedal = false; // se estiver apanhando muito anda um pouco para tras pra nao dar as costas 
 	 bool jalogou = false; // se já logou o decay
+	 bool casterenemy = false;
 	 if (!emCombate) // decay
 	 {
 		decay.Start(me.hp);
@@ -3920,12 +3922,22 @@ namespace Discord
 			 loga("Interact de rotina: 305."); // loga o código de interação
 			aperta(INTERACT);
 		 }
-
+		 //xxxg
 		 // ASSIST NO PET 
 		 //------------------------------
 		 if ((!me.hastarget && hunt.has_pet && me.combat) || (me.mobs > 1 && hunt.has_pet))
+		 {
 			aperta(ASSIST); // assiste o pet se estiver em combate sem target ou +1 mob
+			clog("Assistencia pet A");
+		 }
+		 checkme(); // atualiza status após assist
+		 if ((hunt.pet_hp < 90 && hunt.pet_hp > 1)||hunt.has_pet&&((me.hastarget && tar.pet_aggro || tar.player_aggro) || !me.hastarget))
+		 {
+			aperta(ASSIST); // assiste o pet se estiver com menos de 90% de vida e mais de 1%
+			clog($"Assistindo pet: HP={hunt.pet_hp}%");
+		 }
 
+		 
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
@@ -3962,7 +3974,9 @@ namespace Discord
 		 // RANGED TRY
 		 // ------------------------------------------
 		 checkme();
-		 if (hunt.serpent_sting_up && !me.melee)
+		 if (me.wrongway) aperta(INTERACT);
+		 checkme();
+		 if (hunt.serpent_sting_up && !me.melee && tar.type != MECHANICAL && tar.type != ELEMENTAL)
 		 {
 			aperta(SERPENTSTING); // (comentado: ainda não aprendeu)
 			clog("Casting Serpent Sting.");
@@ -4055,15 +4069,24 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 // ------------------------------------------
 		 // EQUIPA ARMAS CORRETAS
 		 // ------------------------------------------
-		 if (war.has_shield && (tar.trivial || tafacil()))
+		 if (tar.casting && me.level >= 12) casterenemy = true;
+
+		 if (cb_autoequip.Checked)
 		 {
-			aperta(EQUIP2H);                             // troca para 2H se mob trivial ou fácil e estiver de escudo
-			loga("Equipando 2H para mob trivial ou fácil.");
-		 }
-		 else if (!war.has_shield && (!tar.trivial && !tafacil()))
-		 {
-			aperta(EQUIP1H);                             // troca para 1H se mob não trivial e não estiver fácil, e sem escudo
-			loga("Equipando 1H para mob não trivial e difícil.");
+			if (war.has_shield_or_offhand && tafacil() && !casterenemy)
+			{
+			 aperta(EQUIP2H);                             // troca para 2H se mob trivial ou fácil e estiver de escudo
+			 loga("Equipando 2H para mob trivial ou fácil.");
+			 checkme();
+			}
+			else if (!war.has_shield_or_offhand && (!tafacil() || casterenemy))
+			{
+			 aperta(EQUIP1H);                             // troca para 1H se mob não trivial e não estiver fácil, e sem escudo
+			 
+			 if (casterenemy) clog("Mob caster detectado: Equipando shield para dar interrupt.");
+			 else clog("Equipando 1H por causa de mob não trivial ou difícil.");
+			 checkme();
+			}
 		 }
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
@@ -5062,7 +5085,8 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 	// VERIFICA SE TÁ FACIL 
 	bool tafacil()
 	{
-	 return (me.hp > 60 && (tar.trivial || me.mobs < 2));
+	 return (me.mobs == 1 && (me.level - tar.level >= 2))
+		 || (me.mobs == 1 && tar.level <= me.level && tar.hp <= 35 && me.hp > 70);
 	}
 
 	// ------------------------------------------
@@ -8194,8 +8218,8 @@ else
 	{
 	 
 	 checkme();
-	 clog("Revenge: " + war.revenge_up);
-	 clog("Shield block: " + war.shield_block_up);
+	 clog("Tem shield?: " + war.has_shield_or_offhand);
+	 clog("Tá facil?: " + tafacil());
 
 
 

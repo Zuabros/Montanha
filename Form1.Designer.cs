@@ -326,6 +326,7 @@ namespace Discord
 	 this.label53 = new System.Windows.Forms.Label();
 	 this.cb_deathwish = new System.Windows.Forms.CheckBox();
 	 this.tb_deathwish_at = new System.Windows.Forms.TextBox();
+	 this.cb_autoequip = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -1863,6 +1864,7 @@ namespace Discord
 	 // tabPage5
 	 // 
 	 this.tabPage5.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage5.Controls.Add(this.cb_autoequip);
 	 this.tabPage5.Controls.Add(this.tb_deathwish_at);
 	 this.tabPage5.Controls.Add(this.cb_deathwish);
 	 this.tabPage5.Controls.Add(this.label53);
@@ -3444,6 +3446,18 @@ namespace Discord
 	 this.tb_deathwish_at.TabIndex = 28;
 	 this.tb_deathwish_at.Text = "0";
 	 // 
+	 // cb_autoequip
+	 // 
+	 this.cb_autoequip.AutoSize = true;
+	 this.cb_autoequip.Checked = true;
+	 this.cb_autoequip.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_autoequip.Location = new System.Drawing.Point(13, 55);
+	 this.cb_autoequip.Name = "cb_autoequip";
+	 this.cb_autoequip.Size = new System.Drawing.Size(107, 17);
+	 this.cb_autoequip.TabIndex = 29;
+	 this.cb_autoequip.Text = "Auto equip shield";
+	 this.cb_autoequip.UseVisualStyleBackColor = true;
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3818,6 +3832,7 @@ namespace Discord
 	private CheckBox cb_sweep;
 	private CheckBox cb_deathwish;
 	private TextBox tb_deathwish_at;
+	private CheckBox cb_autoequip;
  }
 }
 
