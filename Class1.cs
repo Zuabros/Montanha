@@ -129,7 +129,7 @@ namespace Discord
 	public bool auto_shot_up;             // Auto Shot pronto e em range
 	public bool auto_shot_range_ok;       // Auto Shot range ok (verificação específica)
 
-	// NOVAS SKILLS ADICIONADAS
+	public bool deterrence_up;          // Deterrence pronto  
 	public bool serpent_sting_up;         // Serpent Sting pronto (spellready + manarange)
 	public bool concussive_shot_up;       // Concussive Shot pronto (spellready + manarange)
 	public bool arcane_shot_up;           // Arcane Shot pronto (spellready + manarange)
@@ -151,6 +151,10 @@ namespace Discord
 	public bool has_pet;                  // Pet vivo e ativo (como wlock.has_pet)
 	public int pet_hp;                    // HP do pet (0-100%) (como wlock.pet_hp)
 																				// NOTA: tar.pet_aggro é genérico e já existe no element
+	public bool growl_autocast;
+	public bool growl_available;
+	public bool mongoose_bite_up;         // Mongoose Bite pronto (spellready + manarange)
+
 
 	// ================================
 	// COOLDOWNS (para futuras implementações)

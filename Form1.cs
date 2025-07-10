@@ -263,6 +263,7 @@ namespace Discord
 	// --------------------------------------------
 	// SKILLS GERAIS (comuns ou reutilizáveis)
 	// --------------------------------------------
+	public const int BACKPEDAL = SKEY;     // ataque automático
 	public const int AUTOATTACK = INTERACT;     // ataque automático
 	public const int CLEARTGT = SETE;   // limpa o target
 	public const int TARGETLAST = OITO;   // retarget último inimigo
@@ -399,20 +400,17 @@ namespace Discord
 	// NOVAS SKILLS ADICIONADAS
 	public const int SERPENTSTING = N5;      // Serpent Sting (DoT venenoso)
 	public const int ARCANESHOT = N6;        // Arcane Shot (tiro instantâneo)
-	public const int MULTISHOT = N7;         // Multi-Shot (para futuras implementações)
-	public const int CONCUSSIVESHOT = N0;    // Concussive Shot (slow/desacelera)
+	//public const int MULTISHOT = N7;         // Multi-Shot (para futuras implementações)
+	public const int CONCUSSIVESHOT = N7;    // Concussive Shot (slow/desacelera)
+	public const int MENDPET = N0;    // Concussive Shot (slow/desacelera)
 
 	// Pet commands (usar o mesmo PETATTACK do Warlock)
 	// public const int PETATTACK = F1;     // já definido no Warlock - reutilizar
-	// F6 = ASSIST (já definido globalmente)
-
-	// Aspects (para futuras implementações)
-	// public const int ASPECTHAWK = F3;    // Aspect of the Hawk
-	// public const int ASPECTCHEETAH = F4; // Aspect of the Cheetah
-	// public const int ASPECTMONKEY = F5;  // Aspect of the Monkey
-
 	// NOTA: SUMMONPET deve usar a mesma tecla do Warlock para consistência
 	// public const int SUMMONPET = F2;     // já definido no Warlock - reutilizar
+	// F6 = ASSIST (já definido globalmente)
+	public const int GROWLTOGGLE = F3;         // Multi-Shot (para futuras implementações)
+	public const int DETERRENCE = F7;         // Multi-Shot (para futuras implementações)
 
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO ROGUE
@@ -1192,9 +1190,9 @@ namespace Discord
 		if (mobs > me.mobs && me.hp < 90 && mobs > 1)
 		{
 		 loga("Chegaram novos convidados na festa!");
-		 loga("Dando backpedal para evitar dar as costas.");
-		 if (!tar.casting && !cb_no_backpedal.Checked) aperta(SKEY, 1000); // backpedal 1.2s
-
+		 loga("Dando backpedal para evitar dar as costas. Região 2");
+		 if (!tar.casting && !cb_no_backpedal.Checked)
+			 aperta(BACKPEDAL, 1000); // backpedal 1.2s se aggro no player, trazendo o mob
 		}
 		loga("Mobs: " + mobs);
 	 }
@@ -1568,25 +1566,36 @@ namespace Discord
 	 {
 		// ----------------------------------------
 		// HUNTER - PIXEL 10 EXPANDIDO
+
 		// ----------------------------------------
-		// PIXEL 10 (Hunter) – Skills prontas + Status ativo + Debuffs
+		// PIXEL 10 (Hunter) – Skills prontas + Status ativo + Pet Status
 		// ----------------------------------------
 		// R: bit 0 = raptor_strike_up      (Raptor Strike pronto - mana + range)
 		//    bit 1 = auto_shot_up          (Auto Shot pronto e em range)
 		//    bit 2 = auto_shot_range_ok    (Auto Shot range ok - verificação específica)
-		//    bit 3 = serpent_sting_up      (NOVO: Serpent Sting pronto)
-		//    bit 4 = concussive_shot_up    (NOVO: Concussive Shot pronto)
-		//    bit 5 = arcane_shot_up        (NOVO: Arcane Shot pronto)
-		//    bit 6 = revive_pet_up         (NOVO: Revive Pet pronto)
+		//    bit 3 = serpent_sting_up      (Serpent Sting pronto + target válido + sem debuff)
+		//    bit 4 = concussive_shot_up    (Concussive Shot pronto)
+		//    bit 5 = arcane_shot_up        (Arcane Shot pronto)
+		//    bit 6 = revive_pet_up         (Revive Pet pronto)
 		//    bit 7 = LIVRE
 
 		// G: bit 0 = auto_shot_ativo       (Auto Shot ativo - como autoattack)
-		//    bit 1 = tar_serpent           (NOVO: Target tem debuff Serpent Sting)
+		//    bit 1 = tar_serpent           (Target tem debuff Serpent Sting)
 		//    bits 2-7 = LIVRES
 
-		// B: bit 0 = raptor_strike_toggle_ativo (Raptor Strike toggle ativo)
-		//    bit 1 = has_pet               (Pet vivo e ativo)
-		//    bits 2-7 = LIVRES
+		// B: bit 0 = pet_has_growl         (Pet possui Growl no spellbook)
+		//    bit 1 = growl_autocast_on     (Autocast do Growl está ativo)
+		//    bit 2 = has_pet               (Pet vivo e ativo)
+		//    bit 3 = mongoose_bite_up      (Mongoose Bite pronto - após dodge)
+		//    bits 4-7 = LIVRES
+
+		// ----------------------------------------
+		// PIXEL 11 (Hunter) – Pet HP + Cooldowns Defensivos
+		// ----------------------------------------
+		// R: bits 0-6 = pet_hp             (Pet HP % - 0 a 127, convertido para 0-100%)
+		//    bit 7 = deterrence_up         (Deterrence pronto - cooldown defensivo)
+		// G: bits 0-7 = LIVRES             (Disponível para futuras expansões)
+		// B: bits 0-7 = LIVRES             (Disponível para futuras expansões)
 
 		int r10 = pixels[10].r; // canal vermelho
 		int g10 = pixels[10].g; // canal verde  
@@ -1595,12 +1604,11 @@ namespace Discord
 		// ================================
 		// CANAL R: Skills prontas
 		// ================================
-		hunt.raptor_strike_up = (r10 & 1) != 0;        // bit 0 = Raptor Strike pronto (mana + range + toggle nao ativo)
+		hunt.raptor_strike_up = (r10 & 1) != 0;        // bit 0 = Raptor Strike pronto (mana + range + toggle não ativo)
 		hunt.auto_shot_up = (r10 & 2) != 0;            // bit 1 = Auto Shot pronto e em range
 		hunt.auto_shot_range_ok = (r10 & 4) != 0;      // bit 2 = Auto Shot range ok
-
-		// NOVAS SKILLS
-		hunt.serpent_sting_up = (r10 & 8) != 0;        // bit 3 = Serpent Sting pronto
+																									 // SKILLS EXPANDIDAS
+		hunt.serpent_sting_up = (r10 & 8) != 0;        // bit 3 = Serpent Sting pronto + target válido
 		hunt.concussive_shot_up = (r10 & 16) != 0;     // bit 4 = Concussive Shot pronto
 		hunt.arcane_shot_up = (r10 & 32) != 0;         // bit 5 = Arcane Shot pronto
 		hunt.revive_pet_up = (r10 & 64) != 0;          // bit 6 = Revive Pet pronto
@@ -1612,20 +1620,23 @@ namespace Discord
 		hunt.tar_serpent = (g10 & 2) != 0;             // bit 1 = Target tem debuff Serpent Sting
 
 		// ================================
-		// CANAL B: Toggle ativo e pet status
+		// CANAL B: Pet status + Growl management
 		// ================================
-		hunt.has_pet = (b10 & 2) != 0;                     // bit 1 = Pet vivo e ativo
+		hunt.growl_available = (b10 & 1) != 0;         // bit 0 = Pet possui Growl no spellbook
+		hunt.growl_autocast = (b10 & 2) != 0;          // bit 1 = Autocast do Growl está ativo
+		hunt.has_pet = (b10 & 4) != 0;                 // bit 2 = Pet vivo e ativo (MOVIDO do bit 1)
+		hunt.mongoose_bite_up = (b10 & 8) != 0;           // bit 3 ← CORRETO!
 
 		// ================================
-		// PIXEL 11: PET HP (como Warlock)
+		// PIXEL 11: PET HP + DETERRENCE
 		// ================================
 		if (pixels.Count > 11)
 		{
-		 int ar11 = pixels[11].r;   // R = pet.hp % (base 127 → 0..127)
-		 hunt.pet_hp = (int)(ar11 * 100.0 / 127.0);   // pet.hp % (0..100)
+		 int ar11 = pixels[11].r;   // R = pet.hp % (bits 0-6) + deterrence (bit 7)
+		 hunt.pet_hp = (int)((ar11 & 127) * 100.0 / 127.0);   // pet.hp % (0..100) usando bits 0-6
+		 hunt.deterrence_up = (ar11 & 128) != 0;              // Deterrence pronto (bit 7)
 		}
 	 }
-
 
 	 // -------------------------------------
 	 // PIXEL 10: PRIEST STATUS
@@ -2038,7 +2049,7 @@ namespace Discord
 		solta(WKEY); // segurança: desativa andar se cb_anda não estiver marcado
 	 }
 
-
+	 if (me.combat) combatloop();
 
 	 long last = 0; // marca o tempo do último evento em milissegundos
 	 ///------------------------------------------------------
@@ -2099,9 +2110,9 @@ namespace Discord
 		// -----------------------------
 		if (cb_anda.Checked)
 		{
-		 if (timeout.ElapsedMilliseconds - last >= 3000) // passaram 4 segundos?
+		 if (timeout.ElapsedMilliseconds - last >= 2000) // passaram 4 segundos?
 		 {
-			aperta(SPACEBAR); // dá pulinho a cada 4 segudnos
+			aperta(PULA); // dá pulinho a cada 4 segudnos
 			last = timeout.ElapsedMilliseconds; // atualiza o tempo do último disparo
 		 }
 		 checkme();
@@ -2124,6 +2135,7 @@ namespace Discord
 		 else
 			loga("Curva muito fechada – será necessário parar.");
 		 */
+		 if (me.combat) combatloop();
 		 giralvo(destino);
 		 // gira para o destino
 		 //--------------------------------------------------------
@@ -2186,7 +2198,7 @@ namespace Discord
 		// -----------------------------
 		if (me.combat)
 		{
-		 if (!me.iscaster) para(); // para de andar se em combate
+		 para();
 		 clog("Entrou em combate!");
 		 if (!on) return; // se desligado, sai do loop
 		 loga("Chamando combatloop()...");
@@ -3558,14 +3570,14 @@ namespace Discord
 	{
 	 if (me.spd > 0) // se estiver andando
 	 {
-		aperta(SKEY, 20); // pequeno toque para trás
+		aperta(BACKPEDAL, 20); // pequeno toque para trás
 		solta(WKEY); // para de andar para frente
 		checkme(); // atualiza status
 	 }
 	 while (me.spd > 0) // enquanto estiver andando
 	 {
 		solta(WKEY); // para de andar
-		solta(SKEY); // para de andar para trás
+		solta(BACKPEDAL); // para de andar para trás
 		solta(AKEY); // para de andar para a esquerda
 		solta(DKEY); // para de andar para a direita
 		checkme(); // atualiza status
@@ -3654,6 +3666,8 @@ namespace Discord
 	 bool ja_deu_backpedal = false; // se estiver apanhando muito anda um pouco para tras pra nao dar as costas 
 	 bool jalogou = false; // se já logou o decay
 	 bool casterenemy = false;
+	 bool japarou = false;
+	 bool japarou2 = false;
 	 if (!emCombate) // decay
 	 {
 		decay.Start(me.hp);
@@ -3670,7 +3684,7 @@ namespace Discord
 
 	 do // while me.combat
 	 {
-
+		
 		if (!on) return; // se o bot estiver desligado, sai do loop
 		combat_ticker++; // incrementa contador de combate 
 		ticker++;
@@ -3698,6 +3712,11 @@ namespace Discord
 		{
 		 aperta(F6); // limpa o target e assiste o tank
 		}
+		if (!japarou2) // PARA DE ANDAR NO COMEÇO
+		{
+		 para();
+		 japarou2 = false;
+		}
 		// -----------------------------------------
 		// BACKPEDAL SE APANHANDO NAS COSTAS 
 		// -----------------------------------------
@@ -3711,12 +3730,12 @@ namespace Discord
 
 		 bool pode_backpedalar = false;
 
-		 if (me.dazed)
+		 if (me.dazed )
 		 {
 			loga("Dazed! Backpedal para evitar mob batendo atrás.");
 			pode_backpedalar = true;
 		 }
-		 else if (!ja_deu_backpedal && decay > limiar && tar.type != DRAGONKIN && !tar.casting && tar.hp > 20)
+		 else if (me.mobs > 1 && !ja_deu_backpedal && decay > limiar && tar.type != DRAGONKIN && !tar.casting && tar.hp > 20)
 		 {
 			loga($"Dando Backpedal: decay = {decay}");
 			pode_backpedalar = true;
@@ -3725,7 +3744,16 @@ namespace Discord
 
 		 if (pode_backpedalar)
 		 {
-			if (!cb_no_backpedal.Checked) aperta(SKEY, 1000);    // anda pra trás 1 segundo mantendo o facing
+			if (!cb_no_backpedal.Checked)
+			{
+			 if (tar.player_aggro)
+				aperta(BACKPEDAL, 1000); // backpedal 1.2s se aggro no player, trazendo o mob
+			 else if (tar.pet_aggro)
+			 {
+				aperta(ANDA, 1000); // se aggro no pet, atravessa o mob, para virar
+			 }
+			}
+
 			if (!me.iscaster) aperta(AUTOATTACK);    // garante ataque ligado após reposicionamento
 			else
 			{
@@ -3897,7 +3925,7 @@ namespace Discord
 		}
 
 		//----------------------------------
-		// ROTINA DE COMBATE HUNTER (COPIADA DO ROGUE)
+		// ROTINA DE COMBATE HUNTER (HCR)
 		//----------------------------------
 		else if (me.classe == HUNTER)
 		{
@@ -3905,6 +3933,12 @@ namespace Discord
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
 		 checkme();
+		 if (!japarou)
+		 {
+			para();
+			japarou = true;
+		 }
+
 
 		 getnear();
 
@@ -3952,11 +3986,58 @@ namespace Discord
 		 // ------------------------------------------
 		 // EMERGÊNCIA: POÇÃO SE MORRENDO
 		 // ------------------------------------------
-		 if (me.hp < 30 && me.hp_potion_rdy)
+		 // -----------------------------------------------------------------------
+		 // DETERRENCE: Se o HP estiver abaixo do limiar configurado,
+		 // -----------------------------------------------------------------------
+		 if (me.hp < atoi(tb_deterrence_at))
 		 {
-			aperta(HEALTHPOTION);
-			clog($"Emergência! HP: {me.hp}%");
+			if (hunt.deterrence_up)                                   // se Deterrence está pronto
+			{
+			 if (me.mobs > 1 || tar.hp > 25)    // se NÃO é apenas 1 mob com 25% ou menos de vida
+				aperta(DETERRENCE);                              // então usa Deterrence
+			 clog($"Combat: Deterrence - HP: {me.hp}%");         // loga o uso de Deterrence
+			}
 		 }
+		 if (me.hp < 37 && me.hp_potion_rdy)
+		 {
+			aperta(HEALTHPOTION); // usa poção de cura se HP < 37% e poção pronta
+			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
+		 }
+		 else if (hunt.pet_hp < 60 && me.mobs == 1 && hunt.pet_hp > 1)
+		 {
+			casta(MENDPET);
+			wait_cast();
+		 }	
+
+		 // ------------------------------------------
+		 // USA PET COMO LIFE BUFFER (VERSÃO OTIMIZADA)
+		 // ------------------------------------------
+		 if (hunt.growl_available)
+		 {
+			// Variáveis de intenção para clareza
+			bool precisa_ligar = (me.hp < 30 && !me.hp_potion_rdy) ||
+													 (me.hp < atoi(tb_growlat) && hunt.pet_hp > me.hp);
+
+			bool precisa_desligar = (!precisa_ligar && (me.hp > atoi(tb_growlat) || hunt.pet_hp < me.hp));
+
+			// Prioridade: Emergência vem primeiro (já está coberta em precisa_ligar)
+
+			// Verifica se precisa ligar e está desligado
+			if (precisa_ligar && !hunt.growl_autocast)
+			{
+			 aperta(GROWLTOGGLE);
+			 clog(me.hp < 30 ? "Emergência: Ligando Growl para tentar salvar Hunter."
+											 : "Ativando Growl: Pet mais saudável que Hunter.");
+			}
+			// Verifica se precisa desligar e está ligado
+			else if (precisa_desligar && hunt.growl_autocast)
+			{
+			 aperta(GROWLTOGGLE);
+			 clog("Desativando Growl: Hunter seguro ou Pet mais fraco.");
+			}
+		 }
+
+
 
 		 // ------------------------------------------
 		 // STONEFORM (COPIADO DO PALADINO)
@@ -3989,6 +4070,11 @@ namespace Discord
 		 // ------------------------------------------
 		 // RAPTOR STRIKE (SUBSTITUI TODAS AS SKILLS DO ROGUE)
 		 // ------------------------------------------
+		 else if (hunt.mongoose_bite_up && tar.hp > 0)
+		 {
+			aperta(MONGOOSE);
+			clog("Mongoose Bite");
+		 }
 		 else if (hunt.raptor_strike_up && tar.hp > 0)
 		 {
 			checkme();
@@ -4577,10 +4663,11 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			 loga("Autoattack iniciado. Cod 323");
 			}
 			if (ticker % 3 == 0) aperta(PULA);                        // human-like pulo eventual
-																																// -----------------------------------------------------------------------
-																																// VANISH 
-																																// -----------------------------------------------------------------------
-			if (me.mobs == 3)// TESTE 
+			// -----------------------------------------------------------------------
+			// VANISH 
+		 // -----------------------------------------------------------------------
+		 checkme();
+			if (me.hp < 30 && !me.hp_potion_rdy)// TESTE 
 			{
 			 if (rog.vanish_up)
 			 {
@@ -4591,7 +4678,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 				aperta(CLEARTGT); // limpa o target
 				aperta(VANISH);
 				aperta(CLEARTGT); // limpa o target
-				anda(-6); // recua 6 metros  para evitar aggro imediato
+				anda(-2); // recua 6 metros  para evitar aggro imediato
 				espera(2);
 				checkme();
 				if (rog.stealth_up) casta(STEALTH);
@@ -4630,9 +4717,11 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			{
 			 loga("Tentando interromper cast do mob.");
 			 loga(rog.kick_up.ToString());
-			 if (rog.kick_up)
-				aperta(KICK, 1000); // interrompe cast do mob se possível
-			}
+			if (rog.kick_up)
+			 aperta(KICK, 1000); // interrompe cast do mob se possível
+			else if (rog.gouge_up)
+			 aperta(GOUGE, 1000); // tenta Gouge se Kick não estiver disponível
+		 }
 
 			// ------------------------------------------
 			// COMBATE SEM COMBO POINTS
@@ -4791,6 +4880,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 	 tbavdecay.Text = tracker.Average.ToString();
 	 tbdecay.Text = final.ToString(); // opcional: mostrar o valor final após a luta
 	 emCombate = false;
+	 japarou = japarou2 = false;
 	 //------Timer de kills 
 	 last_kill_time = Environment.TickCount;
 	 //-----------------------------------------
@@ -4816,6 +4906,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 	 // ================================
 	 else if (me.classe == HUNTER)
 	 {
+		japarou = japarou2 = false;
 		// ================================
 		// LÓGICA INTELIGENTE DE PET
 		// ================================
@@ -4892,7 +4983,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 loga($"Esperando recuperação de HP: {Math.Min(me.hp, hunt.pet_hp)}");
 		 aperta(F12); // COMIDA 
 		 espera(2);
-
+		 if (hunt.pet_hp < 80 && !me.eating) casta(MENDPET); // cura o pet se necessário
 		 // se começou a comer, espera até 100%; senão, só até o limite normal
 		 if (me.eating)
 		 {
@@ -4905,6 +4996,8 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			 espera(1);
 		 }
 		}
+		checkme();
+		if (me.combat) para();
 	 }//-------------FIM DA ROTINA DE PÓS COMBATE HUNTER ------------------
 
 	 //-----------------------------------------
@@ -4989,6 +5082,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			espera(1);
 			checkme();
 		 }
+		 japarou = japarou2 = false;
 		}
 
 		// Aplicar buffs se não tem
@@ -5006,7 +5100,13 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 
 		}
 	 }
-
+	 checkme();
+	 if (me.combat)
+	 {
+		japarou = japarou2 = false;
+		para();
+		combatloop(); // ficou recursivo mas tudo bem
+	 }
 	}
 	// --------------------------------
 	// APROXIMA-SE DO TARGET (OU VIRA)
@@ -6085,9 +6185,9 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 {
 		float segundos_re = Math.Abs(s); // converte para positivo
 		int tempos = (int)(segundos_re * 1000); // converte segundos para milissegundos
-		press(SKEY); // começa a andar para trás
+		press(BACKPEDAL); // começa a andar para trás
 		wait(tempos); // espera o tempo em segundos (convertido para ms)
-		solta(SKEY); // para de andar para trás
+		solta(BACKPEDAL); // para de andar para trás
 		loga("andou para trás por " + segundos_re + " segundos");
 		return;
 	 }
@@ -8211,20 +8311,15 @@ else
 
 	}
 	// ----------------------------------------
-	// BOTAO DEBUG - adiciona dados de avistamento 
-	// e atualiza estimativa do mob com base nos últimos 5 pontos
+	// BOTAO DEBUG - VERIFICA STATUS DE FLAGS HUNTER PET
 	// ----------------------------------------
 	private void button17_Click(object sender, EventArgs e)
 	{
-	 
 	 checkme();
-	 clog("Tem shield?: " + war.has_shield_or_offhand);
-	 clog("Tá facil?: " + tafacil());
 
-
-
-
-
+	 clog("=== HUNTER PET STATUS ===");
+	 clog("Has Pet: " + hunt.deterrence_up);
+	 
 	}
 
 

@@ -79,6 +79,7 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_allowcleave = new System.Windows.Forms.CheckBox();
 	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
 	 this.cb_nomurloc = new System.Windows.Forms.CheckBox();
 	 this.tb_hearthlevel = new System.Windows.Forms.TextBox();
@@ -169,6 +170,11 @@ namespace Discord
 	 this.cb_BOM = new System.Windows.Forms.CheckBox();
 	 this.cb_SOR = new System.Windows.Forms.CheckBox();
 	 this.tabPage5 = new System.Windows.Forms.TabPage();
+	 this.cb_autoequip = new System.Windows.Forms.CheckBox();
+	 this.tb_deathwish_at = new System.Windows.Forms.TextBox();
+	 this.cb_deathwish = new System.Windows.Forms.CheckBox();
+	 this.label53 = new System.Windows.Forms.Label();
+	 this.cb_sweep = new System.Windows.Forms.CheckBox();
 	 this.tb_demoshoutat = new System.Windows.Forms.TextBox();
 	 this.cb_use_demoshout = new System.Windows.Forms.CheckBox();
 	 this.cb_slam = new System.Windows.Forms.CheckBox();
@@ -321,12 +327,10 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.cb_allowcleave = new System.Windows.Forms.CheckBox();
-	 this.cb_sweep = new System.Windows.Forms.CheckBox();
-	 this.label53 = new System.Windows.Forms.Label();
-	 this.cb_deathwish = new System.Windows.Forms.CheckBox();
-	 this.tb_deathwish_at = new System.Windows.Forms.TextBox();
-	 this.cb_autoequip = new System.Windows.Forms.CheckBox();
+	 this.tb_deterrence_at = new System.Windows.Forms.TextBox();
+	 this.label54 = new System.Windows.Forms.Label();
+	 this.tb_growlat = new System.Windows.Forms.TextBox();
+	 this.label55 = new System.Windows.Forms.Label();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -883,6 +887,18 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_allowcleave
+	 // 
+	 this.cb_allowcleave.AutoSize = true;
+	 this.cb_allowcleave.Checked = true;
+	 this.cb_allowcleave.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_allowcleave.Location = new System.Drawing.Point(263, 466);
+	 this.cb_allowcleave.Name = "cb_allowcleave";
+	 this.cb_allowcleave.Size = new System.Drawing.Size(120, 17);
+	 this.cb_allowcleave.TabIndex = 81;
+	 this.cb_allowcleave.Text = "Allow Cleave / AOE";
+	 this.cb_allowcleave.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_prefer_distant
 	 // 
@@ -1890,6 +1906,59 @@ namespace Discord
 	 this.tabPage5.TabIndex = 2;
 	 this.tabPage5.Text = "Warrior";
 	 // 
+	 // cb_autoequip
+	 // 
+	 this.cb_autoequip.AutoSize = true;
+	 this.cb_autoequip.Checked = true;
+	 this.cb_autoequip.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_autoequip.Location = new System.Drawing.Point(13, 55);
+	 this.cb_autoequip.Name = "cb_autoequip";
+	 this.cb_autoequip.Size = new System.Drawing.Size(107, 17);
+	 this.cb_autoequip.TabIndex = 29;
+	 this.cb_autoequip.Text = "Auto equip shield";
+	 this.cb_autoequip.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_deathwish_at
+	 // 
+	 this.tb_deathwish_at.Location = new System.Drawing.Point(137, 207);
+	 this.tb_deathwish_at.Name = "tb_deathwish_at";
+	 this.tb_deathwish_at.Size = new System.Drawing.Size(15, 20);
+	 this.tb_deathwish_at.TabIndex = 28;
+	 this.tb_deathwish_at.Text = "0";
+	 // 
+	 // cb_deathwish
+	 // 
+	 this.cb_deathwish.AutoSize = true;
+	 this.cb_deathwish.Checked = true;
+	 this.cb_deathwish.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_deathwish.Location = new System.Drawing.Point(14, 210);
+	 this.cb_deathwish.Name = "cb_deathwish";
+	 this.cb_deathwish.Size = new System.Drawing.Size(128, 17);
+	 this.cb_deathwish.TabIndex = 27;
+	 this.cb_deathwish.Text = "Death Wish level cap";
+	 this.cb_deathwish.UseVisualStyleBackColor = true;
+	 // 
+	 // label53
+	 // 
+	 this.label53.AutoSize = true;
+	 this.label53.Location = new System.Drawing.Point(16, 239);
+	 this.label53.Name = "label53";
+	 this.label53.Size = new System.Drawing.Size(86, 13);
+	 this.label53.TabIndex = 26;
+	 this.label53.Text = "Cleave and AOE";
+	 // 
+	 // cb_sweep
+	 // 
+	 this.cb_sweep.AutoSize = true;
+	 this.cb_sweep.Checked = true;
+	 this.cb_sweep.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_sweep.Location = new System.Drawing.Point(16, 303);
+	 this.cb_sweep.Name = "cb_sweep";
+	 this.cb_sweep.Size = new System.Drawing.Size(108, 17);
+	 this.cb_sweep.TabIndex = 25;
+	 this.cb_sweep.Text = "Sweeping Strikes";
+	 this.cb_sweep.UseVisualStyleBackColor = true;
+	 // 
 	 // tb_demoshoutat
 	 // 
 	 this.tb_demoshoutat.Location = new System.Drawing.Point(104, 255);
@@ -2393,7 +2462,11 @@ namespace Discord
 	 // 
 	 // tabPage8
 	 // 
-	 this.tabPage8.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.tb_growlat);
+	 this.tabPage8.Controls.Add(this.label55);
+	 this.tabPage8.Controls.Add(this.tb_deterrence_at);
+	 this.tabPage8.Controls.Add(this.label54);
 	 this.tabPage8.Controls.Add(this.cb_huntersmark);
 	 this.tabPage8.ForeColor = System.Drawing.SystemColors.ButtonShadow;
 	 this.tabPage8.Location = new System.Drawing.Point(4, 22);
@@ -3393,70 +3466,39 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // cb_allowcleave
+	 // tb_deterrence_at
 	 // 
-	 this.cb_allowcleave.AutoSize = true;
-	 this.cb_allowcleave.Checked = true;
-	 this.cb_allowcleave.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_allowcleave.Location = new System.Drawing.Point(263, 466);
-	 this.cb_allowcleave.Name = "cb_allowcleave";
-	 this.cb_allowcleave.Size = new System.Drawing.Size(120, 17);
-	 this.cb_allowcleave.TabIndex = 81;
-	 this.cb_allowcleave.Text = "Allow Cleave / AOE";
-	 this.cb_allowcleave.UseVisualStyleBackColor = true;
+	 this.tb_deterrence_at.Location = new System.Drawing.Point(81, 41);
+	 this.tb_deterrence_at.Name = "tb_deterrence_at";
+	 this.tb_deterrence_at.Size = new System.Drawing.Size(26, 20);
+	 this.tb_deterrence_at.TabIndex = 11;
+	 this.tb_deterrence_at.Text = "50";
 	 // 
-	 // cb_sweep
+	 // label54
 	 // 
-	 this.cb_sweep.AutoSize = true;
-	 this.cb_sweep.Checked = true;
-	 this.cb_sweep.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_sweep.Location = new System.Drawing.Point(16, 303);
-	 this.cb_sweep.Name = "cb_sweep";
-	 this.cb_sweep.Size = new System.Drawing.Size(108, 17);
-	 this.cb_sweep.TabIndex = 25;
-	 this.cb_sweep.Text = "Sweeping Strikes";
-	 this.cb_sweep.UseVisualStyleBackColor = true;
+	 this.label54.AutoSize = true;
+	 this.label54.Location = new System.Drawing.Point(7, 44);
+	 this.label54.Name = "label54";
+	 this.label54.Size = new System.Drawing.Size(72, 13);
+	 this.label54.TabIndex = 10;
+	 this.label54.Text = "Deterrence at";
 	 // 
-	 // label53
+	 // tb_growlat
 	 // 
-	 this.label53.AutoSize = true;
-	 this.label53.Location = new System.Drawing.Point(16, 239);
-	 this.label53.Name = "label53";
-	 this.label53.Size = new System.Drawing.Size(86, 13);
-	 this.label53.TabIndex = 26;
-	 this.label53.Text = "Cleave and AOE";
+	 this.tb_growlat.Location = new System.Drawing.Point(81, 67);
+	 this.tb_growlat.Name = "tb_growlat";
+	 this.tb_growlat.Size = new System.Drawing.Size(26, 20);
+	 this.tb_growlat.TabIndex = 13;
+	 this.tb_growlat.Text = "80";
 	 // 
-	 // cb_deathwish
+	 // label55
 	 // 
-	 this.cb_deathwish.AutoSize = true;
-	 this.cb_deathwish.Checked = true;
-	 this.cb_deathwish.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_deathwish.Location = new System.Drawing.Point(14, 210);
-	 this.cb_deathwish.Name = "cb_deathwish";
-	 this.cb_deathwish.Size = new System.Drawing.Size(128, 17);
-	 this.cb_deathwish.TabIndex = 27;
-	 this.cb_deathwish.Text = "Death Wish level cap";
-	 this.cb_deathwish.UseVisualStyleBackColor = true;
-	 // 
-	 // tb_deathwish_at
-	 // 
-	 this.tb_deathwish_at.Location = new System.Drawing.Point(137, 207);
-	 this.tb_deathwish_at.Name = "tb_deathwish_at";
-	 this.tb_deathwish_at.Size = new System.Drawing.Size(15, 20);
-	 this.tb_deathwish_at.TabIndex = 28;
-	 this.tb_deathwish_at.Text = "0";
-	 // 
-	 // cb_autoequip
-	 // 
-	 this.cb_autoequip.AutoSize = true;
-	 this.cb_autoequip.Checked = true;
-	 this.cb_autoequip.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_autoequip.Location = new System.Drawing.Point(13, 55);
-	 this.cb_autoequip.Name = "cb_autoequip";
-	 this.cb_autoequip.Size = new System.Drawing.Size(107, 17);
-	 this.cb_autoequip.TabIndex = 29;
-	 this.cb_autoequip.Text = "Auto equip shield";
-	 this.cb_autoequip.UseVisualStyleBackColor = true;
+	 this.label55.AutoSize = true;
+	 this.label55.Location = new System.Drawing.Point(7, 70);
+	 this.label55.Name = "label55";
+	 this.label55.Size = new System.Drawing.Size(46, 13);
+	 this.label55.TabIndex = 12;
+	 this.label55.Text = "Growl at";
 	 // 
 	 // Form1
 	 // 
@@ -3833,6 +3875,10 @@ namespace Discord
 	private CheckBox cb_deathwish;
 	private TextBox tb_deathwish_at;
 	private CheckBox cb_autoequip;
+	private TextBox tb_deterrence_at;
+	private Label label54;
+	private TextBox tb_growlat;
+	private Label label55;
  }
 }
 
