@@ -331,6 +331,8 @@ namespace Discord
 	 this.label54 = new System.Windows.Forms.Label();
 	 this.tb_growlat = new System.Windows.Forms.TextBox();
 	 this.label55 = new System.Windows.Forms.Label();
+	 this.cb_cheetah = new System.Windows.Forms.CheckBox();
+	 this.cb_autogrowl = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -2463,6 +2465,8 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.cb_autogrowl);
+	 this.tabPage8.Controls.Add(this.cb_cheetah);
 	 this.tabPage8.Controls.Add(this.tb_growlat);
 	 this.tabPage8.Controls.Add(this.label55);
 	 this.tabPage8.Controls.Add(this.tb_deterrence_at);
@@ -3500,6 +3504,28 @@ namespace Discord
 	 this.label55.TabIndex = 12;
 	 this.label55.Text = "Growl at";
 	 // 
+	 // cb_cheetah
+	 // 
+	 this.cb_cheetah.AutoSize = true;
+	 this.cb_cheetah.Checked = true;
+	 this.cb_cheetah.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_cheetah.Location = new System.Drawing.Point(4, 96);
+	 this.cb_cheetah.Name = "cb_cheetah";
+	 this.cb_cheetah.Size = new System.Drawing.Size(72, 17);
+	 this.cb_cheetah.TabIndex = 14;
+	 this.cb_cheetah.Text = "Cheetah !";
+	 this.cb_cheetah.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_autogrowl
+	 // 
+	 this.cb_autogrowl.AutoSize = true;
+	 this.cb_autogrowl.Location = new System.Drawing.Point(4, 120);
+	 this.cb_autogrowl.Name = "cb_autogrowl";
+	 this.cb_autogrowl.Size = new System.Drawing.Size(78, 17);
+	 this.cb_autogrowl.TabIndex = 15;
+	 this.cb_autogrowl.Text = "Auto Growl";
+	 this.cb_autogrowl.UseVisualStyleBackColor = true;
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3879,6 +3905,8 @@ namespace Discord
 	private Label label54;
 	private TextBox tb_growlat;
 	private Label label55;
+	private CheckBox cb_cheetah;
+	private CheckBox cb_autogrowl;
  }
 }
 

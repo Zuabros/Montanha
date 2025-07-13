@@ -134,6 +134,9 @@ namespace Discord
 	public bool concussive_shot_up;       // Concussive Shot pronto (spellready + manarange)
 	public bool arcane_shot_up;           // Arcane Shot pronto (spellready + manarange)
 	public bool revive_pet_up;            // Revive Pet pronto (spellready + manarange)
+	public bool disengage_up;             // Disengage pronto (spellready + manarange) 
+	public bool aspect_monkey;
+	public bool aspect_cheetah;
 
 	// ================================
 	// STATUS ATIVO (true se ativo)

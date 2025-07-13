@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices; // Required for Windows API functions
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
@@ -411,11 +412,13 @@ namespace Discord
 	// F6 = ASSIST (já definido globalmente)
 	public const int GROWLTOGGLE = F3;         // Multi-Shot (para futuras implementações)
 	public const int DETERRENCE = F7;         // Multi-Shot (para futuras implementações)
-
-	// --------------------------------------------
-	// SKILLS EXCLUSIVAS DO ROGUE
-	// --------------------------------------------
-	//public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) 
+	public const int DISENGAGE = F10;         // Multi-Shot (para futuras implementações)
+	public const int ASPECTMONKEY = NOVE;
+	public const int ASPECTCHEETAH = ZERO;
+																					// --------------------------------------------
+																					// SKILLS EXCLUSIVAS DO ROGUE
+																					// --------------------------------------------
+																					//public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) 
 	public const int SS = N1;               // Sinister Strike
 	public const int EVIS = N2;             // Eviscerate
 	public const int THROW = N3;            // Throwing Knife
@@ -1192,7 +1195,12 @@ namespace Discord
 		 loga("Chegaram novos convidados na festa!");
 		 loga("Dando backpedal para evitar dar as costas. Região 2");
 		 if (!tar.casting && !cb_no_backpedal.Checked)
-			 aperta(BACKPEDAL, 1000); // backpedal 1.2s se aggro no player, trazendo o mob
+		 {
+			if (tar.player_aggro)
+			aperta(BACKPEDAL, 1000); // backpedal 1.2s se aggro no player, trazendo o mob
+			else if (tar.pet_aggro)
+			 aperta(ANDA, 1000); // ANDA PARA ATRAVESSAR MOB E VIRAR
+		 }
 		}
 		loga("Mobs: " + mobs);
 	 }
@@ -1618,6 +1626,9 @@ namespace Discord
 		// ================================
 		hunt.auto_shot_ativo = (g10 & 1) != 0;         // bit 0 = Auto Shot ativo (como autoattack)
 		hunt.tar_serpent = (g10 & 2) != 0;             // bit 1 = Target tem debuff Serpent Sting
+		hunt.disengage_up = (g10 & 4) != 0;            // bit 2 = Disengage pronto
+		hunt.aspect_monkey = (g10 & 8) != 0;           // bit 3 = Aspect of the Monkey ativo
+		hunt.aspect_cheetah = (g10 & 16) != 0;         // bit 4 = Aspect of the Cheetah ativo
 
 		// ================================
 		// CANAL B: Pet status + Growl management
@@ -1995,6 +2006,7 @@ namespace Discord
 	// --------------------------------
 	public void moveto(loc destino)
 	{
+	 		
 	 // --------------------------------
 	 // ROTINAS GERAIS PRÉ-MOVIMENTAÇÃO
 	 // --------------------------------
@@ -2004,6 +2016,8 @@ namespace Discord
 	 Func<int, bool> mana = (p) => me.mana > p;            // verifica se tem mana acima de p
 
 	 getstats(ref me);                                     // atualiza status inicial
+	 if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
+		aperta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
 	 drawmap(destino);
 	 if (cb_herbalism.Checked) atualizamapa(me.pos);
 	 int temp = 0;                                         // contador de ciclos
@@ -2203,6 +2217,7 @@ namespace Discord
 		 if (!on) return; // se desligado, sai do loop
 		 loga("Chamando combatloop()...");
 		 if (me.classe == ROGUE) ComboOptimizer.categoria_atual = ComboOptimizer.EscolherCategoria(); // se for Rogue, escolhe categoria de combo points
+		 if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah) aperta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
 		 combatloop(); // entra na rotina de combate
 		 aperta(STOPATTACK); // para de atacar após combate
 
@@ -2389,7 +2404,7 @@ namespace Discord
 
 
 		//----------------------------------
-		// RECUPERAÇAO E PREPARO PÓS COMBATE - WARRIOR
+		// RECUPERAÇAO E PREPARO PRÉ COMBATE - WARRIOR
 		//----------------------------------
 		else if (me.classe == WARRIOR)
 		{
@@ -2505,8 +2520,12 @@ namespace Discord
 		//--------------------------------------
 		// CONTINUA ANDANDO ATÉ CHEGAR NO LOCAL. RESTART DO LOOP
 
-	 } while (on && dist(me.pos, destino) > (catando_planta ? 70 : 120)); // enquanto ativo e longe (20 se catando)
-
+		cheguei = 120;
+		if (catando_planta) cheguei = 70;
+		else if (me.classe == HUNTER && hunt.aspect_cheetah) cheguei = 180; // Hunter com Cheetah tem mais range
+																																				// else if paladino com talento de correr... implementar. 
+	 } while (on && dist(me.pos, destino) > cheguei); // enquanto ativo e longe
+	 
 	 loga("Waypoint atingido. Partindo para proximo.");
 	 if (catando_planta) catando_planta = false; // chegou na planta 
 
@@ -2516,6 +2535,7 @@ namespace Discord
 	//--------------------------------------------
 	/// MÉTODO HEARTHHOME - USADO PARA VOLTAR PARA A CIDADE COM HEARTHSTONE
 	//--------------------------------------------
+	int cheguei = 0; // usado acima. distancia em que considera que chegou no moveto
 	void HS()
 	{
 	 para(); // para de andar se estiver andando
@@ -2804,7 +2824,7 @@ namespace Discord
 		if (tar.mood == 1) return false; // amarelo = não hostil
 		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
-		if (tar.level > me.level + Convert.ToInt32(tb_pullcap.Text)) return false;
+		if (tar.level > me.level + atoi(tb_pullcap)) return false;
 		if (cb_nomurloc.Checked && tar.type == MURLOC) return false;
 
 		// Bloqueia apenas humanóides NPC
@@ -3057,6 +3077,7 @@ namespace Discord
 		 // --------------------------------------
 		 else if (me.classe == HUNTER) // inicio pull hunter
 		 {
+			if (hunt.aspect_cheetah) aperta(ASPECTMONKEY);
 			loga("Iniciando pull como Hunter.");
 			aperta(AUTOATTACK); // ativa auto attack
 			aperta(INTERACT); // começa a andar para o mob
@@ -3125,6 +3146,7 @@ namespace Discord
 				if (me.combat) // se combate iniciou após ranged
 				{
 				 loga("Combate iniciado após ranged pull.");
+				 if (hunt.auto_shot_range_ok) aperta(DOIS); // RAPID FORE
 				 return;
 				}
 			 }
@@ -3590,7 +3612,7 @@ namespace Discord
 	private void rastreia_mob_combate()
 	{
 	 // só adiciona se target válido, com aggro, e levou porrada significativa
-	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro) && tar.hp < 50)
+	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro) && tar.hp < 80)
 	 {
 		// verifica se é mob skinnable
 		if (tar.type == HUMANOID || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
@@ -3928,7 +3950,9 @@ namespace Discord
 		// ROTINA DE COMBATE HUNTER (HCR)
 		//----------------------------------
 		else if (me.classe == HUNTER)
+		
 		{
+		 if (!hunt.aspect_monkey) aperta(ASPECTMONKEY); // DESLIGA ASPECTO DA CHEETAH
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
@@ -4010,9 +4034,9 @@ namespace Discord
 		 }	
 
 		 // ------------------------------------------
-		 // USA PET COMO LIFE BUFFER (VERSÃO OTIMIZADA)
+		 // AUTO GROWL - USA PET COMO LIFE BUFFER (VERSÃO OTIMIZADA)
 		 // ------------------------------------------
-		 if (hunt.growl_available)
+		 if (cb_autogrowl.Checked &&  hunt.growl_available) // controle automatico do growl 
 		 {
 			// Variáveis de intenção para clareza
 			bool precisa_ligar = (me.hp < 30 && !me.hp_potion_rdy) ||
@@ -4080,6 +4104,13 @@ namespace Discord
 			checkme();
 			if (hunt.raptor_strike_up) aperta(RAPTORS);
 			clog($"Raptor Strike: mana={me.mana}");
+		 }
+		 // ------------------------------------------
+		 // DISENGAGE SE TEM AGGRO E DEVIA ESTAR PARA O PET
+		 // ------------------------------------------
+		 else if (hunt.growl_autocast && tar.player_aggro && hunt.disengage_up && hunt.pet_hp > 10)
+		 {
+			aperta(DISENGAGE); // usa Disengage se está em combate e tem aggro no player
 		 }
 
 
@@ -4983,7 +5014,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 loga($"Esperando recuperação de HP: {Math.Min(me.hp, hunt.pet_hp)}");
 		 aperta(F12); // COMIDA 
 		 espera(2);
-		 if (hunt.pet_hp < 80 && !me.eating) casta(MENDPET); // cura o pet se necessário
+		 if (hunt.pet_hp < 70 && !me.eating) casta(MENDPET); // cura o pet se necessário
 		 // se começou a comer, espera até 100%; senão, só até o limite normal
 		 if (me.eating)
 		 {
@@ -4997,6 +5028,8 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 }
 		}
 		checkme();
+		if (false && me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
+		 casta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
 		if (me.combat) para();
 	 }//-------------FIM DA ROTINA DE PÓS COMBATE HUNTER ------------------
 
@@ -6684,13 +6717,29 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 	// -------------------------------------------------------
 	private void button1_Click_1(object sender, EventArgs e)
 	{
+
+	 cb_anda.Checked = true; // garante que o checkbox de andar esteja marcado
 	 bt_save_cfg_Click(sender, e);
+
+
+	 // ROTINAS ESPECIFICAS DE CLASSE 
+	 checkme();
+	 if (!me.combat)
+	 {
+		//------------------
+		// HUNTER
+		//---------------------
+		if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
+		{
+		 aperta(ASPECTCHEETAH); // ativa Aspecto do Guepardo
+		}
+	 }
 	 {
 
 		// ATUALIZADOR EM BACKGROUND DOS STATS 
 		//StartBackgroundUpdates(); // <- ADICIONAR AQUI
-															
 
+		
 		int hs_tick = 0; // guarda o último tick registrado (global ou da classe)
 
 	 if (cb_HS_timer.Checked && hs_tick == 0) // só na primeira vez
