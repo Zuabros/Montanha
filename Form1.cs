@@ -215,6 +215,9 @@ namespace Discord
 	public const int NOVE = 0x39; // tecla 9 
 	public const int ZERO = 0x30; // tecla 0 
 
+	public const int ZE = 0x5A; // tecla Z
+	public const int XIS = 0x58; // tecla X
+
 	// --------------------------------------------
 	// TECLAS DO NUMPAD
 	// --------------------------------------------
@@ -395,12 +398,12 @@ namespace Discord
 
 	public const int RAPTORS = N1;           // Raptor Strike (análogo ao HEROICS do Warrior)
 	public const int AUTOSHOT = N2;          // Auto Shot (skill principal à distância)
-	public const int MONGOOSE = N3;          // Mongoose Bite (ataque especial de pet)
-	public const int HUNTERSMARK = N4;       // Hunter's Mark (para futuras implementações)
-
-	// NOVAS SKILLS ADICIONADAS
-	public const int SERPENTSTING = N5;      // Serpent Sting (DoT venenoso)
-	public const int ARCANESHOT = N6;        // Arcane Shot (tiro instantâneo)
+	public const int MONGOOSE = N6;          // Mongoose Bite (ataque especial de pet)
+	public const int HUNTERSMARK = N5;       // Hunter's Mark (para futuras implementações)
+	public const int FEIGNDEATH = SEIS;          // Mongoose Bite (ataque especial de pet)
+																					 // NOVAS SKILLS ADICIONADAS
+	public const int SERPENTSTING = N3;      // Serpent Sting (DoT venenoso)
+	public const int ARCANESHOT = N4;        // Arcane Shot (tiro instantâneo)
 	//public const int MULTISHOT = N7;         // Multi-Shot (para futuras implementações)
 	public const int CONCUSSIVESHOT = N7;    // Concussive Shot (slow/desacelera)
 	public const int MENDPET = N0;    // Concussive Shot (slow/desacelera)
@@ -413,12 +416,13 @@ namespace Discord
 	public const int GROWLTOGGLE = F3;         // Multi-Shot (para futuras implementações)
 	public const int DETERRENCE = F7;         // Multi-Shot (para futuras implementações)
 	public const int DISENGAGE = F10;         // Multi-Shot (para futuras implementações)
-	public const int ASPECTMONKEY = NOVE;
+	public const int ASPECTMONKEY = UM;
 	public const int ASPECTCHEETAH = ZERO;
-																					// --------------------------------------------
-																					// SKILLS EXCLUSIVAS DO ROGUE
-																					// --------------------------------------------
-																					//public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) 
+	public const int RAPIDFIRE = DOIS;
+	// --------------------------------------------
+	// SKILLS EXCLUSIVAS DO ROGUE
+	// --------------------------------------------
+	//public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) 
 	public const int SS = N1;               // Sinister Strike
 	public const int EVIS = N2;             // Eviscerate
 	public const int THROW = N3;            // Throwing Knife
@@ -769,7 +773,7 @@ namespace Discord
 	 lb_combatlog.Clear(); // limpa todos os itens da ListBox combatlog
 	 carrega_loot(); // carrega frequencia de pontos de loot 
 	 checkme(); // verifica se o player está em combate e ativa o botao de stop
-	 if (me.level >= 12) cb_nohumanoid.Checked = true; // ativa filtro de humanoides por padrão
+	 if (me.level >= 15) cb_nomurloc.Checked = true; // ativa filtro de humanoides por padrão
 	 killstats("load"); // carrega estatísticas de kills do arquivo
 
 
@@ -1205,6 +1209,10 @@ namespace Discord
 		loga("Mobs: " + mobs);
 	 }
 	 me.mobs = mobs;
+	 // leitura dos mobs separados (bits do pixel 8 green)
+me.mobs_player = pixels[8].g & 0b00000011;        // bits 0–1
+me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
+
 
 	 // debug visual
 	 tb_hp.Text = v_hp.ToString();
@@ -1605,6 +1613,8 @@ namespace Discord
 		// G: bits 0-7 = LIVRES             (Disponível para futuras expansões)
 		// B: bits 0-7 = LIVRES             (Disponível para futuras expansões)
 
+		// PIXEL 10: 
+		
 		int r10 = pixels[10].r; // canal vermelho
 		int g10 = pixels[10].g; // canal verde  
 		int b10 = pixels[10].b; // canal azul
@@ -1638,15 +1648,28 @@ namespace Discord
 		hunt.has_pet = (b10 & 4) != 0;                 // bit 2 = Pet vivo e ativo (MOVIDO do bit 1)
 		hunt.mongoose_bite_up = (b10 & 8) != 0;           // bit 3 ← CORRETO!
 
+
 		// ================================
 		// PIXEL 11: PET HP + DETERRENCE
 		// ================================
-		if (pixels.Count > 11)
-		{
-		 int ar11 = pixels[11].r;   // R = pet.hp % (bits 0-6) + deterrence (bit 7)
-		 hunt.pet_hp = (int)((ar11 & 127) * 100.0 / 127.0);   // pet.hp % (0..100) usando bits 0-6
-		 hunt.deterrence_up = (ar11 & 128) != 0;              // Deterrence pronto (bit 7)
-		}
+		int r11 = pixels[11].r; // canal vermelho
+		int g11 = pixels[11].g; // canal verde  
+		int b11 = pixels[11].b; // canal azul
+
+		hunt.pet_hp = (int)((r11 & 127) * 100.0 / 127.0);   // pet.hp % (0..100) usando bits 0–6
+		hunt.deterrence_up = (r11 & 128) != 0;              // Deterrence pronto (bit 7)
+
+
+		// ================================
+		// PIXEL 12: FLAGS DO HUNTER
+		// bit 0 (R) = feign_death_ready
+		// bit 1 (R) = rapid_fire_ready
+		// ================================
+		int r12 = pixels[12].r;
+		hunt.feigndeath_up = (r12 & 1) != 0; // bit 0 = Feign Death pronto
+		hunt.rapidfire_up = (r12 & 2) != 0;  // bit 1 = Rapid Fire pronto
+
+
 	 }
 
 	 // -------------------------------------
@@ -2006,17 +2029,18 @@ namespace Discord
 	// --------------------------------
 	public void moveto(loc destino)
 	{
-	 		
+
 	 // --------------------------------
 	 // ROTINAS GERAIS PRÉ-MOVIMENTAÇÃO
 	 // --------------------------------
+	 fazendopull = false;
 	 reset_stuck_system(); // inicializa o sistema anti stuck 
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // tem algum seal ativo
 
 	 Func<int, bool> mana = (p) => me.mana > p;            // verifica se tem mana acima de p
 
 	 getstats(ref me);                                     // atualiza status inicial
-	 if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
+	 if (me.classe == HUNTER && me.mana>atoi(tb_cheetah_mana) && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
 		aperta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
 	 drawmap(destino);
 	 if (cb_herbalism.Checked) atualizamapa(me.pos);
@@ -2217,7 +2241,7 @@ namespace Discord
 		 if (!on) return; // se desligado, sai do loop
 		 loga("Chamando combatloop()...");
 		 if (me.classe == ROGUE) ComboOptimizer.categoria_atual = ComboOptimizer.EscolherCategoria(); // se for Rogue, escolhe categoria de combo points
-		 if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah) aperta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
+		 if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah && me.mana>atoi(tb_cheetah_mana) ) aperta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
 		 combatloop(); // entra na rotina de combate
 		 aperta(STOPATTACK); // para de atacar após combate
 
@@ -2798,7 +2822,7 @@ namespace Discord
 	 // NAO DEIXA AFOGAR 
 	 //------------------------------
 	 nao_afoga(); // nada para cima se estiver afogando
-
+	 fazendopull = true;
 
 
 	 // --------------------------------------------
@@ -2826,6 +2850,7 @@ namespace Discord
 		if (tar.hp < 100) return false; // já apanhou
 		if (tar.level > me.level + atoi(tb_pullcap)) return false;
 		if (cb_nomurloc.Checked && tar.type == MURLOC) return false;
+		if (cb_noelemental.Checked && tar.type == ELEMENTAL) return false;
 
 		// Bloqueia apenas humanóides NPC
 		if (cb_nohumanoid.Checked && tar.type == HUMANOID)
@@ -3071,133 +3096,284 @@ namespace Discord
 			if (ticker++ % 16 == 0) aperta(PULA); // pulo humano a cada ~2s
 			aperta(INTERACT); // continua andando até o mob
 		 }
+		 // =====================================================
+		 // HUNTER PULL 2.0 - MÁQUINA DE ESTADOS FINITOS
+		 // VERSÃO CONSERVADORA - NÃO SUBSTITUI O ORIGINAL!
+		 // =====================================================
 
-		 // --------------------------------------
-		 // PULL HUNTER REFEITO - WOW CLASSIC HC
-		 // --------------------------------------
-		 else if (me.classe == HUNTER) // inicio pull hunter
+		 /* 
+				* BACKUP DO CÓDIGO ORIGINAL: linha XXX-YYY (MANTER INTOCADO!)
+				* Esta versão é EXPERIMENTAL - teste primeiro em mobs level 1-5
+				* Se der merda, volta pro código capenga que funciona!
+				*/
+
+		 else if (me.classe == HUNTER) // inicio pull hunter v2.0
 		 {
-			if (hunt.aspect_cheetah) aperta(ASPECTMONKEY);
-			loga("Iniciando pull como Hunter.");
-			aperta(AUTOATTACK); // ativa auto attack
-			aperta(INTERACT); // começa a andar para o mob
-			int t0 = Environment.TickCount; // marca o tempo inicial
-			int lastInteract = t0; // controle de interações
-			int lastJump = t0; // controle de pulos
-			bool jafalou = false; // flag de log
-			while (!me.combat && Environment.TickCount - t0 < 6000 && me.hastarget && tar.hp >= 100)
+			// =================================
+			// FASE 1: SETUP INICIAL (OBRIGATÓRIA)
+			// =================================
+
+			loga("Hunter Pull 2.0 - Iniciando setup.");
+
+			// Remove aspecto e para movimento
+			if (hunt.aspect_cheetah)
 			{
-			 checkme(); // atualiza estado
-			 if (check_stuck() >= 2) break; // verifica stuck
-																			// verifica se auto shot está pronto para ranged pull
-			 if (hunt.auto_shot_up)
-			 {
-				clog("Em range do Auto Shot. Executando ranged pull.");
-				para(); // para de andar
-				checkme();
-
-				if (hunt.auto_shot_up && !hunt.auto_shot_ativo) // se não está ativo, ativa
-				{
-				 if (me.level >= 8 && cb_huntersmark.Checked && !tar.trivial) casta(HUNTERSMARK);
-				 casta(AUTOSHOT);
-
-				 loga("Auto Shot ativado.");
-				 wait(1000); // espera 2s para garantir que o Auto Shot está ativo
-				}
-				clog("Esperando aproximação do mob após ranged pull.");
-				// espera ativa de até 6s
-				while (!me.melee && me.mobs == 0 && Environment.TickCount - t0 < 10000)
-				{
-				 checkme(); // atualiza estado
-										// se auto shot parou, já prepara o raptor strike
-				 if (!hunt.auto_shot_range_ok && hunt.raptor_strike_up)
-				 {
-					aperta(RAPTORS);
-					clog($"Sem range após {(Environment.TickCount - t0) / 1000}s! Preparando Raptor Strike.");
-					break;
-				 }
-
-				 // se tiver arcane shot pronto, pode castar aqui
-				 if (hunt.serpent_sting_up && tar.type != MECHANICAL && tar.type != ELEMENTAL)
-				 {
-					aperta(SERPENTSTING); // (comentado: ainda não aprendeu)
-					clog("Casting Serpent Sting.");
-				 }
-				 else if (hunt.arcane_shot_up)
-				 {
-					aperta(ARCANESHOT); // (comentado: ainda não aprendeu)
-					clog("Casting Arcane Shot.");
-				 }
-
-
-				 // se tiver serpent sting pronto, pode castar aqui
-
-				}
-				if (me.melee || me.mobs > 0)
-				{
-				 if (hunt.raptor_strike_up)
-				 {
-					aperta(RAPTORS); // se não está no dead zone, usa Raptor Strike
-					aperta(INTERACT); // engaja mob
-					loga("Usando Raptor Strike em melee range.");
-				 }
-				 break; // mob chegou
-				}
-				if (me.combat) // se combate iniciou após ranged
-				{
-				 loga("Combate iniciado após ranged pull.");
-				 if (hunt.auto_shot_range_ok) aperta(DOIS); // RAPID FORE
-				 return;
-				}
-			 }
-			 // fallback para melee caso não tenha ranged
-			 if (me.melee)
-			 {
-				if (hunt.raptor_strike_up)
-				{
-				 aperta(RAPTORS);
-				 loga("Usando Raptor Strike em melee range.");
-				}
-				else
-				{
-				 if (!me.autoattack)
-					aperta(AUTOATTACK);
-				}
-			 }
-			 // movimento contínuo: interact e pulo
-			 int now = Environment.TickCount;
-			 if (now - lastInteract >= 500)
-			 {
-				aperta(INTERACT);
-				lastInteract = now;
-			 }
-			 if (now - lastJump >= 3000)
-			 {
-				aperta(PULA, 20);
-				lastJump = now;
-			 }
+			 aperta(ASPECTMONKEY);
+			 clog("Removendo Aspect of the Cheetah.");
 			}
-			// avaliação final do pull
-			if (!hunt.auto_shot_range_ok || me.melee || me.mobs > 0)
+
+			aperta(AUTOATTACK); // garante auto attack ativo
+			para(); // para movimento imediatamente
+
+			// Marcadores de tempo e estado
+			int pullStartTime = Environment.TickCount;
+			int currentTime = pullStartTime;
+			
+			int RANGED_PHASE_DURATION = atoi(tb_rangedseconds)*1000; // 7s de ranged
+			int MAX_PULL_TIME = RANGED_PHASE_DURATION + 4000; // 10s timeout total
+			// =================================
+			// FASE 2: DETERMINAÇÃO DE ESTRATÉGIA
+			// =================================
+
+			checkme();
+			virahunter();
+	
+			bool canDoRangedPull = hunt.auto_shot_up && hunt.auto_shot_range_ok;
+			bool shouldDoRangedPull = canDoRangedPull && !me.melee;
+
+			clog($"Estratégia: {(shouldDoRangedPull ? "RANGED PULL" : "MELEE APPROACH")}");
+
+		 // GOTO LABEL - PONTO DE RETORNO DO GOTO RAIZ! 🔥
+		 RANGED_PHASE:
+
+			if (shouldDoRangedPull || hunt.auto_shot_range_ok) // 🔥 CONDIÇÃO MODIFICADA
 			{
 			 para();
-			 //aperta(PULA, 10);
-			 //aperta(INTERACT);
+			 // =================================
+			 // FASE 3A: RANGED PULL SEQUENCE
+			 // =================================
+
+			 clog("Executando ranged pull sequence.");
+
+			 // Pet attack se disponível
+			 if (hunt.has_pet)
+			 {
+				aperta(PETATTACK);
+				clog("Pet enviado para attack.");
+			 }
+
+			 // espera global cooldown da mudança de aspecto (VERSÃO ORIGINAL - FUNCIONA!)
+			 int tic = 0;
+			 if (cb_cheetah.Checked)
+			 {
+				while (hunt.auto_shot_range_ok && !hunt.arcane_shot_up && !me.melee && tic < 20)
+				{
+				 tic++;
+				 checkme();
+				 wait(100);
+				}
+			 }
+
+			 // =================================
+			 // SEQUÊNCIA DE ABERTURA RANGED
+			 // =================================
+
 			 checkme();
+			 virahunter(true);
+			 if (hunt.auto_shot_range_ok && !me.combat)
+			 {
+				// Ordem de prioridade para opening shot
+				bool openingShotFired = false;
+
+				// 1. Hunter's Mark (se alto level e não trivial)
+				if (me.level >= 8 && cb_huntersmark.Checked && !tar.trivial)
+				{
+				 casta(HUNTERSMARK);
+				 clog("Opening: Hunter's Mark");
+				 openingShotFired = true;
+				}
+				// 2. Serpent Sting (prioridade máxima se disponível)
+				else if (hunt.serpent_sting_up && cb_serpentsting.Checked &&
+								 tar.type != MECHANICAL && tar.type != ELEMENTAL)
+				{
+				 casta(SERPENTSTING);
+				 clog("Opening: Serpent Sting");
+				 openingShotFired = true;
+				}
+				// 3. Arcane Shot (dano burst)
+				else if (hunt.arcane_shot_up && cb_arcaneshot.Checked)
+				{
+				 casta(ARCANESHOT);
+				 clog("Opening: Arcane Shot");
+				 openingShotFired = true;
+				}
+				// 4. Auto Shot (fallback sempre disponível)
+				else if (hunt.auto_shot_up && !hunt.auto_shot_ativo)
+				{
+				 casta(AUTOSHOT);
+				 clog("Opening: Auto Shot");
+				 openingShotFired = true;
+				}
+
+				if (!openingShotFired)
+				{
+				 clog("AVISO: Nenhum opening shot disponível!");
+				}
+			 }
+
+			 // =================================
+			 // FASE 3B: RANGED SUSTAIN LOOP (5 segundos)
+			 // =================================
+			 if (cb_huntermeleepull.Checked)
+			 {
+				aperta(INTERACT); // garante que o hunter se VOLTA do alvo
+				wait(400);
+			 }
+			 checkme();
+
+			 int rangedPhaseStart = Environment.TickCount;
+			 clog("Iniciando ranged sustain phase. ");
+			 if (!tar.trivial && me.combat && hunt.auto_shot_range_ok && hunt.rapidfire_up) aperta(RAPIDFIRE); // RAPID FIRE se já em combate e mob forte
+
+			 while ((Environment.TickCount - rangedPhaseStart) < RANGED_PHASE_DURATION &&
+							hunt.auto_shot_range_ok &&
+							tar.hp > atoi(tb_rangedhp) && // se mob tá morrendo, chega de pipoco e bora pegar o loot
+							!cb_huntermeleepull.Checked &&
+							//!me.combat &&
+							(Environment.TickCount - pullStartTime) < MAX_PULL_TIME)
+			 {
+				checkme();
+			 virahunter(true);
+				// Sequência de prioridade durante ranged phase
+				if (hunt.serpent_sting_up && cb_serpentsting.Checked &&
+						!hunt.tar_serpent && tar.type != MECHANICAL && tar.type != ELEMENTAL)
+				{
+				 casta(SERPENTSTING);
+				 clog("Sustain: Serpent Sting");
+				}
+				else if (hunt.arcane_shot_up && cb_arcaneshot.Checked)
+				{
+				 casta(ARCANESHOT);
+				 clog("Sustain: Arcane Shot");
+				}
+				else if (hunt.auto_shot_up && !hunt.auto_shot_ativo)
+				{
+				 aperta(AUTOSHOT);
+				 clog("Sustain: Auto Shot");
+				}
+
+				wait(200); // evita spam excessivo
+			 }
+
+			 clog("Ranged phase finalizada.");
+			 aperta(RAPTORS); // prepara Raptor Strike se disponível
+			}
+
+			// =================================
+			// FASE 4: TRANSIÇÃO PARA MELEE/VERIFICAÇÃO
+			// =================================
+
+			checkme();
+			currentTime = Environment.TickCount;
+
+			// Se ainda não está em combate e tem tempo, tenta aproximação melee
+			if (!me.combat &&
+					(currentTime - pullStartTime) < MAX_PULL_TIME &&
+					me.hastarget &&
+					tar.hp >= 100)
+			{
+			 clog("Transicionando para melee approach.");
+
+			 // Prepara Raptor Strike se disponível
 			 if (hunt.raptor_strike_up)
 			 {
-				aperta(RAPTORS); // usa Raptor Strike se não estiver no dead zone
-				clog("Last chance raptor strike.");
+				aperta(RAPTORS);
+				clog("Raptor Strike preparado.");
 			 }
-			 clog("Pull concluído com sucesso.");
+
+			 // Loop de aproximação
+			 int approachStart = Environment.TickCount;
+			 int lastInteract = approachStart;
+			 int lastJump = approachStart;
+
+			 while (!me.combat &&
+							
+							(Environment.TickCount - pullStartTime) < MAX_PULL_TIME &&
+							me.hastarget)
+			 {
+				checkme();
+
+				currentTime = Environment.TickCount;
+
+				// 🔥🔥🔥 GOTO RAIZ AQUI! 🔥🔥🔥
+				// Se conseguiu auto shot range de novo durante aproximação melee...
+				if (hunt.auto_shot_range_ok)
+				{
+				 clog("🔥 GOTO: Mob voltou ao range! Retornando para ranged phase!");
+				 shouldDoRangedPull = true; // força ranged pull
+				 pullStartTime += 3000; // 🔥 GANHA +3 SEGUNDOS DE VIDA
+				 goto RANGED_PHASE; // 🔥 GOTO RAIZ! 🔥
+				}
+
+				// Interact a cada 500ms
+				if ((currentTime - lastInteract) >= 150)
+				{
+				 aperta(INTERACT);
+				 lastInteract = currentTime;
+				}
+
+				// Jump a cada 3s para evitar stuck
+				if ((currentTime - lastJump) >= 3000)
+				{
+				 aperta(PULA, 20);
+				 lastJump = currentTime;
+				 clog("Jump anti-stuck.");
+				}
+
+				// Verifica stuck critical
+				if (check_stuck() >= 2)
+				{
+				 clog("STUCK DETECTADO - abortando pull.");
+				 break;
+				}
+
+				wait(50);
+			 }
+			}
+
+			// =================================
+			// FASE 5: AVALIAÇÃO FINAL
+			// =================================
+
+			checkme();
+			currentTime = Environment.TickCount;
+			int totalPullTime = currentTime - pullStartTime;
+
+			if (me.combat || me.melee || me.mobs > 0 || !hunt.auto_shot_range_ok)
+			{
+			 // SUCESSO - entramos em combate
+			 para();
+
+			 // Last chance Raptor Strike se ainda não usado
+			 if (hunt.raptor_strike_up && (me.melee || !hunt.auto_shot_range_ok))
+			 {
+				aperta(RAPTORS);
+				clog("Final: Raptor Strike em melee.");
+			 }
+
+			 clog($"✅ PULL SUCESSO em {totalPullTime}ms");
 			 return;
 			}
 			else
 			{
-			 clog("Pull falhou. Não entrou em combate.");
+			 // FALHA - não conseguiu engajar
+			 para();
 			 aperta(CLEARTGT);
+			 clog($"❌ PULL FALHOU após {totalPullTime}ms - target cleared.");
 			}
-		 } // fim pull hunter
+
+		 } // fim pull hunter v2.0
+
 
 
 		 //------------------------------------------------------------
@@ -3667,8 +3843,11 @@ namespace Discord
 	void viramob()
 	{
 	 if (tar.player_aggro || tar.pet_aggro) // se tem aggro válido
-		aperta(INTERACT, 300);
-	 if (me.iscaster) para(); // para de andar antes de castar
+	 {
+		aperta(INTERACT);
+		wait(300); // espera 0.3s para virar
+	 }
+	 if (me.iscaster || me.classe == HUNTER) para(); // para de andar antes de castar
 	}
 	// --------------------------------
 	// MÉTODO COMBATLOOP - ROTINAS DE COMBATE
@@ -3738,6 +3917,15 @@ namespace Discord
 		{
 		 para();
 		 japarou2 = false;
+		}
+		// ------------------------
+		// LIMPA TARGET AMIGAVEL OU SELF
+		//---------------------------
+		if (tar.mood == 1)
+		{
+		 clog("Limpando target amigavel ou self.");
+		 aperta(CLEARTGT); // limpa o target se for amigável ou self (mood -1)
+		 checkme();
 		}
 		// -----------------------------------------
 		// BACKPEDAL SE APANHANDO NAS COSTAS 
@@ -3952,7 +4140,7 @@ namespace Discord
 		else if (me.classe == HUNTER)
 		
 		{
-		 if (!hunt.aspect_monkey) aperta(ASPECTMONKEY); // DESLIGA ASPECTO DA CHEETAH
+		 if (!hunt.aspect_monkey && me.level >= 5) aperta(ASPECTMONKEY); // DESLIGA ASPECTO DA CHEETAH
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
@@ -3965,7 +4153,7 @@ namespace Discord
 
 
 		 getnear();
-
+		 virahunter(true);
 		 // Aproximação (COPIADO DO GETNEAR PARA MELEE CLASSES)
 		 if (me.wrongway)
 		 {
@@ -3976,26 +4164,46 @@ namespace Discord
 		 {
 			if (!me.melee)
 			 loga("Hunter: Corrigindo distância (fora de melee) (code 303).");
-			else
-			 loga("Interact de rotina: 305."); // loga o código de interação
+			//else
+			 //loga("Interact de rotina: 305."); // loga o código de interação
 			aperta(INTERACT);
 		 }
-		 //xxxg
-		 // ASSIST NO PET 
-		 //------------------------------
-		 if ((!me.hastarget && hunt.has_pet && me.combat) || (me.mobs > 1 && hunt.has_pet))
+		 //------------------------
+		 // FEIGN DEATH
+		 //------------------------
+		 if (me.combat && hunt.feigndeath_up && hunt.pet_hp == 0 && !hunt.has_pet)
 		 {
-			aperta(ASSIST); // assiste o pet se estiver em combate sem target ou +1 mob
-			clog("Assistencia pet A");
-		 }
-		 checkme(); // atualiza status após assist
-		 if ((hunt.pet_hp < 90 && hunt.pet_hp > 1)||hunt.has_pet&&((me.hastarget && tar.pet_aggro || tar.player_aggro) || !me.hastarget))
-		 {
-			aperta(ASSIST); // assiste o pet se estiver com menos de 90% de vida e mais de 1%
-			clog($"Assistindo pet: HP={hunt.pet_hp}%");
+			bool perigo = me.hp < 50 || tar.iselite || tar.hp > me.hp + 2 || me.mobs_player > 3;
+
+			if (perigo)
+			 aperta(FEIGNDEATH);
 		 }
 
-		 
+		 //------------------------
+		 // ASSIST NO PET OU AJUDA DO PET 
+		 //------------------------------
+		 if (
+			 (!me.hastarget && hunt.has_pet && me.combat) ||
+			 (me.mobs > 1 && hunt.has_pet) ||
+			 (hunt.pet_hp < 90 && hunt.pet_hp > 1) ||
+			 (hunt.has_pet && (
+				 (me.hastarget && (tar.pet_aggro || tar.player_aggro)) ||
+				 !me.hastarget
+			 ))
+		 )
+		 {
+			if (cb_player_protect.Checked && tar.player_aggro) // o mob tá batendo no player → PET que deve ajudar
+			{
+			 aperta(PETATTACK); //F1, manda o pet. 
+			 clog("Pet atacando para proteger o player (aggro no player).");
+			}
+			else // qualquer outro caso → player que deve ajudar o pet
+			{
+			 aperta(ASSIST);
+			 //clog($"Player assistindo o pet (HP pet={hunt.pet_hp}%, mobs={me.mobs}).");
+			}
+		 }
+
 		 // ------------------------------------------
 		 // AUTOATTACK + PULOS
 		 // ------------------------------------------
@@ -4027,7 +4235,7 @@ namespace Discord
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 37% e poção pronta
 			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
 		 }
-		 else if (hunt.pet_hp < 60 && me.mobs == 1 && hunt.pet_hp > 1)
+		 else if (hunt.pet_hp < 60 && me.mobs_player==0 && hunt.pet_hp > 1)
 		 {
 			casta(MENDPET);
 			wait_cast();
@@ -4077,19 +4285,35 @@ namespace Discord
 		 }
 		 // ------------------------------------------
 		 // RANGED TRY
+		 // Testa se está em range de Auto Shot antes
+		 // Aí prioriza Serpent > Arcane > Auto
+		 // Depois espera 3200ms se tinha range
 		 // ------------------------------------------
-		 checkme();
-		 if (me.wrongway) aperta(INTERACT);
-		 checkme();
-		 if (hunt.serpent_sting_up && !me.melee && tar.type != MECHANICAL && tar.type != ELEMENTAL)
+		 checkme(); // atualiza estado do player
+		 if (me.wrongway) aperta(INTERACT); // corrige direção
+		 checkme(); // atualiza de novo
+
+		 bool ranged = hunt.auto_shot_range_ok; // já armazena se estava em range
+
+		 if (ranged) // só tenta ranged se está na range de Auto Shot
 		 {
-			aperta(SERPENTSTING); // (comentado: ainda não aprendeu)
-			clog("Casting Serpent Sting.");
-		 }
-		 else if (hunt.arcane_shot_up && !me.melee)
-		 {
-			aperta(ARCANESHOT); // (comentado: ainda não aprendeu)
-			clog("Casting Arcane Shot.");
+			virahunter(true); // vira só se tiver na direção errada 
+			if (hunt.serpent_sting_up && !me.melee && tar.type != MECHANICAL && tar.type != ELEMENTAL)
+			{
+			 aperta(SERPENTSTING); // cast Serpent Sting
+			 clog("Casting Serpent Sting.");
+			}
+			else if (hunt.arcane_shot_up && cb_arcaneshot.Checked)
+			{
+			 aperta(ARCANESHOT); // cast Arcane Shot
+			 clog("Casting Arcane Shot.");
+			}
+			else if (hunt.auto_shot_up && !hunt.auto_shot_ativo)
+			{
+			 aperta(AUTOSHOT); // inicia Auto Shot
+			 clog("Start Auto Shot.");
+			}
+			wait(3200); // dá pelo menos 2 tiros
 		 }
 		 // ------------------------------------------
 		 // RAPTOR STRIKE (SUBSTITUI TODAS AS SKILLS DO ROGUE)
@@ -4953,11 +5177,11 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			wait(500);
 
 			// Verifica se tem mana suficiente (Revive Pet custa mana)
-			if (me.mana < 50)
+			if (!hunt.revive_pet_up)
 			{
 			 loga("Mana insuficiente para reviver pet. Esperando recuperação.");
 			 aperta(F12); // COMIDA/BEBIDA para recuperar mana
-			 while (me.mana < 50 && !me.combat)
+			 while (!hunt.revive_pet_up && !me.combat)
 			 {
 				wait(1000);
 				checkme();
@@ -5005,31 +5229,38 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		// RECUPERAÇÃO DE HP (código existente)
 		// ================================
 		int hp_ini = Math.Min(me.hp,hunt.pet_hp);                              // salva o HP inicial
-		int limite = 80;                                 // Hunter usa mesmo limite do Warrior (80%)
+		if (me.level < 12) hp_ini = me.hp;
+		int limite = atoi(tb_huntereat);                                 // Hunter usa mesmo limite do Warrior (80%)
 
 		if (hp_ini < limite)
 		{
 		 loga($"HUNTER: HP baixo após combate ({Math.Min(me.hp, hunt.pet_hp)}%). Esperando recuperação.");
 		 para(); // para de andar se estiver andando
 		 loga($"Esperando recuperação de HP: {Math.Min(me.hp, hunt.pet_hp)}");
-		 aperta(F12); // COMIDA 
+		 if (me.hp < limite) aperta(F12); // COMIDA 
 		 espera(2);
 		 if (hunt.pet_hp < 70 && !me.eating) casta(MENDPET); // cura o pet se necessário
 		 // se começou a comer, espera até 100%; senão, só até o limite normal
 		 if (me.eating)
 		 {
 			while (Math.Min(me.hp, hunt.pet_hp) < 100 && !me.combat)
+			{
 			 espera(1);
-		 }
+			 if (me.hp > 70 && me.level < 12) break;
+			}
+
+			}
 		 else
 		 {
 			while (Math.Min(me.hp, hunt.pet_hp) < limite && !me.combat)
+			{
 			 espera(1);
+			 if (me.hp > 70 && me.level < 12) break;
+			}
 		 }
 		}
 		checkme();
-		if (false && me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
-		 casta(ASPECTCHEETAH); // ativa Aspect of the Cheetah se disponível e permitido
+
 		if (me.combat) para();
 	 }//-------------FIM DA ROTINA DE PÓS COMBATE HUNTER ------------------
 
@@ -6729,7 +6960,7 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 		//------------------
 		// HUNTER
 		//---------------------
-		if (me.classe == HUNTER && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
+		if (me.classe == HUNTER && me.mana>atoi(tb_cheetah_mana) && !me.combat && me.level >= 16 && cb_cheetah.Checked && cb_anda.Checked && !hunt.aspect_cheetah)
 		{
 		 aperta(ASPECTCHEETAH); // ativa Aspecto do Guepardo
 		}
@@ -8367,10 +8598,26 @@ else
 	 checkme();
 
 	 clog("=== HUNTER PET STATUS ===");
-	 clog("Has Pet: " + hunt.deterrence_up);
+	 clog("WRONG WAY" + me.wrongway);
+	 virahunter();
 	 
-	}
 
+	}
+	void virahunter(bool sowrongway=false)
+	{
+
+	 if (sowrongway && !me.wrongway)
+		return;
+
+	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro || fazendopull))
+	 {
+		aperta(INTERACT);
+		wait(20);
+		aperta(ANDA,5);
+		para();
+	 }
+	}
+	bool fazendopull = false; // flag para indicar se está puxando
 
 	// ------------------------------------------
 	// metodo giraok
@@ -8961,7 +9208,47 @@ else
 
 	private void cb_nomurloc_CheckedChanged(object sender, EventArgs e)
 	{
-	 if (cb_nomurloc.Checked) MessageBox.Show("Atenção: Ataque a murlocs habilitado!");
+	 if (!cb_nomurloc.Checked) MessageBox.Show("Atenção: Ataque a murlocs habilitado!");
+	}
+	bool assistmode = false;
+	private void button9_Click_3(object sender, EventArgs e)
+	{
+	 assistmode = true;
+	 while (assistmode)
+	 {
+		wait(300);
+		
+		if (!me.combat) aperta(XIS);
+		aperta(ZE);
+		// COMBATMODE
+		if (!checkBox1.Checked || me.combat)
+		{
+
+		 if (me.hastarget && tar.hp < 100 && tar.hp > 0 && tar.mood < 1)
+		 {
+			if (hunt.has_pet) aperta(PETATTACK);
+			if (hunt.serpent_sting_up) aperta(SERPENTSTING);
+			else if (hunt.arcane_shot_up) aperta(ARCANESHOT);
+			virahunter(true);
+			if (me.swim) aperta(SPACEBAR);
+			if (!hunt.auto_shot_range_ok && hunt.raptor_strike_up)
+			{
+			 aperta(RAPTORS);
+			 aperta(INTERACT);
+			}
+		 }
+
+		}
+
+
+		checkme();
+
+	 }
+	}
+
+	private void button14_Click_1(object sender, EventArgs e)
+	{
+	 assistmode = false;
 	}
 
 

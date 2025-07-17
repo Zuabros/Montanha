@@ -51,6 +51,8 @@ namespace Discord
 	public bool hasother;        // outros debuffs (ex: bleed)
 	public bool dazed;           // está atordoado (dazed)
 	public int  mobs;        // contador de mobs atacando
+	public int mobs_player;        // contador de mobs atacando player
+	public int mobs_pet;        // contador de mobs atacando pet 
 	public bool  eating;        // comendo ou bebendo
 	public bool ready;    // GCD pronto (Global Cooldown)
 	public bool ranged;
@@ -137,7 +139,8 @@ namespace Discord
 	public bool disengage_up;             // Disengage pronto (spellready + manarange) 
 	public bool aspect_monkey;
 	public bool aspect_cheetah;
-
+	public bool feigndeath_up;
+	public bool rapidfire_up;
 	// ================================
 	// STATUS ATIVO (true se ativo)
 	// ================================
@@ -158,31 +161,6 @@ namespace Discord
 	public bool growl_available;
 	public bool mongoose_bite_up;         // Mongoose Bite pronto (spellready + manarange)
 
-
-	// ================================
-	// COOLDOWNS (para futuras implementações)
-	// ================================
-	// public int aspect_cd;              // Cooldown de aspectos
-	// public int trap_cd;                // Cooldown de armadilhas
-
-	// ================================
-	// AMMUNITION/ARROWS (para futuras implementações)
-	// ================================
-	// public bool has_arrows;            // Tem munição
-	// public int arrow_count;            // Quantidade de flechas
-
-	// ================================
-	// OUTROS DEBUFFS NO TARGET (para futuras implementações)
-	// ================================
-	// public bool has_hunters_mark;      // Hunter's Mark ativo no target
-	// public bool has_concussive_shot;   // Concussive Shot ativo no target
-
-	// ================================
-	// ASPECTS (para futuras implementações)
-	// ================================
-	// public bool aspect_hawk;           // Aspect of the Hawk ativo
-	// public bool aspect_cheetah;        // Aspect of the Cheetah ativo
-	// public bool aspect_monkey;         // Aspect of the Monkey ativo
  }
 
 

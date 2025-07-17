@@ -79,6 +79,7 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_noelemental = new System.Windows.Forms.CheckBox();
 	 this.cb_allowcleave = new System.Windows.Forms.CheckBox();
 	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
 	 this.cb_nomurloc = new System.Windows.Forms.CheckBox();
@@ -224,6 +225,20 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_huntermeleepull = new System.Windows.Forms.CheckBox();
+	 this.tb_huntereat = new System.Windows.Forms.TextBox();
+	 this.cb_huntereat = new System.Windows.Forms.Label();
+	 this.cb_serpentsting = new System.Windows.Forms.CheckBox();
+	 this.cb_arcaneshot = new System.Windows.Forms.CheckBox();
+	 this.tb_cheetah_mana = new System.Windows.Forms.TextBox();
+	 this.label56 = new System.Windows.Forms.Label();
+	 this.cb_player_protect = new System.Windows.Forms.CheckBox();
+	 this.cb_autogrowl = new System.Windows.Forms.CheckBox();
+	 this.cb_cheetah = new System.Windows.Forms.CheckBox();
+	 this.tb_growlat = new System.Windows.Forms.TextBox();
+	 this.label55 = new System.Windows.Forms.Label();
+	 this.tb_deterrence_at = new System.Windows.Forms.TextBox();
+	 this.label54 = new System.Windows.Forms.Label();
 	 this.cb_huntersmark = new System.Windows.Forms.CheckBox();
 	 this.pan_tar = new System.Windows.Forms.Panel();
 	 this.cb_killgray = new System.Windows.Forms.CheckBox();
@@ -327,12 +342,14 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.tb_deterrence_at = new System.Windows.Forms.TextBox();
-	 this.label54 = new System.Windows.Forms.Label();
-	 this.tb_growlat = new System.Windows.Forms.TextBox();
-	 this.label55 = new System.Windows.Forms.Label();
-	 this.cb_cheetah = new System.Windows.Forms.CheckBox();
-	 this.cb_autogrowl = new System.Windows.Forms.CheckBox();
+	 this.tabPage9 = new System.Windows.Forms.TabPage();
+	 this.button9 = new System.Windows.Forms.Button();
+	 this.button14 = new System.Windows.Forms.Button();
+	 this.checkBox1 = new System.Windows.Forms.CheckBox();
+	 this.tb_rangedhp = new System.Windows.Forms.TextBox();
+	 this.label57 = new System.Windows.Forms.Label();
+	 this.tb_rangedseconds = new System.Windows.Forms.TextBox();
+	 this.label58 = new System.Windows.Forms.Label();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
@@ -349,6 +366,7 @@ namespace Discord
 	 this.pan_me.SuspendLayout();
 	 this.tabPage3.SuspendLayout();
 	 this.Statistics.SuspendLayout();
+	 this.tabPage9.SuspendLayout();
 	 this.SuspendLayout();
 	 // 
 	 // tab_nav
@@ -357,6 +375,7 @@ namespace Discord
 	 this.tab_nav.Controls.Add(this.tabPage2);
 	 this.tab_nav.Controls.Add(this.tabPage3);
 	 this.tab_nav.Controls.Add(this.Statistics);
+	 this.tab_nav.Controls.Add(this.tabPage9);
 	 this.tab_nav.Location = new System.Drawing.Point(115, 4);
 	 this.tab_nav.Name = "tab_nav";
 	 this.tab_nav.SelectedIndex = 0;
@@ -854,6 +873,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_noelemental);
 	 this.tabPage2.Controls.Add(this.cb_allowcleave);
 	 this.tabPage2.Controls.Add(this.cb_prefer_distant);
 	 this.tabPage2.Controls.Add(this.cb_nomurloc);
@@ -878,8 +898,10 @@ namespace Discord
 	 this.tabPage2.Controls.Add(this.cb_nodragonkin);
 	 this.tabPage2.Controls.Add(this.label21);
 	 this.tabPage2.Controls.Add(this.tb_pullcap);
+	 this.tabPage2.Controls.Add(this.tb_stoneform_at);
 	 this.tabPage2.Controls.Add(this.lb_map_zoom);
 	 this.tabPage2.Controls.Add(this.tb_map_zoom);
+	 this.tabPage2.Controls.Add(this.cb_dwarf);
 	 this.tabPage2.Controls.Add(this.tab_buffs);
 	 this.tabPage2.Controls.Add(this.pan_tar);
 	 this.tabPage2.Controls.Add(this.pan_me);
@@ -889,6 +911,18 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_noelemental
+	 // 
+	 this.cb_noelemental.AutoSize = true;
+	 this.cb_noelemental.Checked = true;
+	 this.cb_noelemental.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_noelemental.Location = new System.Drawing.Point(532, 57);
+	 this.cb_noelemental.Name = "cb_noelemental";
+	 this.cb_noelemental.Size = new System.Drawing.Size(89, 17);
+	 this.cb_noelemental.TabIndex = 82;
+	 this.cb_noelemental.Text = "No Elemental";
+	 this.cb_noelemental.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_allowcleave
 	 // 
@@ -1443,9 +1477,7 @@ namespace Discord
 	 this.Paladin.Controls.Add(this.cb_BOK);
 	 this.Paladin.Controls.Add(this.tb_bow_trig);
 	 this.Paladin.Controls.Add(this.cb_BOW);
-	 this.Paladin.Controls.Add(this.tb_stoneform_at);
 	 this.Paladin.Controls.Add(this.cb_loh);
-	 this.Paladin.Controls.Add(this.cb_dwarf);
 	 this.Paladin.Controls.Add(this.cb_bubble);
 	 this.Paladin.Controls.Add(this.cb_purify);
 	 this.Paladin.Controls.Add(this.label19);
@@ -1719,7 +1751,7 @@ namespace Discord
 	 // 
 	 // tb_stoneform_at
 	 // 
-	 this.tb_stoneform_at.Location = new System.Drawing.Point(104, 293);
+	 this.tb_stoneform_at.Location = new System.Drawing.Point(515, 463);
 	 this.tb_stoneform_at.Name = "tb_stoneform_at";
 	 this.tb_stoneform_at.Size = new System.Drawing.Size(33, 20);
 	 this.tb_stoneform_at.TabIndex = 58;
@@ -1740,7 +1772,9 @@ namespace Discord
 	 // cb_dwarf
 	 // 
 	 this.cb_dwarf.AutoSize = true;
-	 this.cb_dwarf.Location = new System.Drawing.Point(10, 296);
+	 this.cb_dwarf.Checked = true;
+	 this.cb_dwarf.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_dwarf.Location = new System.Drawing.Point(421, 466);
 	 this.cb_dwarf.Name = "cb_dwarf";
 	 this.cb_dwarf.Size = new System.Drawing.Size(74, 17);
 	 this.cb_dwarf.TabIndex = 29;
@@ -2465,6 +2499,18 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.tb_rangedhp);
+	 this.tabPage8.Controls.Add(this.label57);
+	 this.tabPage8.Controls.Add(this.tb_rangedseconds);
+	 this.tabPage8.Controls.Add(this.label58);
+	 this.tabPage8.Controls.Add(this.cb_huntermeleepull);
+	 this.tabPage8.Controls.Add(this.tb_huntereat);
+	 this.tabPage8.Controls.Add(this.cb_huntereat);
+	 this.tabPage8.Controls.Add(this.cb_serpentsting);
+	 this.tabPage8.Controls.Add(this.cb_arcaneshot);
+	 this.tabPage8.Controls.Add(this.tb_cheetah_mana);
+	 this.tabPage8.Controls.Add(this.label56);
+	 this.tabPage8.Controls.Add(this.cb_player_protect);
 	 this.tabPage8.Controls.Add(this.cb_autogrowl);
 	 this.tabPage8.Controls.Add(this.cb_cheetah);
 	 this.tabPage8.Controls.Add(this.tb_growlat);
@@ -2478,6 +2524,140 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // cb_huntermeleepull
+	 // 
+	 this.cb_huntermeleepull.AutoSize = true;
+	 this.cb_huntermeleepull.Location = new System.Drawing.Point(4, 214);
+	 this.cb_huntermeleepull.Name = "cb_huntermeleepull";
+	 this.cb_huntermeleepull.Size = new System.Drawing.Size(75, 17);
+	 this.cb_huntermeleepull.TabIndex = 23;
+	 this.cb_huntermeleepull.Text = "Melee Pull";
+	 this.cb_huntermeleepull.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_huntereat
+	 // 
+	 this.tb_huntereat.Location = new System.Drawing.Point(204, 40);
+	 this.tb_huntereat.Name = "tb_huntereat";
+	 this.tb_huntereat.Size = new System.Drawing.Size(26, 20);
+	 this.tb_huntereat.TabIndex = 22;
+	 this.tb_huntereat.Text = "75";
+	 // 
+	 // cb_huntereat
+	 // 
+	 this.cb_huntereat.AutoSize = true;
+	 this.cb_huntereat.Location = new System.Drawing.Point(150, 43);
+	 this.cb_huntereat.Name = "cb_huntereat";
+	 this.cb_huntereat.Size = new System.Drawing.Size(35, 13);
+	 this.cb_huntereat.TabIndex = 21;
+	 this.cb_huntereat.Text = "Eat at";
+	 // 
+	 // cb_serpentsting
+	 // 
+	 this.cb_serpentsting.AutoSize = true;
+	 this.cb_serpentsting.Checked = true;
+	 this.cb_serpentsting.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_serpentsting.Location = new System.Drawing.Point(4, 191);
+	 this.cb_serpentsting.Name = "cb_serpentsting";
+	 this.cb_serpentsting.Size = new System.Drawing.Size(110, 17);
+	 this.cb_serpentsting.TabIndex = 20;
+	 this.cb_serpentsting.Text = "Serpent Sting Pull";
+	 this.cb_serpentsting.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_arcaneshot
+	 // 
+	 this.cb_arcaneshot.AutoSize = true;
+	 this.cb_arcaneshot.Location = new System.Drawing.Point(4, 167);
+	 this.cb_arcaneshot.Name = "cb_arcaneshot";
+	 this.cb_arcaneshot.Size = new System.Drawing.Size(85, 17);
+	 this.cb_arcaneshot.TabIndex = 19;
+	 this.cb_arcaneshot.Text = "Arcane Shot";
+	 this.cb_arcaneshot.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_cheetah_mana
+	 // 
+	 this.tb_cheetah_mana.Location = new System.Drawing.Point(153, 97);
+	 this.tb_cheetah_mana.Name = "tb_cheetah_mana";
+	 this.tb_cheetah_mana.Size = new System.Drawing.Size(26, 20);
+	 this.tb_cheetah_mana.TabIndex = 18;
+	 this.tb_cheetah_mana.Text = "35";
+	 // 
+	 // label56
+	 // 
+	 this.label56.AutoSize = true;
+	 this.label56.Location = new System.Drawing.Point(110, 100);
+	 this.label56.Name = "label56";
+	 this.label56.Size = new System.Drawing.Size(37, 13);
+	 this.label56.TabIndex = 17;
+	 this.label56.Text = "Mana:";
+	 // 
+	 // cb_player_protect
+	 // 
+	 this.cb_player_protect.AutoSize = true;
+	 this.cb_player_protect.Checked = true;
+	 this.cb_player_protect.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_player_protect.Location = new System.Drawing.Point(4, 144);
+	 this.cb_player_protect.Name = "cb_player_protect";
+	 this.cb_player_protect.Size = new System.Drawing.Size(103, 17);
+	 this.cb_player_protect.TabIndex = 16;
+	 this.cb_player_protect.Text = "Pet assist Player";
+	 this.cb_player_protect.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_autogrowl
+	 // 
+	 this.cb_autogrowl.AutoSize = true;
+	 this.cb_autogrowl.Location = new System.Drawing.Point(4, 120);
+	 this.cb_autogrowl.Name = "cb_autogrowl";
+	 this.cb_autogrowl.Size = new System.Drawing.Size(78, 17);
+	 this.cb_autogrowl.TabIndex = 15;
+	 this.cb_autogrowl.Text = "Auto Growl";
+	 this.cb_autogrowl.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_cheetah
+	 // 
+	 this.cb_cheetah.AutoSize = true;
+	 this.cb_cheetah.Checked = true;
+	 this.cb_cheetah.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_cheetah.Location = new System.Drawing.Point(4, 96);
+	 this.cb_cheetah.Name = "cb_cheetah";
+	 this.cb_cheetah.Size = new System.Drawing.Size(72, 17);
+	 this.cb_cheetah.TabIndex = 14;
+	 this.cb_cheetah.Text = "Cheetah !";
+	 this.cb_cheetah.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_growlat
+	 // 
+	 this.tb_growlat.Location = new System.Drawing.Point(81, 67);
+	 this.tb_growlat.Name = "tb_growlat";
+	 this.tb_growlat.Size = new System.Drawing.Size(26, 20);
+	 this.tb_growlat.TabIndex = 13;
+	 this.tb_growlat.Text = "80";
+	 // 
+	 // label55
+	 // 
+	 this.label55.AutoSize = true;
+	 this.label55.Location = new System.Drawing.Point(7, 70);
+	 this.label55.Name = "label55";
+	 this.label55.Size = new System.Drawing.Size(46, 13);
+	 this.label55.TabIndex = 12;
+	 this.label55.Text = "Growl at";
+	 // 
+	 // tb_deterrence_at
+	 // 
+	 this.tb_deterrence_at.Location = new System.Drawing.Point(81, 41);
+	 this.tb_deterrence_at.Name = "tb_deterrence_at";
+	 this.tb_deterrence_at.Size = new System.Drawing.Size(26, 20);
+	 this.tb_deterrence_at.TabIndex = 11;
+	 this.tb_deterrence_at.Text = "50";
+	 // 
+	 // label54
+	 // 
+	 this.label54.AutoSize = true;
+	 this.label54.Location = new System.Drawing.Point(7, 44);
+	 this.label54.Name = "label54";
+	 this.label54.Size = new System.Drawing.Size(72, 13);
+	 this.label54.TabIndex = 10;
+	 this.label54.Text = "Deterrence at";
 	 // 
 	 // cb_huntersmark
 	 // 
@@ -3470,61 +3650,81 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // tb_deterrence_at
+	 // tabPage9
 	 // 
-	 this.tb_deterrence_at.Location = new System.Drawing.Point(81, 41);
-	 this.tb_deterrence_at.Name = "tb_deterrence_at";
-	 this.tb_deterrence_at.Size = new System.Drawing.Size(26, 20);
-	 this.tb_deterrence_at.TabIndex = 11;
-	 this.tb_deterrence_at.Text = "50";
+	 this.tabPage9.BackColor = System.Drawing.Color.DarkGray;
+	 this.tabPage9.Controls.Add(this.checkBox1);
+	 this.tabPage9.Controls.Add(this.button14);
+	 this.tabPage9.Controls.Add(this.button9);
+	 this.tabPage9.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage9.Name = "tabPage9";
+	 this.tabPage9.Size = new System.Drawing.Size(697, 502);
+	 this.tabPage9.TabIndex = 4;
+	 this.tabPage9.Text = "Assist";
 	 // 
-	 // label54
+	 // button9
 	 // 
-	 this.label54.AutoSize = true;
-	 this.label54.Location = new System.Drawing.Point(7, 44);
-	 this.label54.Name = "label54";
-	 this.label54.Size = new System.Drawing.Size(72, 13);
-	 this.label54.TabIndex = 10;
-	 this.label54.Text = "Deterrence at";
+	 this.button9.Location = new System.Drawing.Point(562, 12);
+	 this.button9.Name = "button9";
+	 this.button9.Size = new System.Drawing.Size(107, 44);
+	 this.button9.TabIndex = 0;
+	 this.button9.Text = "Assist Mode";
+	 this.button9.UseVisualStyleBackColor = true;
+	 this.button9.Click += new System.EventHandler(this.button9_Click_3);
 	 // 
-	 // tb_growlat
+	 // button14
 	 // 
-	 this.tb_growlat.Location = new System.Drawing.Point(81, 67);
-	 this.tb_growlat.Name = "tb_growlat";
-	 this.tb_growlat.Size = new System.Drawing.Size(26, 20);
-	 this.tb_growlat.TabIndex = 13;
-	 this.tb_growlat.Text = "80";
+	 this.button14.Location = new System.Drawing.Point(562, 61);
+	 this.button14.Name = "button14";
+	 this.button14.Size = new System.Drawing.Size(107, 46);
+	 this.button14.TabIndex = 1;
+	 this.button14.Text = "Stop Assist";
+	 this.button14.UseVisualStyleBackColor = true;
+	 this.button14.Click += new System.EventHandler(this.button14_Click_1);
 	 // 
-	 // label55
+	 // checkBox1
 	 // 
-	 this.label55.AutoSize = true;
-	 this.label55.Location = new System.Drawing.Point(7, 70);
-	 this.label55.Name = "label55";
-	 this.label55.Size = new System.Drawing.Size(46, 13);
-	 this.label55.TabIndex = 12;
-	 this.label55.Text = "Growl at";
+	 this.checkBox1.AutoSize = true;
+	 this.checkBox1.Location = new System.Drawing.Point(364, 17);
+	 this.checkBox1.Name = "checkBox1";
+	 this.checkBox1.Size = new System.Drawing.Size(70, 17);
+	 this.checkBox1.TabIndex = 2;
+	 this.checkBox1.Text = "Dungeon";
+	 this.checkBox1.UseVisualStyleBackColor = true;
 	 // 
-	 // cb_cheetah
+	 // tb_rangedhp
 	 // 
-	 this.cb_cheetah.AutoSize = true;
-	 this.cb_cheetah.Checked = true;
-	 this.cb_cheetah.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_cheetah.Location = new System.Drawing.Point(4, 96);
-	 this.cb_cheetah.Name = "cb_cheetah";
-	 this.cb_cheetah.Size = new System.Drawing.Size(72, 17);
-	 this.cb_cheetah.TabIndex = 14;
-	 this.cb_cheetah.Text = "Cheetah !";
-	 this.cb_cheetah.UseVisualStyleBackColor = true;
+	 this.tb_rangedhp.Location = new System.Drawing.Point(198, 326);
+	 this.tb_rangedhp.Name = "tb_rangedhp";
+	 this.tb_rangedhp.Size = new System.Drawing.Size(26, 20);
+	 this.tb_rangedhp.TabIndex = 27;
+	 this.tb_rangedhp.Text = "50";
 	 // 
-	 // cb_autogrowl
+	 // label57
 	 // 
-	 this.cb_autogrowl.AutoSize = true;
-	 this.cb_autogrowl.Location = new System.Drawing.Point(4, 120);
-	 this.cb_autogrowl.Name = "cb_autogrowl";
-	 this.cb_autogrowl.Size = new System.Drawing.Size(78, 17);
-	 this.cb_autogrowl.TabIndex = 15;
-	 this.cb_autogrowl.Text = "Auto Growl";
-	 this.cb_autogrowl.UseVisualStyleBackColor = true;
+	 this.label57.AutoSize = true;
+	 this.label57.Location = new System.Drawing.Point(167, 329);
+	 this.label57.Name = "label57";
+	 this.label57.Size = new System.Drawing.Size(25, 13);
+	 this.label57.TabIndex = 26;
+	 this.label57.Text = "HP:";
+	 // 
+	 // tb_rangedseconds
+	 // 
+	 this.tb_rangedseconds.Location = new System.Drawing.Point(110, 326);
+	 this.tb_rangedseconds.Name = "tb_rangedseconds";
+	 this.tb_rangedseconds.Size = new System.Drawing.Size(18, 20);
+	 this.tb_rangedseconds.TabIndex = 25;
+	 this.tb_rangedseconds.Text = "6";
+	 // 
+	 // label58
+	 // 
+	 this.label58.AutoSize = true;
+	 this.label58.Location = new System.Drawing.Point(14, 330);
+	 this.label58.Name = "label58";
+	 this.label58.Size = new System.Drawing.Size(90, 13);
+	 this.label58.TabIndex = 24;
+	 this.label58.Text = "Ranged Seconds";
 	 // 
 	 // Form1
 	 // 
@@ -3597,6 +3797,8 @@ namespace Discord
 	 this.tabPage3.PerformLayout();
 	 this.Statistics.ResumeLayout(false);
 	 this.Statistics.PerformLayout();
+	 this.tabPage9.ResumeLayout(false);
+	 this.tabPage9.PerformLayout();
 	 this.ResumeLayout(false);
 	 this.PerformLayout();
 
@@ -3907,6 +4109,23 @@ namespace Discord
 	private Label label55;
 	private CheckBox cb_cheetah;
 	private CheckBox cb_autogrowl;
+	private CheckBox cb_player_protect;
+	private CheckBox cb_noelemental;
+	private TextBox tb_cheetah_mana;
+	private Label label56;
+	private CheckBox cb_arcaneshot;
+	private CheckBox cb_serpentsting;
+	private TextBox tb_huntereat;
+	private Label cb_huntereat;
+	private CheckBox cb_huntermeleepull;
+	private TabPage tabPage9;
+	private Button button9;
+	private Button button14;
+	private CheckBox checkBox1;
+	private TextBox tb_rangedhp;
+	private Label label57;
+	private TextBox tb_rangedseconds;
+	private Label label58;
  }
 }
 
