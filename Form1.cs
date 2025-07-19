@@ -399,14 +399,14 @@ namespace Discord
 	public const int RAPTORS = N1;           // Raptor Strike (análogo ao HEROICS do Warrior)
 	public const int AUTOSHOT = N2;          // Auto Shot (skill principal à distância)
 	public const int MONGOOSE = N6;          // Mongoose Bite (ataque especial de pet)
-	public const int HUNTERSMARK = N5;       // Hunter's Mark (para futuras implementações)
+	public const int HUNTERSMARK = N0;       // Hunter's Mark (para futuras implementações)
 	public const int FEIGNDEATH = SEIS;          // Mongoose Bite (ataque especial de pet)
 																					 // NOVAS SKILLS ADICIONADAS
 	public const int SERPENTSTING = N3;      // Serpent Sting (DoT venenoso)
 	public const int ARCANESHOT = N4;        // Arcane Shot (tiro instantâneo)
 	//public const int MULTISHOT = N7;         // Multi-Shot (para futuras implementações)
 	public const int CONCUSSIVESHOT = N7;    // Concussive Shot (slow/desacelera)
-	public const int MENDPET = N0;    // Concussive Shot (slow/desacelera)
+	public const int MENDPET = N5;    // Concussive Shot (slow/desacelera)
 
 	// Pet commands (usar o mesmo PETATTACK do Warlock)
 	// public const int PETATTACK = F1;     // já definido no Warlock - reutilizar
@@ -3290,6 +3290,8 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 				aperta(RAPTORS);
 				clog("Raptor Strike preparado.");
 			 }
+			 if (!hunt.auto_shot_range_ok && !me.melee) // dead zone
+				aperta(PETATTACK); // manda o pet resolver a encrenca
 
 			 // Loop de aproximação
 			 int approachStart = Environment.TickCount;
@@ -3859,6 +3861,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 	public void combatloop()
 	{
+
 	 loga("Iniciando loop de combate Combatloop().");
 	 checkme(); // atualiza status inicial
 	 para(); // para de andar se estiver andando
@@ -3869,6 +3872,10 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 	 bool casterenemy = false;
 	 bool japarou = false;
 	 bool japarou2 = false;
+	   bool ticker_inicializado = false;
+	  long ticker_start_time = 0;
+	  long ticker_ms = 0;
+	 
 	 if (!emCombate) // decay
 	 {
 		decay.Start(me.hp);
@@ -3882,6 +3889,8 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 	 killed_skin.Clear();        // zera lista de mobs skinnable
 	 killed_noskin.Clear();      // zera lista de mobs normais
 	 loga("Tracking de mobs reiniciado para novo combate.");
+
+
 
 	 do // while me.combat
 	 {
@@ -4108,7 +4117,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
 		 {
 			int limiar = Convert.ToInt32(tb_stoneform_at.Text);     // lê o valor do limiar de HP do textbox
-			if (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease)
+			if (!me.dazed && (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease))
 			 aperta(STONEFORM);                                // ativa Stoneform se atender condições
 		 }
 		 else if (me.level >= 8 // checa level
@@ -4134,13 +4143,24 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 		}
 
-		//----------------------------------
-		// ROTINA DE COMBATE HUNTER (HCR)
-		//----------------------------------
-		else if (me.classe == HUNTER)
-		
+	//----------------------------------
+// ROTINA DE COMBATE HUNTER (HCR)
+//----------------------------------
+else if (me.classe == HUNTER)
 		{
+		 // ------------------------------------------
+		 // ATUALIZAÇÃO DO TICKER
+		 // ------------------------------------------
+		 if (!ticker_inicializado)
+		 {
+			ticker_start_time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+			ticker_inicializado = true;
+		 }
+
+		 ticker_ms = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - ticker_start_time;
+
 		 if (!hunt.aspect_monkey && me.level >= 5) aperta(ASPECTMONKEY); // DESLIGA ASPECTO DA CHEETAH
+
 		 // ------------------------------------------
 		 // MOVIMENTO: aproximação se fora de melee
 		 // ------------------------------------------
@@ -4151,9 +4171,9 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			japarou = true;
 		 }
 
-
 		 getnear();
 		 virahunter(true);
+
 		 // Aproximação (COPIADO DO GETNEAR PARA MELEE CLASSES)
 		 if (me.wrongway)
 		 {
@@ -4165,9 +4185,10 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			if (!me.melee)
 			 loga("Hunter: Corrigindo distância (fora de melee) (code 303).");
 			//else
-			 //loga("Interact de rotina: 305."); // loga o código de interação
+			//loga("Interact de rotina: 305."); // loga o código de interação
 			aperta(INTERACT);
 		 }
+
 		 //------------------------
 		 // FEIGN DEATH
 		 //------------------------
@@ -4183,13 +4204,13 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 // ASSIST NO PET OU AJUDA DO PET 
 		 //------------------------------
 		 if (
-			 (!me.hastarget && hunt.has_pet && me.combat) ||
-			 (me.mobs > 1 && hunt.has_pet) ||
-			 (hunt.pet_hp < 90 && hunt.pet_hp > 1) ||
-			 (hunt.has_pet && (
-				 (me.hastarget && (tar.pet_aggro || tar.player_aggro)) ||
-				 !me.hastarget
-			 ))
+				 (!me.hastarget && hunt.has_pet && me.combat) ||
+				 (me.mobs > 1 && hunt.has_pet) ||
+				 (hunt.pet_hp < 90 && hunt.pet_hp > 1) ||
+				 (hunt.has_pet && (
+						 (me.hastarget && (tar.pet_aggro || tar.player_aggro)) ||
+						 !me.hastarget
+				 ))
 		 )
 		 {
 			if (cb_player_protect.Checked && tar.player_aggro) // o mob tá batendo no player → PET que deve ajudar
@@ -4205,7 +4226,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 }
 
 		 // ------------------------------------------
-		 // AUTOATTACK + PULOS
+		 // AUTOATTACK + PULOS INTELIGENTES
 		 // ------------------------------------------
 		 if (me.hastarget && tar.player_aggro && tar.mood != 1 && !me.autoattack)
 		 {
@@ -4213,7 +4234,12 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			loga("Autoattack iniciado.");
 		 }
 
-		 if (ticker % 6 == 0) aperta(PULA); // pulo human-like
+		 // PULO A CADA 6 SEGUNDOS (só se não está castando)
+		 if (ticker_ms % 6000 < 100 && !me.casting)
+		 {
+			aperta(PULA);
+			//clog("Pulo de rotina (6s)");
+		 }
 
 		 // ------------------------------------------
 		 // EMERGÊNCIA: POÇÃO SE MORRENDO
@@ -4235,16 +4261,16 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 37% e poção pronta
 			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
 		 }
-		 else if (hunt.pet_hp < 60 && me.mobs_player==0 && hunt.pet_hp > 1)
+		 else if (hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
 		 {
 			casta(MENDPET);
 			wait_cast();
-		 }	
-
+		 }
+		 stonecheck(); // verifica se deve usar Stoneform (Dwarf racial)
 		 // ------------------------------------------
 		 // AUTO GROWL - USA PET COMO LIFE BUFFER (VERSÃO OTIMIZADA)
 		 // ------------------------------------------
-		 if (cb_autogrowl.Checked &&  hunt.growl_available) // controle automatico do growl 
+		 if (cb_autogrowl.Checked && hunt.growl_available) // controle automatico do growl 
 		 {
 			// Variáveis de intenção para clareza
 			bool precisa_ligar = (me.hp < 30 && !me.hp_potion_rdy) ||
@@ -4269,20 +4295,19 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			}
 		 }
 
-
-
 		 // ------------------------------------------
 		 // STONEFORM (COPIADO DO PALADINO)
 		 // ------------------------------------------
 		 else if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
 		 {
-			int limiar = Convert.ToInt32(tb_stoneform_at.Text);          // lê o valor do limiar de HP do textbox
-			if (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease)
-			{
+			int limiar = Convert.ToInt32(tb_stoneform_at.Text);     // lê o valor do limiar de HP do textbox
+			if (!me.dazed && (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease))
+			{ 
 			 aperta(STONEFORM);                                       // ativa Stoneform se atender condições
 			 clog($"Hunter: Stoneform usado! HP: {me.hp}% Debuffs: {me.hasother}/{me.haspoison}/{me.hasdisease}");
 			}
 		 }
+
 		 // ------------------------------------------
 		 // RANGED TRY
 		 // Testa se está em range de Auto Shot antes
@@ -4315,6 +4340,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			}
 			wait(3200); // dá pelo menos 2 tiros
 		 }
+
 		 // ------------------------------------------
 		 // RAPTOR STRIKE (SUBSTITUI TODAS AS SKILLS DO ROGUE)
 		 // ------------------------------------------
@@ -4329,6 +4355,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			if (hunt.raptor_strike_up) aperta(RAPTORS);
 			clog($"Raptor Strike: mana={me.mana}");
 		 }
+
 		 // ------------------------------------------
 		 // DISENGAGE SE TEM AGGRO E DEVIA ESTAR PARA O PET
 		 // ------------------------------------------
@@ -4336,8 +4363,6 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 {
 			aperta(DISENGAGE); // usa Disengage se está em combate e tem aggro no player
 		 }
-
-
 
 		}//------------FIM ROTINA DE COMBATE HUNTER ------------------
 
@@ -5231,7 +5256,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		int hp_ini = Math.Min(me.hp,hunt.pet_hp);                              // salva o HP inicial
 		if (me.level < 12) hp_ini = me.hp;
 		int limite = atoi(tb_huntereat);                                 // Hunter usa mesmo limite do Warrior (80%)
-
+		stonecheck();
 		if (hp_ini < limite)
 		{
 		 loga($"HUNTER: HP baixo após combate ({Math.Min(me.hp, hunt.pet_hp)}%). Esperando recuperação.");
@@ -5451,6 +5476,20 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 	{
 	 return (me.mobs == 1 && (me.level - tar.level >= 2))
 		 || (me.mobs == 1 && tar.level <= me.level && tar.hp <= 35 && me.hp > 70);
+	}
+	// STONEFORM
+	void stonecheck()
+	{
+
+		 if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
+	 {
+
+		if (me.haspoison || me.hasdisease)
+		{
+		 aperta(STONEFORM);                                       // ativa Stoneform se atender condições
+		 clog($"Stoneform usado! HP: {me.hp}% Debuffs: {me.haspoison}/{me.hasdisease}");
+		}
+	 }
 	}
 
 	// ------------------------------------------
