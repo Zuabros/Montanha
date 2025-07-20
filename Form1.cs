@@ -3236,6 +3236,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			 if (!tar.trivial && me.combat && hunt.auto_shot_range_ok && hunt.rapidfire_up) aperta(RAPIDFIRE); // RAPID FIRE se já em combate e mob forte
 
 			 while ((Environment.TickCount - rangedPhaseStart) < RANGED_PHASE_DURATION &&
+				me.mobs_player==0 && // sem mobs no player, se tiver cola no pet pra ele puxar
 							hunt.auto_shot_range_ok &&
 							tar.hp > atoi(tb_rangedhp) && // se mob tá morrendo, chega de pipoco e bora pegar o loot
 							!cb_huntermeleepull.Checked &&
@@ -4261,7 +4262,7 @@ else if (me.classe == HUNTER)
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 37% e poção pronta
 			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
 		 }
-		 else if (hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
+		 else if (!hunt.raptor_strike_up &&  hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
 		 {
 			casta(MENDPET);
 			wait_cast();
@@ -5000,7 +5001,10 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			if (rog.kick_up)
 			 aperta(KICK, 1000); // interrompe cast do mob se possível
 			else if (rog.gouge_up)
+			{
 			 aperta(GOUGE, 1000); // tenta Gouge se Kick não estiver disponível
+			 aperta(INTERACT); // continua regaçando
+			}
 		 }
 
 			// ------------------------------------------
