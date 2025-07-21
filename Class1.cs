@@ -141,6 +141,8 @@ namespace Discord
 	public bool aspect_cheetah;
 	public bool feigndeath_up;
 	public bool rapidfire_up;
+	public bool multishot_up;
+	public bool raptor_queued; // captor strike aguardando 
 	// ================================
 	// STATUS ATIVO (true se ativo)
 	// ================================

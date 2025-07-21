@@ -47,13 +47,9 @@ namespace Discord
 	 this.button18 = new System.Windows.Forms.Button();
 	 this.button17 = new System.Windows.Forms.Button();
 	 this.cb_assist_tank = new System.Windows.Forms.CheckBox();
-	 this.button15 = new System.Windows.Forms.Button();
-	 this.find_dots = new System.Windows.Forms.Button();
-	 this.button10 = new System.Windows.Forms.Button();
 	 this.tbraio = new System.Windows.Forms.TextBox();
 	 this.tby = new System.Windows.Forms.TextBox();
 	 this.tbx = new System.Windows.Forms.TextBox();
-	 this.pb_minimap = new System.Windows.Forms.PictureBox();
 	 this.label18 = new System.Windows.Forms.Label();
 	 this.tb_back_limiar = new System.Windows.Forms.TextBox();
 	 this.label9 = new System.Windows.Forms.Label();
@@ -62,10 +58,8 @@ namespace Discord
 	 this.tbdecay = new System.Windows.Forms.TextBox();
 	 this.rtbcursor = new System.Windows.Forms.TextBox();
 	 this.button11 = new System.Windows.Forms.Button();
-	 this.button7 = new System.Windows.Forms.Button();
 	 this.bt_saveWPas = new System.Windows.Forms.Button();
 	 this.tb_filename = new System.Windows.Forms.TextBox();
-	 this.bt_debug3 = new System.Windows.Forms.Button();
 	 this.button8 = new System.Windows.Forms.Button();
 	 this.cb_anda = new System.Windows.Forms.CheckBox();
 	 this.bt_saveWP = new System.Windows.Forms.Button();
@@ -104,8 +98,10 @@ namespace Discord
 	 this.cb_nodragonkin = new System.Windows.Forms.CheckBox();
 	 this.label21 = new System.Windows.Forms.Label();
 	 this.tb_pullcap = new System.Windows.Forms.TextBox();
+	 this.tb_stoneform_at = new System.Windows.Forms.TextBox();
 	 this.lb_map_zoom = new System.Windows.Forms.Label();
 	 this.tb_map_zoom = new System.Windows.Forms.TextBox();
+	 this.cb_dwarf = new System.Windows.Forms.CheckBox();
 	 this.tab_buffs = new System.Windows.Forms.TabControl();
 	 this.tabPage4 = new System.Windows.Forms.TabPage();
 	 this.label52 = new System.Windows.Forms.Label();
@@ -155,9 +151,7 @@ namespace Discord
 	 this.cb_BOK = new System.Windows.Forms.CheckBox();
 	 this.tb_bow_trig = new System.Windows.Forms.TextBox();
 	 this.cb_BOW = new System.Windows.Forms.CheckBox();
-	 this.tb_stoneform_at = new System.Windows.Forms.TextBox();
 	 this.cb_loh = new System.Windows.Forms.CheckBox();
-	 this.cb_dwarf = new System.Windows.Forms.CheckBox();
 	 this.cb_bubble = new System.Windows.Forms.CheckBox();
 	 this.cb_purify = new System.Windows.Forms.CheckBox();
 	 this.label19 = new System.Windows.Forms.Label();
@@ -225,6 +219,10 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.tb_rangedhp = new System.Windows.Forms.TextBox();
+	 this.label57 = new System.Windows.Forms.Label();
+	 this.tb_rangedseconds = new System.Windows.Forms.TextBox();
+	 this.label58 = new System.Windows.Forms.Label();
 	 this.cb_huntermeleepull = new System.Windows.Forms.CheckBox();
 	 this.tb_huntereat = new System.Windows.Forms.TextBox();
 	 this.cb_huntereat = new System.Windows.Forms.Label();
@@ -309,6 +307,18 @@ namespace Discord
 	 this.label41 = new System.Windows.Forms.Label();
 	 this.label40 = new System.Windows.Forms.Label();
 	 this.label39 = new System.Windows.Forms.Label();
+	 this.tabPage9 = new System.Windows.Forms.TabPage();
+	 this.checkBox1 = new System.Windows.Forms.CheckBox();
+	 this.button14 = new System.Windows.Forms.Button();
+	 this.button9 = new System.Windows.Forms.Button();
+	 this.tabPage10 = new System.Windows.Forms.TabPage();
+	 this.label59 = new System.Windows.Forms.Label();
+	 this.tb_maplog = new System.Windows.Forms.TextBox();
+	 this.pb_minimap = new System.Windows.Forms.PictureBox();
+	 this.find_dots = new System.Windows.Forms.Button();
+	 this.button10 = new System.Windows.Forms.Button();
+	 this.button15 = new System.Windows.Forms.Button();
+	 this.button7 = new System.Windows.Forms.Button();
 	 this.label49 = new System.Windows.Forms.Label();
 	 this.label48 = new System.Windows.Forms.Label();
 	 this.label47 = new System.Windows.Forms.Label();
@@ -342,17 +352,20 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.tabPage9 = new System.Windows.Forms.TabPage();
-	 this.button9 = new System.Windows.Forms.Button();
-	 this.button14 = new System.Windows.Forms.Button();
-	 this.checkBox1 = new System.Windows.Forms.CheckBox();
-	 this.tb_rangedhp = new System.Windows.Forms.TextBox();
-	 this.label57 = new System.Windows.Forms.Label();
-	 this.tb_rangedseconds = new System.Windows.Forms.TextBox();
-	 this.label58 = new System.Windows.Forms.Label();
+	 this.bt_find_minimap = new System.Windows.Forms.Button();
+	 this.bt_capture_minimap = new System.Windows.Forms.Button();
+	 this.button22 = new System.Windows.Forms.Button();
+	 this.bt_find_tracked = new System.Windows.Forms.Button();
+	 this.tb_probe_x = new System.Windows.Forms.TextBox();
+	 this.tb_probe_y = new System.Windows.Forms.TextBox();
+	 this.bt_calibra_fatores = new System.Windows.Forms.Button();
+	 this.label60 = new System.Windows.Forms.Label();
+	 this.bt_show_red_positions = new System.Windows.Forms.Button();
+	 this.cb_greedy_hunter = new System.Windows.Forms.CheckBox();
+	 this.textBox2 = new System.Windows.Forms.TextBox();
+	 this.label61 = new System.Windows.Forms.Label();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
-	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
 	 this.tabPage2.SuspendLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_map)).BeginInit();
 	 this.tab_buffs.SuspendLayout();
@@ -367,6 +380,8 @@ namespace Discord
 	 this.tabPage3.SuspendLayout();
 	 this.Statistics.SuspendLayout();
 	 this.tabPage9.SuspendLayout();
+	 this.tabPage10.SuspendLayout();
+	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).BeginInit();
 	 this.SuspendLayout();
 	 // 
 	 // tab_nav
@@ -376,7 +391,8 @@ namespace Discord
 	 this.tab_nav.Controls.Add(this.tabPage3);
 	 this.tab_nav.Controls.Add(this.Statistics);
 	 this.tab_nav.Controls.Add(this.tabPage9);
-	 this.tab_nav.Location = new System.Drawing.Point(115, 4);
+	 this.tab_nav.Controls.Add(this.tabPage10);
+	 this.tab_nav.Location = new System.Drawing.Point(110, 4);
 	 this.tab_nav.Name = "tab_nav";
 	 this.tab_nav.SelectedIndex = 0;
 	 this.tab_nav.Size = new System.Drawing.Size(705, 528);
@@ -401,13 +417,9 @@ namespace Discord
 	 this.tabPage1.Controls.Add(this.button18);
 	 this.tabPage1.Controls.Add(this.button17);
 	 this.tabPage1.Controls.Add(this.cb_assist_tank);
-	 this.tabPage1.Controls.Add(this.button15);
-	 this.tabPage1.Controls.Add(this.find_dots);
-	 this.tabPage1.Controls.Add(this.button10);
 	 this.tabPage1.Controls.Add(this.tbraio);
 	 this.tabPage1.Controls.Add(this.tby);
 	 this.tabPage1.Controls.Add(this.tbx);
-	 this.tabPage1.Controls.Add(this.pb_minimap);
 	 this.tabPage1.Controls.Add(this.label18);
 	 this.tabPage1.Controls.Add(this.tb_back_limiar);
 	 this.tabPage1.Controls.Add(this.label9);
@@ -416,10 +428,8 @@ namespace Discord
 	 this.tabPage1.Controls.Add(this.tbdecay);
 	 this.tabPage1.Controls.Add(this.rtbcursor);
 	 this.tabPage1.Controls.Add(this.button11);
-	 this.tabPage1.Controls.Add(this.button7);
 	 this.tabPage1.Controls.Add(this.bt_saveWPas);
 	 this.tabPage1.Controls.Add(this.tb_filename);
-	 this.tabPage1.Controls.Add(this.bt_debug3);
 	 this.tabPage1.Controls.Add(this.button8);
 	 this.tabPage1.Controls.Add(this.cb_anda);
 	 this.tabPage1.Controls.Add(this.bt_saveWP);
@@ -578,36 +588,6 @@ namespace Discord
 	 this.cb_assist_tank.Text = "Asisst tank";
 	 this.cb_assist_tank.UseVisualStyleBackColor = true;
 	 // 
-	 // button15
-	 // 
-	 this.button15.Location = new System.Drawing.Point(112, 256);
-	 this.button15.Name = "button15";
-	 this.button15.Size = new System.Drawing.Size(75, 23);
-	 this.button15.TabIndex = 49;
-	 this.button15.Text = "Andaplanta";
-	 this.button15.UseVisualStyleBackColor = true;
-	 this.button15.Click += new System.EventHandler(this.button15_Click);
-	 // 
-	 // find_dots
-	 // 
-	 this.find_dots.Location = new System.Drawing.Point(186, 254);
-	 this.find_dots.Name = "find_dots";
-	 this.find_dots.Size = new System.Drawing.Size(75, 23);
-	 this.find_dots.TabIndex = 46;
-	 this.find_dots.Text = "Acha Planta";
-	 this.find_dots.UseVisualStyleBackColor = true;
-	 this.find_dots.Click += new System.EventHandler(this.find_dots_Click);
-	 // 
-	 // button10
-	 // 
-	 this.button10.Location = new System.Drawing.Point(419, 254);
-	 this.button10.Name = "button10";
-	 this.button10.Size = new System.Drawing.Size(75, 23);
-	 this.button10.TabIndex = 44;
-	 this.button10.Text = "button10";
-	 this.button10.UseVisualStyleBackColor = true;
-	 this.button10.Click += new System.EventHandler(this.button10_Click);
-	 // 
 	 // tbraio
 	 // 
 	 this.tbraio.Location = new System.Drawing.Point(419, 22);
@@ -631,17 +611,6 @@ namespace Discord
 	 this.tbx.Size = new System.Drawing.Size(51, 20);
 	 this.tbx.TabIndex = 41;
 	 this.tbx.Text = "150";
-	 // 
-	 // pb_minimap
-	 // 
-	 this.pb_minimap.Location = new System.Drawing.Point(285, 49);
-	 this.pb_minimap.Name = "pb_minimap";
-	 this.pb_minimap.Size = new System.Drawing.Size(200, 200);
-	 this.pb_minimap.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-	 this.pb_minimap.TabIndex = 40;
-	 this.pb_minimap.TabStop = false;
-	 this.pb_minimap.Click += new System.EventHandler(this.pb_minimap_Click);
-	 this.pb_minimap.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pb_minimap_MouseClick);
 	 // 
 	 // label18
 	 // 
@@ -711,16 +680,6 @@ namespace Discord
 	 this.button11.UseVisualStyleBackColor = true;
 	 this.button11.Click += new System.EventHandler(this.button11_Click);
 	 // 
-	 // button7
-	 // 
-	 this.button7.Location = new System.Drawing.Point(342, 254);
-	 this.button7.Name = "button7";
-	 this.button7.Size = new System.Drawing.Size(79, 23);
-	 this.button7.TabIndex = 20;
-	 this.button7.Text = "Acha Flexa";
-	 this.button7.UseVisualStyleBackColor = true;
-	 this.button7.Click += new System.EventHandler(this.button7_Click);
-	 // 
 	 // bt_saveWPas
 	 // 
 	 this.bt_saveWPas.Location = new System.Drawing.Point(202, 61);
@@ -738,16 +697,6 @@ namespace Discord
 	 this.tb_filename.Size = new System.Drawing.Size(258, 20);
 	 this.tb_filename.TabIndex = 25;
 	 this.tb_filename.Text = "waypoints.txt";
-	 // 
-	 // bt_debug3
-	 // 
-	 this.bt_debug3.Location = new System.Drawing.Point(261, 254);
-	 this.bt_debug3.Name = "bt_debug3";
-	 this.bt_debug3.Size = new System.Drawing.Size(75, 23);
-	 this.bt_debug3.TabIndex = 17;
-	 this.bt_debug3.Text = "Debug";
-	 this.bt_debug3.UseVisualStyleBackColor = true;
-	 this.bt_debug3.Click += new System.EventHandler(this.bt_debug3_Click);
 	 // 
 	 // button8
 	 // 
@@ -1184,6 +1133,14 @@ namespace Discord
 	 this.tb_pullcap.TabIndex = 58;
 	 this.tb_pullcap.Text = "0";
 	 // 
+	 // tb_stoneform_at
+	 // 
+	 this.tb_stoneform_at.Location = new System.Drawing.Point(515, 463);
+	 this.tb_stoneform_at.Name = "tb_stoneform_at";
+	 this.tb_stoneform_at.Size = new System.Drawing.Size(33, 20);
+	 this.tb_stoneform_at.TabIndex = 58;
+	 this.tb_stoneform_at.Text = "60";
+	 // 
 	 // lb_map_zoom
 	 // 
 	 this.lb_map_zoom.AutoSize = true;
@@ -1200,6 +1157,18 @@ namespace Discord
 	 this.tb_map_zoom.Size = new System.Drawing.Size(43, 20);
 	 this.tb_map_zoom.TabIndex = 27;
 	 this.tb_map_zoom.Text = "100";
+	 // 
+	 // cb_dwarf
+	 // 
+	 this.cb_dwarf.AutoSize = true;
+	 this.cb_dwarf.Checked = true;
+	 this.cb_dwarf.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_dwarf.Location = new System.Drawing.Point(421, 466);
+	 this.cb_dwarf.Name = "cb_dwarf";
+	 this.cb_dwarf.Size = new System.Drawing.Size(74, 17);
+	 this.cb_dwarf.TabIndex = 29;
+	 this.cb_dwarf.Text = "Stoneform";
+	 this.cb_dwarf.UseVisualStyleBackColor = true;
 	 // 
 	 // tab_buffs
 	 // 
@@ -1749,14 +1718,6 @@ namespace Discord
 	 this.cb_BOW.Text = "Usar BOW ";
 	 this.cb_BOW.UseVisualStyleBackColor = true;
 	 // 
-	 // tb_stoneform_at
-	 // 
-	 this.tb_stoneform_at.Location = new System.Drawing.Point(515, 463);
-	 this.tb_stoneform_at.Name = "tb_stoneform_at";
-	 this.tb_stoneform_at.Size = new System.Drawing.Size(33, 20);
-	 this.tb_stoneform_at.TabIndex = 58;
-	 this.tb_stoneform_at.Text = "60";
-	 // 
 	 // cb_loh
 	 // 
 	 this.cb_loh.AutoSize = true;
@@ -1768,18 +1729,6 @@ namespace Discord
 	 this.cb_loh.TabIndex = 56;
 	 this.cb_loh.Text = "Lay on Hands";
 	 this.cb_loh.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_dwarf
-	 // 
-	 this.cb_dwarf.AutoSize = true;
-	 this.cb_dwarf.Checked = true;
-	 this.cb_dwarf.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_dwarf.Location = new System.Drawing.Point(421, 466);
-	 this.cb_dwarf.Name = "cb_dwarf";
-	 this.cb_dwarf.Size = new System.Drawing.Size(74, 17);
-	 this.cb_dwarf.TabIndex = 29;
-	 this.cb_dwarf.Text = "Stoneform";
-	 this.cb_dwarf.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_bubble
 	 // 
@@ -2499,6 +2448,9 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.textBox2);
+	 this.tabPage8.Controls.Add(this.label61);
+	 this.tabPage8.Controls.Add(this.cb_greedy_hunter);
 	 this.tabPage8.Controls.Add(this.tb_rangedhp);
 	 this.tabPage8.Controls.Add(this.label57);
 	 this.tabPage8.Controls.Add(this.tb_rangedseconds);
@@ -2524,6 +2476,40 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // tb_rangedhp
+	 // 
+	 this.tb_rangedhp.Location = new System.Drawing.Point(198, 326);
+	 this.tb_rangedhp.Name = "tb_rangedhp";
+	 this.tb_rangedhp.Size = new System.Drawing.Size(26, 20);
+	 this.tb_rangedhp.TabIndex = 27;
+	 this.tb_rangedhp.Text = "50";
+	 // 
+	 // label57
+	 // 
+	 this.label57.AutoSize = true;
+	 this.label57.Location = new System.Drawing.Point(167, 329);
+	 this.label57.Name = "label57";
+	 this.label57.Size = new System.Drawing.Size(25, 13);
+	 this.label57.TabIndex = 26;
+	 this.label57.Text = "HP:";
+	 // 
+	 // tb_rangedseconds
+	 // 
+	 this.tb_rangedseconds.Location = new System.Drawing.Point(110, 326);
+	 this.tb_rangedseconds.Name = "tb_rangedseconds";
+	 this.tb_rangedseconds.Size = new System.Drawing.Size(18, 20);
+	 this.tb_rangedseconds.TabIndex = 25;
+	 this.tb_rangedseconds.Text = "6";
+	 // 
+	 // label58
+	 // 
+	 this.label58.AutoSize = true;
+	 this.label58.Location = new System.Drawing.Point(14, 330);
+	 this.label58.Name = "label58";
+	 this.label58.Size = new System.Drawing.Size(90, 13);
+	 this.label58.TabIndex = 24;
+	 this.label58.Text = "Ranged Seconds";
 	 // 
 	 // cb_huntermeleepull
 	 // 
@@ -3355,6 +3341,142 @@ namespace Discord
 	 this.label39.TabIndex = 0;
 	 this.label39.Text = "Priest";
 	 // 
+	 // tabPage9
+	 // 
+	 this.tabPage9.BackColor = System.Drawing.Color.DarkGray;
+	 this.tabPage9.Controls.Add(this.checkBox1);
+	 this.tabPage9.Controls.Add(this.button14);
+	 this.tabPage9.Controls.Add(this.button9);
+	 this.tabPage9.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage9.Name = "tabPage9";
+	 this.tabPage9.Size = new System.Drawing.Size(697, 502);
+	 this.tabPage9.TabIndex = 4;
+	 this.tabPage9.Text = "Assist";
+	 // 
+	 // checkBox1
+	 // 
+	 this.checkBox1.AutoSize = true;
+	 this.checkBox1.Location = new System.Drawing.Point(364, 17);
+	 this.checkBox1.Name = "checkBox1";
+	 this.checkBox1.Size = new System.Drawing.Size(70, 17);
+	 this.checkBox1.TabIndex = 2;
+	 this.checkBox1.Text = "Dungeon";
+	 this.checkBox1.UseVisualStyleBackColor = true;
+	 // 
+	 // button14
+	 // 
+	 this.button14.Location = new System.Drawing.Point(562, 61);
+	 this.button14.Name = "button14";
+	 this.button14.Size = new System.Drawing.Size(107, 46);
+	 this.button14.TabIndex = 1;
+	 this.button14.Text = "Stop Assist";
+	 this.button14.UseVisualStyleBackColor = true;
+	 this.button14.Click += new System.EventHandler(this.button14_Click_1);
+	 // 
+	 // button9
+	 // 
+	 this.button9.Location = new System.Drawing.Point(562, 12);
+	 this.button9.Name = "button9";
+	 this.button9.Size = new System.Drawing.Size(107, 44);
+	 this.button9.TabIndex = 0;
+	 this.button9.Text = "Assist Mode";
+	 this.button9.UseVisualStyleBackColor = true;
+	 this.button9.Click += new System.EventHandler(this.button9_Click_3);
+	 // 
+	 // tabPage10
+	 // 
+	 this.tabPage10.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage10.Controls.Add(this.bt_show_red_positions);
+	 this.tabPage10.Controls.Add(this.label60);
+	 this.tabPage10.Controls.Add(this.bt_calibra_fatores);
+	 this.tabPage10.Controls.Add(this.tb_probe_y);
+	 this.tabPage10.Controls.Add(this.tb_probe_x);
+	 this.tabPage10.Controls.Add(this.bt_find_tracked);
+	 this.tabPage10.Controls.Add(this.button22);
+	 this.tabPage10.Controls.Add(this.bt_capture_minimap);
+	 this.tabPage10.Controls.Add(this.bt_find_minimap);
+	 this.tabPage10.Controls.Add(this.label59);
+	 this.tabPage10.Controls.Add(this.tb_maplog);
+	 this.tabPage10.Controls.Add(this.pb_minimap);
+	 this.tabPage10.Controls.Add(this.find_dots);
+	 this.tabPage10.Controls.Add(this.button10);
+	 this.tabPage10.Controls.Add(this.button15);
+	 this.tabPage10.Controls.Add(this.button7);
+	 this.tabPage10.Location = new System.Drawing.Point(4, 22);
+	 this.tabPage10.Name = "tabPage10";
+	 this.tabPage10.Size = new System.Drawing.Size(697, 502);
+	 this.tabPage10.TabIndex = 5;
+	 this.tabPage10.Text = "Greedy";
+	 // 
+	 // label59
+	 // 
+	 this.label59.AutoSize = true;
+	 this.label59.Location = new System.Drawing.Point(8, 294);
+	 this.label59.Name = "label59";
+	 this.label59.Size = new System.Drawing.Size(49, 13);
+	 this.label59.TabIndex = 67;
+	 this.label59.Text = "Map Log";
+	 // 
+	 // tb_maplog
+	 // 
+	 this.tb_maplog.BackColor = System.Drawing.SystemColors.ScrollBar;
+	 this.tb_maplog.Location = new System.Drawing.Point(4, 310);
+	 this.tb_maplog.Multiline = true;
+	 this.tb_maplog.Name = "tb_maplog";
+	 this.tb_maplog.Size = new System.Drawing.Size(252, 187);
+	 this.tb_maplog.TabIndex = 66;
+	 // 
+	 // pb_minimap
+	 // 
+	 this.pb_minimap.Location = new System.Drawing.Point(421, 35);
+	 this.pb_minimap.Name = "pb_minimap";
+	 this.pb_minimap.Size = new System.Drawing.Size(200, 200);
+	 this.pb_minimap.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+	 this.pb_minimap.TabIndex = 40;
+	 this.pb_minimap.TabStop = false;
+	 this.pb_minimap.Click += new System.EventHandler(this.pb_minimap_Click);
+	 this.pb_minimap.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pb_minimap_MouseClick);
+	 // 
+	 // find_dots
+	 // 
+	 this.find_dots.Location = new System.Drawing.Point(42, 169);
+	 this.find_dots.Name = "find_dots";
+	 this.find_dots.Size = new System.Drawing.Size(75, 23);
+	 this.find_dots.TabIndex = 46;
+	 this.find_dots.Text = "Acha Planta";
+	 this.find_dots.UseVisualStyleBackColor = true;
+	 this.find_dots.Click += new System.EventHandler(this.find_dots_Click);
+	 // 
+	 // button10
+	 // 
+	 this.button10.Location = new System.Drawing.Point(30, 202);
+	 this.button10.Name = "button10";
+	 this.button10.Size = new System.Drawing.Size(75, 23);
+	 this.button10.TabIndex = 44;
+	 this.button10.Text = "button10";
+	 this.button10.UseVisualStyleBackColor = true;
+	 this.button10.Click += new System.EventHandler(this.button10_Click);
+	 // 
+	 // button15
+	 // 
+	 this.button15.Location = new System.Drawing.Point(48, 134);
+	 this.button15.Name = "button15";
+	 this.button15.Size = new System.Drawing.Size(75, 23);
+	 this.button15.TabIndex = 49;
+	 this.button15.Text = "Andaplanta";
+	 this.button15.UseVisualStyleBackColor = true;
+	 this.button15.Click += new System.EventHandler(this.button15_Click);
+	 // 
+	 // button7
+	 // 
+	 this.button7.Location = new System.Drawing.Point(30, 233);
+	 this.button7.Name = "button7";
+	 this.button7.Size = new System.Drawing.Size(79, 23);
+	 this.button7.TabIndex = 20;
+	 this.button7.Text = "Acha Flexa";
+	 this.button7.UseVisualStyleBackColor = true;
+	 this.button7.Click += new System.EventHandler(this.button7_Click);
+	 // 
 	 // label49
 	 // 
 	 this.label49.AutoSize = true;
@@ -3453,7 +3575,7 @@ namespace Discord
 	 // 
 	 // bt_anda
 	 // 
-	 this.bt_anda.Location = new System.Drawing.Point(2, 38);
+	 this.bt_anda.Location = new System.Drawing.Point(-6, 38);
 	 this.bt_anda.Name = "bt_anda";
 	 this.bt_anda.Size = new System.Drawing.Size(61, 23);
 	 this.bt_anda.TabIndex = 5;
@@ -3644,87 +3766,126 @@ namespace Discord
 	 // 
 	 this.bt_loadWP.Location = new System.Drawing.Point(58, 38);
 	 this.bt_loadWP.Name = "bt_loadWP";
-	 this.bt_loadWP.Size = new System.Drawing.Size(75, 23);
+	 this.bt_loadWP.Size = new System.Drawing.Size(59, 23);
 	 this.bt_loadWP.TabIndex = 26;
 	 this.bt_loadWP.Text = "Load List";
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // tabPage9
+	 // bt_find_minimap
 	 // 
-	 this.tabPage9.BackColor = System.Drawing.Color.DarkGray;
-	 this.tabPage9.Controls.Add(this.checkBox1);
-	 this.tabPage9.Controls.Add(this.button14);
-	 this.tabPage9.Controls.Add(this.button9);
-	 this.tabPage9.Location = new System.Drawing.Point(4, 22);
-	 this.tabPage9.Name = "tabPage9";
-	 this.tabPage9.Size = new System.Drawing.Size(697, 502);
-	 this.tabPage9.TabIndex = 4;
-	 this.tabPage9.Text = "Assist";
+	 this.bt_find_minimap.Location = new System.Drawing.Point(9, 12);
+	 this.bt_find_minimap.Name = "bt_find_minimap";
+	 this.bt_find_minimap.Size = new System.Drawing.Size(93, 23);
+	 this.bt_find_minimap.TabIndex = 68;
+	 this.bt_find_minimap.Text = "Calibra Minimap";
+	 this.bt_find_minimap.UseVisualStyleBackColor = true;
+	 this.bt_find_minimap.Click += new System.EventHandler(this.bt_find_minimap_Click);
 	 // 
-	 // button9
+	 // bt_capture_minimap
 	 // 
-	 this.button9.Location = new System.Drawing.Point(562, 12);
-	 this.button9.Name = "button9";
-	 this.button9.Size = new System.Drawing.Size(107, 44);
-	 this.button9.TabIndex = 0;
-	 this.button9.Text = "Assist Mode";
-	 this.button9.UseVisualStyleBackColor = true;
-	 this.button9.Click += new System.EventHandler(this.button9_Click_3);
+	 this.bt_capture_minimap.Location = new System.Drawing.Point(237, 12);
+	 this.bt_capture_minimap.Name = "bt_capture_minimap";
+	 this.bt_capture_minimap.Size = new System.Drawing.Size(107, 23);
+	 this.bt_capture_minimap.TabIndex = 69;
+	 this.bt_capture_minimap.Text = "Desenha Minimap";
+	 this.bt_capture_minimap.UseVisualStyleBackColor = true;
+	 this.bt_capture_minimap.Click += new System.EventHandler(this.bt_capture_minimap_Click);
 	 // 
-	 // button14
+	 // button22
 	 // 
-	 this.button14.Location = new System.Drawing.Point(562, 61);
-	 this.button14.Name = "button14";
-	 this.button14.Size = new System.Drawing.Size(107, 46);
-	 this.button14.TabIndex = 1;
-	 this.button14.Text = "Stop Assist";
-	 this.button14.UseVisualStyleBackColor = true;
-	 this.button14.Click += new System.EventHandler(this.button14_Click_1);
+	 this.button22.Location = new System.Drawing.Point(108, 12);
+	 this.button22.Name = "button22";
+	 this.button22.Size = new System.Drawing.Size(123, 23);
+	 this.button22.TabIndex = 70;
+	 this.button22.Text = "Salva Congigurações";
+	 this.button22.UseVisualStyleBackColor = true;
+	 this.button22.Click += new System.EventHandler(this.button22_Click_1);
 	 // 
-	 // checkBox1
+	 // bt_find_tracked
 	 // 
-	 this.checkBox1.AutoSize = true;
-	 this.checkBox1.Location = new System.Drawing.Point(364, 17);
-	 this.checkBox1.Name = "checkBox1";
-	 this.checkBox1.Size = new System.Drawing.Size(70, 17);
-	 this.checkBox1.TabIndex = 2;
-	 this.checkBox1.Text = "Dungeon";
-	 this.checkBox1.UseVisualStyleBackColor = true;
+	 this.bt_find_tracked.Location = new System.Drawing.Point(201, 168);
+	 this.bt_find_tracked.Name = "bt_find_tracked";
+	 this.bt_find_tracked.Size = new System.Drawing.Size(75, 23);
+	 this.bt_find_tracked.TabIndex = 72;
+	 this.bt_find_tracked.Text = "button24";
+	 this.bt_find_tracked.UseVisualStyleBackColor = true;
+	 this.bt_find_tracked.Click += new System.EventHandler(this.bt_find_tracked_Click_1);
 	 // 
-	 // tb_rangedhp
+	 // tb_probe_x
 	 // 
-	 this.tb_rangedhp.Location = new System.Drawing.Point(198, 326);
-	 this.tb_rangedhp.Name = "tb_rangedhp";
-	 this.tb_rangedhp.Size = new System.Drawing.Size(26, 20);
-	 this.tb_rangedhp.TabIndex = 27;
-	 this.tb_rangedhp.Text = "50";
+	 this.tb_probe_x.AccessibleRole = System.Windows.Forms.AccessibleRole.Border;
+	 this.tb_probe_x.Location = new System.Drawing.Point(108, 71);
+	 this.tb_probe_x.Name = "tb_probe_x";
+	 this.tb_probe_x.Size = new System.Drawing.Size(38, 20);
+	 this.tb_probe_x.TabIndex = 73;
+	 this.tb_probe_x.Text = "1527";
 	 // 
-	 // label57
+	 // tb_probe_y
 	 // 
-	 this.label57.AutoSize = true;
-	 this.label57.Location = new System.Drawing.Point(167, 329);
-	 this.label57.Name = "label57";
-	 this.label57.Size = new System.Drawing.Size(25, 13);
-	 this.label57.TabIndex = 26;
-	 this.label57.Text = "HP:";
+	 this.tb_probe_y.Location = new System.Drawing.Point(152, 71);
+	 this.tb_probe_y.Name = "tb_probe_y";
+	 this.tb_probe_y.Size = new System.Drawing.Size(37, 20);
+	 this.tb_probe_y.TabIndex = 74;
+	 this.tb_probe_y.Text = "7146";
 	 // 
-	 // tb_rangedseconds
+	 // bt_calibra_fatores
 	 // 
-	 this.tb_rangedseconds.Location = new System.Drawing.Point(110, 326);
-	 this.tb_rangedseconds.Name = "tb_rangedseconds";
-	 this.tb_rangedseconds.Size = new System.Drawing.Size(18, 20);
-	 this.tb_rangedseconds.TabIndex = 25;
-	 this.tb_rangedseconds.Text = "6";
+	 this.bt_calibra_fatores.Location = new System.Drawing.Point(108, 41);
+	 this.bt_calibra_fatores.Name = "bt_calibra_fatores";
+	 this.bt_calibra_fatores.Size = new System.Drawing.Size(123, 23);
+	 this.bt_calibra_fatores.TabIndex = 75;
+	 this.bt_calibra_fatores.Text = "Calibra Fatores";
+	 this.bt_calibra_fatores.UseVisualStyleBackColor = true;
+	 this.bt_calibra_fatores.Click += new System.EventHandler(this.bt_calibra_fatores_Click);
 	 // 
-	 // label58
+	 // label60
 	 // 
-	 this.label58.AutoSize = true;
-	 this.label58.Location = new System.Drawing.Point(14, 330);
-	 this.label58.Name = "label58";
-	 this.label58.Size = new System.Drawing.Size(90, 13);
-	 this.label58.TabIndex = 24;
-	 this.label58.Text = "Ranged Seconds";
+	 this.label60.AutoSize = true;
+	 this.label60.Location = new System.Drawing.Point(26, 74);
+	 this.label60.Name = "label60";
+	 this.label60.Size = new System.Drawing.Size(70, 13);
+	 this.label60.TabIndex = 76;
+	 this.label60.Text = "Guard Parker";
+	 // 
+	 // bt_show_red_positions
+	 // 
+	 this.bt_show_red_positions.Location = new System.Drawing.Point(252, 41);
+	 this.bt_show_red_positions.Name = "bt_show_red_positions";
+	 this.bt_show_red_positions.Size = new System.Drawing.Size(75, 23);
+	 this.bt_show_red_positions.TabIndex = 77;
+	 this.bt_show_red_positions.Text = "button23";
+	 this.bt_show_red_positions.UseVisualStyleBackColor = true;
+	 this.bt_show_red_positions.Click += new System.EventHandler(this.bt_show_red_positions_Click);
+	 // 
+	 // cb_greedy_hunter
+	 // 
+	 this.cb_greedy_hunter.AutoSize = true;
+	 this.cb_greedy_hunter.Checked = true;
+	 this.cb_greedy_hunter.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_greedy_hunter.Location = new System.Drawing.Point(6, 237);
+	 this.cb_greedy_hunter.Name = "cb_greedy_hunter";
+	 this.cb_greedy_hunter.Size = new System.Drawing.Size(133, 17);
+	 this.cb_greedy_hunter.TabIndex = 68;
+	 this.cb_greedy_hunter.Text = "Greedy Hunter (Radar)";
+	 this.cb_greedy_hunter.UseVisualStyleBackColor = true;
+	 // 
+	 // textBox2
+	 // 
+	 this.textBox2.Location = new System.Drawing.Point(267, 234);
+	 this.textBox2.Name = "textBox2";
+	 this.textBox2.Size = new System.Drawing.Size(35, 20);
+	 this.textBox2.TabIndex = 70;
+	 this.textBox2.Text = "200";
+	 // 
+	 // label61
+	 // 
+	 this.label61.AutoSize = true;
+	 this.label61.Location = new System.Drawing.Point(165, 237);
+	 this.label61.Name = "label61";
+	 this.label61.Size = new System.Drawing.Size(96, 13);
+	 this.label61.TabIndex = 69;
+	 this.label61.Text = "Max Dist from Path";
 	 // 
 	 // Form1
 	 // 
@@ -3772,7 +3933,6 @@ namespace Discord
 	 this.tab_nav.ResumeLayout(false);
 	 this.tabPage1.ResumeLayout(false);
 	 this.tabPage1.PerformLayout();
-	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).EndInit();
 	 this.tabPage2.ResumeLayout(false);
 	 this.tabPage2.PerformLayout();
 	 ((System.ComponentModel.ISupportInitialize)(this.pb_map)).EndInit();
@@ -3799,6 +3959,9 @@ namespace Discord
 	 this.Statistics.PerformLayout();
 	 this.tabPage9.ResumeLayout(false);
 	 this.tabPage9.PerformLayout();
+	 this.tabPage10.ResumeLayout(false);
+	 this.tabPage10.PerformLayout();
+	 ((System.ComponentModel.ISupportInitialize)(this.pb_minimap)).EndInit();
 	 this.ResumeLayout(false);
 	 this.PerformLayout();
 
@@ -3819,7 +3982,6 @@ namespace Discord
 	private System.Windows.Forms.TextBox tb_debug1;
 	private System.Windows.Forms.TextBox tb_debug2;
 	private System.Windows.Forms.Button bt_debug2;
-	private System.Windows.Forms.Button bt_debug3;
 	private System.Windows.Forms.Button bt_onoff;
 	private System.Windows.Forms.ListBox lbwp;
 	private System.Windows.Forms.Button button2;
@@ -4126,6 +4288,21 @@ namespace Discord
 	private Label label57;
 	private TextBox tb_rangedseconds;
 	private Label label58;
+	private TabPage tabPage10;
+	private Label label59;
+	private TextBox tb_maplog;
+	private Button bt_find_minimap;
+	private Button bt_capture_minimap;
+	private Button button22;
+	private Button bt_find_tracked;
+	private TextBox tb_probe_y;
+	private TextBox tb_probe_x;
+	private Button bt_calibra_fatores;
+	private Label label60;
+	private Button bt_show_red_positions;
+	private CheckBox cb_greedy_hunter;
+	private TextBox textBox2;
+	private Label label61;
  }
 }
 
