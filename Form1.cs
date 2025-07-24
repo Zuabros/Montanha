@@ -2153,11 +2153,22 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		// -----------------------------
 		if (cb_anda.Checked)
 		{
-		 if (timeout.ElapsedMilliseconds - last >= 2000) // passaram 4 segundos?
+
+		 int segundo_atual = DateTime.Now.Second;
+
+		 // Pula se o segundo terminar em 0 ou 5 (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+		 if (segundo_atual % 5 == 0)
 		 {
-			aperta(PULA); // dá pulinho a cada 4 segudnos
-			last = timeout.ElapsedMilliseconds; // atualiza o tempo do último disparo
+			aperta(PULA);
+			loga($"🦘 Pulo executado! Segundo: {segundo_atual:D2}");
+
+			// Espera um pouquinho para não pular múltiplas vezes no mesmo segundo
+			
 		 }
+
+
+
+
 		 checkme();
 		 drawmap(destino);
 		 loga($"Distancia do waypoint: {dist(me.pos, destino)}");
@@ -2886,13 +2897,15 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
 	 checkme(); // atualiza status após o TAB inicial
 							// pega segundo target
-	 loga($"Target 1 mood: {mood1}");
+	 if (me.hastarget)
+		loga($"Target 1 mood: {mood1}");
 	 aperta(TAB, 120);
 	 checkme();
 	 if (me.hastarget) loga("Pegando target. Code 2.");
 
 	 int mood2 = tar.mood;
-	 loga($"Target 2 mood: {mood2}");
+	 if (me.hastarget)
+		loga($"Target 2 mood: {mood2}");
 	 bool t2_ok = bomtarget();
 	 int t2_id = tar.id;
 	 if (t2_id != t1_id) scan_elites(); // verifica se tem target novo
@@ -4273,7 +4286,7 @@ else if (me.classe == HUNTER)
 			 clog($"Combat: Deterrence - HP: {me.hp}%");         // loga o uso de Deterrence
 			}
 		 }
-		 if (me.hp < 37 && me.hp_potion_rdy)
+		 if (me.hp < 37 && me.hp_potion_rdy && me.mana > 0 && me.hp >0) // pra nao pegar feign death
 		 {
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 37% e poção pronta
 			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
@@ -4324,7 +4337,7 @@ else if (me.classe == HUNTER)
 		 else if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
 		 {
 			int limiar = Convert.ToInt32(tb_stoneform_at.Text);     // lê o valor do limiar de HP do textbox
-			if (!me.dazed && (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease))
+			if (!me.dazed && me.hp > 1 && (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease))
 			{ 
 			 aperta(STONEFORM);                                       // ativa Stoneform se atender condições
 			 clog($"Hunter: Stoneform usado! HP: {me.hp}% Debuffs: {me.hasother}/{me.haspoison}/{me.hasdisease}");
@@ -5518,7 +5531,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 	void stonecheck()
 	{
 
-		 if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
+		 if (cb_dwarf.Checked && me.racialready && me.hp > 1)                     // é anão e o racial está pronto
 	 {
 
 		if (me.haspoison || me.hasdisease)
@@ -6913,29 +6926,51 @@ return new loc { x = x, y = y };
 	 // SISTEMA GULOSO: HUNTER + CHECKBOX ATIVADA
 	 if (me.classe == HUNTER && cb_greedy_hunter.Checked)
 	 {
-		// Prioridade 1: Mobs vermelhos
+		// Prioridade 1: Mobs vermelhos próximos da rota
 		List<loc> mobs = get_all_red_mobs();
-		if (mobs.Count > 0)
+		List<loc> red_validos = new List<loc>();
+
+		// Lê valor máximo de distância permitido (em unidades do seu sistema)
+		int max_dist_red = atoi(tb_maxdistred);
+
+		// Filtra apenas os red dots próximos da rota
+		foreach (var mob in mobs)
 		{
-		 int idx_mob = nearest(me.pos, mobs);
-		 if (idx_mob >= 0)
+		 foreach (var wp in lwp)
 		 {
-			greedy_volta_rota = true; // marca que saiu da rota
-			loga($"🎯 Red dot encontrado: indo para o mais próximo. Distância: {dist(me.pos, mobs[idx_mob]) / 100}m");
-			return mobs[idx_mob]; // MOB MAIS PRÓXIMO
+			if (dist(mob, wp) <= max_dist_red)
+			{
+			 red_validos.Add(mob);
+			 break; // já validou esse mob
+			}
 		 }
 		}
 
-		// Prioridade 2: Se não há mobs E precisa voltar à rota
+		if (red_validos.Count > 0)
+		{
+		 int idx_mob = nearest(me.pos, red_validos);
+		 if (idx_mob >= 0)
+		 {
+			greedy_volta_rota = true; // marca que saiu da rota
+			loga($"🎯 Red dot encontrado (dentro do alcance). Indo para o mais próximo. Distância: {dist(me.pos, red_validos[idx_mob]) / 100}m");
+			return red_validos[idx_mob]; // red dot mais próximo
+		 }
+		}
+		else if (mobs.Count > 0)
+		{
+		 loga($"⚠️ Ignorando {mobs.Count} red dot(s) fora do alcance máximo da rota.");
+		}
+
+		// Prioridade 2: Se não há mobs válidos E precisa voltar à rota
 		if (greedy_volta_rota)
 		{
 		 int idx_wp = nearest(me.pos, lwp);
 		 if (idx_wp >= 0)
 		 {
-			indexAtual = idx_wp; // ATUALIZA ÍNDICE UMA ÚNICA VEZ
-			greedy_volta_rota = false; // reseta flag
-			dir = +1; // reinicia direção para frente
-			loga($"❌ Não localizados mais red dots. Seguindo para o ponto mais próximo da lista: #{idx_wp}");
+			indexAtual = idx_wp;
+			greedy_volta_rota = false;
+			dir = +1;
+			loga($"❌ Sem red dots válidos. Voltando à rota no ponto mais próximo: #{idx_wp}");
 			return lwp[idx_wp];
 		 }
 		}
@@ -9671,6 +9706,7 @@ else
 
 	 // Atualiza a variável centro_minimap com o valor calculado
 	 centro_minimap = centro_real;
+	 save_calibration(); // salva calibração em arquivo
 	}
 
 	// --------------------------------------------
@@ -9982,96 +10018,23 @@ else
 
 	}
 	// --------------------------------------------
-	// DETECTA PONTOS VERMELHOS COM VALIDAÇÃO DE QUANTIDADE
-	// Usa o MESMO algoritmo do find_tracked() existente
+	// DETECTA PONTO VERMELHO ÚNICO NO MINIMAP
+	// Agora chama busca_todos_pontos_vermelhos() com validação
 	// --------------------------------------------
 	Point detecta_ponto_vermelho_no_minimap(out int quantidade_encontrada)
 	{
-	 quantidade_encontrada = 0;
+	 List<Point> pontos = busca_todos_pontos_vermelhos(out quantidade_encontrada);
 
-	 if (pb_minimap.Image == null)
-		return new Point(-1, -1);
-
-	 Bitmap bmp = (Bitmap)pb_minimap.Image;
-
-	 // MESMO CENTRO DO ALGORITMO ORIGINAL
-	 int cx = bmp.Width / 2;
-	 int cy = bmp.Height / 2;
-
-	 // USA OS MESMOS VALORES DE COR DO find_tracked() ORIGINAL
-	 int lim_r = 200, lim_r2 = 255;  // vermelho
-	 int lim_g = 0, lim_g2 = 100;    // verde  
-	 int lim_b = 0, lim_b2 = 100;    // azul
-	 int dist_max = 6;               // distância para agrupar
-
-	 // MESMO ALGORITMO DE AGRUPAMENTO
-	 List<List<Point>> grupos = new List<List<Point>>();
-
-	 for (int y = 0; y < bmp.Height; y++)
+	 if (quantidade_encontrada != 1)
 	 {
-		for (int x = 0; x < bmp.Width; x++)
-		{
-		 Color c = bmp.GetPixel(x, y);
-
-		 if (c.R >= lim_r && c.R <= lim_r2 &&
-				 c.G >= lim_g && c.G <= lim_g2 &&
-				 c.B >= lim_b && c.B <= lim_b2)
-		 {
-			Point p = new Point(x, y);
-			bool agrupado = false;
-
-			for (int i = 0; i < grupos.Count; i++)
-			{
-			 foreach (Point q in grupos[i])
-			 {
-				int dx = p.X - q.X;
-				int dy = p.Y - q.Y;
-				if (dx * dx + dy * dy <= dist_max * dist_max)
-				{
-				 grupos[i].Add(p);
-				 agrupado = true;
-				 break;
-				}
-			 }
-			 if (agrupado) break;
-			}
-
-			if (!agrupado)
-			{
-			 List<Point> novo = new List<Point>();
-			 novo.Add(p);
-			 grupos.Add(novo);
-			}
-		 }
-		}
+		// Calibração falhou: nenhum ponto ou múltiplos
+		return new Point(-1, -1);
 	 }
 
-	 // CONVERTE GRUPOS EM MOBS
-	 List<Point> mobs_minimap = new List<Point>();
-
-	 foreach (var grupo in grupos)
-	 {
-		if (grupo.Count >= 3) // grupo válido
-		{
-		 int soma_x = 0, soma_y = 0;
-		 foreach (Point p in grupo)
-		 {
-			soma_x += p.X;
-			soma_y += p.Y;
-		 }
-		 int mx = soma_x / grupo.Count;
-		 int my = soma_y / grupo.Count;
-		 mobs_minimap.Add(new Point(mx, my));
-		}
-	 }
-
-	 quantidade_encontrada = mobs_minimap.Count;
-
-	 if (mobs_minimap.Count != 1)
-		return new Point(-1, -1);
-
-	 return mobs_minimap[0];
+	 // Calibração OK: retorna o único ponto encontrado
+	 return pontos[0];
 	}
+
 
 	// --------------------------------------------
 	// VERSÃO SIMPLIFICADA PARA COMPATIBILIDADE
@@ -10337,6 +10300,8 @@ else
 		save_fatores();
 		maplog("🎉 CALIBRAÇÃO CONCLUÍDA COM SUCESSO!");
 		maplog($"📊 Fatores finais: X={fator_x_calibrado:0.00} Y={fator_y_calibrado:0.00}");
+		tb_factorx.Text = fator_x_calibrado.ToString("0.00");
+		tb_factory.Text = fator_y_calibrado.ToString("0.00");
 	 }
 	 else
 	 {
@@ -10538,34 +10503,13 @@ else
 	}
 
 	// --------------------------------------------
-	// BOTÃO: MOSTRA POSIÇÃO DOS PONTOS VERMELHOS - VERSÃO ATUALIZADA
+	// BOTÃO: MOSTRA POSIÇÃO DOS PONTOS VERMELHOS - FUNCIONA SEM CALIBRAÇÃO
 	// --------------------------------------------
 	private void bt_show_red_positions_Click(object sender, EventArgs e)
 	{
+	 
 	 tb_maplog.Clear();
 	 maplog("=== POSIÇÕES DOS PONTOS VERMELHOS ===");
-
-	 // Verifica se calibração está carregada
-	 if (centro_minimap.X == 0 && centro_minimap.Y == 0)
-	 {
-		maplog("❌ ERRO: Calibração do minimap não encontrada!");
-		maplog("Execute a calibração do minimap primeiro.");
-		return;
-	 }
-
-	 // Verifica se fatores estão calibrados
-	 if (fator_x_calibrado == 0 && fator_y_calibrado == 0)
-	 {
-		maplog("❌ ERRO: Fatores não calibrados!");
-		maplog("Execute a calibração dos fatores primeiro.");
-		return;
-	 }
-
-	 // Atualiza posição do player
-	 checkme();
-	 maplog($"🚶 Player atual: ({me.pos.x}, {me.pos.y})");
-	 maplog($"🔧 Fatores calibrados: X={fator_x_calibrado:0.00} Y={fator_y_calibrado:0.00}");
-	 maplog("");
 
 	 // Captura minimap atual
 	 get_minimap_calibrated();
@@ -10586,80 +10530,91 @@ else
 		return;
 	 }
 
-	 // ================================
-	 // CALCULA E MOSTRA POSIÇÕES NO MUNDO
-	 // ================================
 	 Bitmap bmp = (Bitmap)pb_minimap.Image;
-	 int cx = bmp.Width / 2;   // centro da imagem
+	 int cx = bmp.Width / 2;
 	 int cy = bmp.Height / 2;
 
-	 maplog($"🎯 Centro do minimap: ({cx}, {cy})");
 	 maplog($"📊 Total de pontos vermelhos encontrados: {quantidade_pontos}");
+	 maplog($"🎯 Centro do minimap: ({cx}, {cy})");
 	 maplog("");
 
 	 for (int i = 0; i < pontos_vermelhos_minimap.Count; i++)
 	 {
 		Point ponto_minimap = pontos_vermelhos_minimap[i];
 
-		// Calcula offset do centro do minimap
-		int dx_minimap = ponto_minimap.X - cx;
-		int dy_minimap = ponto_minimap.Y - cy;
-
-		// Converte para coordenadas do mundo usando os fatores calibrados
-		int dx_mundo = (int)(dx_minimap * fator_x_calibrado);
-		int dy_mundo = (int)(dy_minimap * fator_y_calibrado);
-
-		// Posição absoluta no mundo
-		int mob_mundo_x = me.pos.x + dx_mundo;
-		int mob_mundo_y = me.pos.y + dy_mundo;
-
-		// Calcula distância
-		double distancia_mundo = Math.Sqrt((double)dx_mundo * dx_mundo + (double)dy_mundo * dy_mundo);
-		float distancia_metros = (float)(distancia_mundo / 100.0);
-
 		maplog($"📍 Ponto Vermelho #{i + 1}:");
 		maplog($"  🗺️ Posição no minimap: ({ponto_minimap.X}, {ponto_minimap.Y})");
-		maplog($"  📐 Offset do centro: ({dx_minimap:+0;-0}, {dy_minimap:+0;-0}) pixels");
-		maplog($"  🌍 Posição no mundo: ({mob_mundo_x}, {mob_mundo_y})");
-		maplog($"  📏 Distância do player: {distancia_metros:0.1f} metros");
 
-		// Validação de proximidade
-		if (distancia_metros < 1.0f)
+		// Somente se a calibração estiver disponível
+		if ((centro_minimap.X != 0 || centro_minimap.Y != 0) &&
+			(fator_x_calibrado != 0 || fator_y_calibrado != 0))
 		{
-		 maplog($"  ⚠️ MUITO PRÓXIMO - pode ser impreciso");
+		 // Atualiza posição do player
+		 checkme();
+
+		 int dx_minimap = ponto_minimap.X - cx;
+		 int dy_minimap = ponto_minimap.Y - cy;
+
+		 int dx_mundo = (int)(dx_minimap * fator_x_calibrado);
+		 int dy_mundo = (int)(dy_minimap * fator_y_calibrado);
+
+		 int mob_mundo_x = me.pos.x + dx_mundo;
+		 int mob_mundo_y = me.pos.y + dy_mundo;
+
+		 double distancia_mundo = Math.Sqrt((double)dx_mundo * dx_mundo + (double)dy_mundo * dy_mundo);
+		 float distancia_metros = (float)(distancia_mundo / 100.0);
+
+		 maplog($"  📐 Offset do centro: ({dx_minimap:+0;-0}, {dy_minimap:+0;-0}) pixels");
+		 maplog($"  🌍 Posição no mundo: ({mob_mundo_x}, {mob_mundo_y})");
+		 maplog($"  📏 Distância do player: {distancia_metros:0.1f} metros");
+
+		 if (distancia_metros < 1.0f)
+		 {
+			maplog($"  ⚠️ MUITO PRÓXIMO - pode ser impreciso");
+		 }
+		 else if (distancia_metros > 50.0f)
+		 {
+			maplog($"  ⚠️ MUITO DISTANTE - pode estar fora do range");
+		 }
 		}
-		else if (distancia_metros > 50.0f)
+		else
 		{
-		 maplog($"  ⚠️ MUITO DISTANTE - pode estar fora do range");
+		 maplog($"  ⚠️ Calibração não carregada - mostrando apenas posição bruta.");
 		}
 
 		maplog("");
 	 }
 
-	 maplog("=== TODAS AS POSIÇÕES CALCULADAS ===");
-	 maplog($"💡 Use essas coordenadas para testar a precisão dos fatores!");
+	 maplog("=== TODAS AS POSIÇÕES PROCESSADAS ===");
 	}
 
+
+
 	// --------------------------------------------
-	// NOVA FUNÇÃO: BUSCA TODOS OS PONTOS VERMELHOS
+	// BUSCA TODOS OS PONTOS VERMELHOS (VERSÃO SCORE)
+	// Usa score ≥ tb_redscore.Text para definir "vermelhidão"
 	// --------------------------------------------
-	List<Point> busca_todos_pontos_vermelhos(out int quantidade_encontrada)
+	public List<Point> busca_todos_pontos_vermelhos(out int quantidade_encontrada)
 	{
 	 quantidade_encontrada = 0;
 	 List<Point> pontos_encontrados = new List<Point>();
 
-	 if (pb_minimap.Image == null)
+	 if (pb_minimap == null || pb_minimap.Image == null)
+	 {
+		maplog("🔍 DEBUG: PictureBox ou imagem do minimapa não disponível.");
 		return pontos_encontrados;
+	 }
 
 	 Bitmap bmp = (Bitmap)pb_minimap.Image;
 
-	 // USA OS MESMOS VALORES DE COR DO find_tracked() ORIGINAL
-	 int lim_r = 200, lim_r2 = 255;  // vermelho
-	 int lim_g = 0, lim_g2 = 100;    // verde  
-	 int lim_b = 0, lim_b2 = 100;    // azul
-	 int dist_max = 6;               // distância para agrupar
+	 // Lê o valor de corte do textbox
+	 if (!int.TryParse(tb_redscore.Text, out int corte_score))
+	 {
+		maplog("❌ ERRO: Valor de corte inválido em tb_redscore.");
+		return pontos_encontrados;
+	 }
 
-	 // MESMO ALGORITMO DE AGRUPAMENTO DO find_tracked()
+	 int dist_max = 6;
 	 List<List<Point>> grupos = new List<List<Point>>();
 
 	 for (int y = 0; y < bmp.Height; y++)
@@ -10668,9 +10623,11 @@ else
 		{
 		 Color c = bmp.GetPixel(x, y);
 
-		 if (c.R >= lim_r && c.R <= lim_r2 &&
-				 c.G >= lim_g && c.G <= lim_g2 &&
-				 c.B >= lim_b && c.B <= lim_b2)
+		 // Score por fórmula 2*R - G - B
+		 int score = (2 * c.R) - c.G - c.B;
+
+		 // Verifica se o pixel tem score suficiente para ser considerado vermelho
+		 if (score >= corte_score)
 		 {
 			Point p = new Point(x, y);
 			bool agrupado = false;
@@ -10693,18 +10650,17 @@ else
 
 			if (!agrupado)
 			{
-			 List<Point> novo = new List<Point>();
-			 novo.Add(p);
+			 List<Point> novo = new List<Point> { p };
 			 grupos.Add(novo);
 			}
 		 }
 		}
 	 }
 
-	 // CONVERTE GRUPOS EM PONTOS CENTRAIS
+	 // Processa grupos encontrados
 	 foreach (var grupo in grupos)
 	 {
-		if (grupo.Count >= 3) // grupo válido
+		if (grupo.Count >= 3)
 		{
 		 int soma_x = 0, soma_y = 0;
 		 foreach (Point p in grupo)
@@ -10719,8 +10675,123 @@ else
 	 }
 
 	 quantidade_encontrada = pontos_encontrados.Count;
+
+	 if (quantidade_encontrada == 0)
+		maplog("🔍 DEBUG: Nenhum grupo vermelho detectado com score ≥ " + corte_score);
+	 else
+		maplog($"🔍 DEBUG: {quantidade_encontrada} grupo(s) vermelho(s) detectado(s) com score ≥ {corte_score}.");
+
 	 return pontos_encontrados;
 	}
+
+
+	private void button23_Click_2(object sender, EventArgs e)
+	{
+	 if (pb_minimap.Image == null)
+	 {
+		maplog("❌ Sem imagem no minimap para analisar.");
+		return;
+	 }
+
+	 Bitmap bmp = new Bitmap(pb_minimap.Image);
+
+	 List<(int x, int y, int r, int g, int b, int score)> top10 = new List<(int, int, int, int, int, int)>();
+
+	 for (int x = 0; x < bmp.Width; x++)
+	 {
+		for (int y = 0; y < bmp.Height; y++)
+		{
+		 Color c = bmp.GetPixel(x, y);
+		 int score = (2 * c.R) - c.G - c.B;
+
+		 if (top10.Count < 10)
+		 {
+			top10.Add((x, y, c.R, c.G, c.B, score));
+			top10 = top10.OrderByDescending(p => p.score).ToList();
+		 }
+		 else if (score > top10[9].score)
+		 {
+			top10[9] = (x, y, c.R, c.G, c.B, score);
+			top10 = top10.OrderByDescending(p => p.score).ToList();
+		 }
+		}
+	 }
+
+	 bmp.Dispose();
+
+	 if (top10.Count > 0)
+	 {
+		maplog("🔍 Top 10 pixels mais vermelhos:");
+		foreach (var p in top10)
+		{
+		 maplog($"📍 {p.x},{p.y} - Escore: {p.score} | Cor: R={p.r}, G={p.g}, B={p.b}");
+		}
+	 }
+	 else
+	 {
+		maplog("❌ Nenhum pixel vermelho encontrado.");
+	 }
+	}
+
+	private void bt_getscore_Click(object sender, EventArgs e)
+	{
+	 if (pb_minimap.Image == null)
+	 {
+		maplog("❌ Sem imagem carregada no minimap.");
+		return;
+	 }
+
+	 Bitmap bmp = new Bitmap(pb_minimap.Image);
+	 List<(int x, int y, int r, int g, int b, int score)> todos = new List<(int, int, int, int, int, int)>();
+
+	 // Escaneia todos os pixels da imagem
+	 for (int x = 0; x < bmp.Width; x++)
+	 {
+		for (int y = 0; y < bmp.Height; y++)
+		{
+		 Color c = bmp.GetPixel(x, y);
+		 int score = (2 * c.R) - c.G - c.B;
+		 todos.Add((x, y, c.R, c.G, c.B, score));
+		}
+	 }
+
+	 bmp.Dispose();
+
+	 // Ordena os pixels por score decrescente
+	 var ordenados = todos.OrderByDescending(p => p.score).ToList();
+
+	 // Se tiver menos de 5 pixels, aborta
+	 if (ordenados.Count < 5)
+	 {
+		maplog("❌ Não há pixels suficientes para calcular o corte.");
+		return;
+	 }
+
+	 // Pega o maior score entre os 5 primeiros
+	 int maior = ordenados[0].score;
+	 int corte = maior - 30;
+
+	 // Define o valor do corte no textbox
+	 tb_redscore.Text = corte.ToString();
+
+	 // Log dos top 10 pixels
+	 maplog($"🔍 Top 10 pixels mais vermelhos (score ≥ {corte}):");
+	 for (int i = 0; i < Math.Min(10, ordenados.Count); i++)
+	 {
+		var p = ordenados[i];
+		maplog($"📍 {p.x},{p.y} - Escore: {p.score} | Cor: R={p.r}, G={p.g}, B={p.b}");
+	 }
+	}
+
+	private void button25_Click(object sender, EventArgs e)
+	{
+	 checkme();
+	 tb_probe_x.Text = me.pos.x.ToString();
+	 tb_probe_y.Text = me.pos.y.ToString();
+	}
+
+
+
 
 	// MULTI THREAD DE ATUALIZAÇÃO DAS STATS NO BACKGROUND 
 

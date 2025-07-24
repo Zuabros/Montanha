@@ -219,6 +219,9 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.tb_maxdistred = new System.Windows.Forms.TextBox();
+	 this.label61 = new System.Windows.Forms.Label();
+	 this.cb_greedy_hunter = new System.Windows.Forms.CheckBox();
 	 this.tb_rangedhp = new System.Windows.Forms.TextBox();
 	 this.label57 = new System.Windows.Forms.Label();
 	 this.tb_rangedseconds = new System.Windows.Forms.TextBox();
@@ -312,6 +315,15 @@ namespace Discord
 	 this.button14 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.tabPage10 = new System.Windows.Forms.TabPage();
+	 this.bt_show_red_positions = new System.Windows.Forms.Button();
+	 this.label60 = new System.Windows.Forms.Label();
+	 this.bt_calibra_fatores = new System.Windows.Forms.Button();
+	 this.tb_probe_y = new System.Windows.Forms.TextBox();
+	 this.tb_probe_x = new System.Windows.Forms.TextBox();
+	 this.bt_find_tracked = new System.Windows.Forms.Button();
+	 this.button22 = new System.Windows.Forms.Button();
+	 this.bt_capture_minimap = new System.Windows.Forms.Button();
+	 this.bt_find_minimap = new System.Windows.Forms.Button();
 	 this.label59 = new System.Windows.Forms.Label();
 	 this.tb_maplog = new System.Windows.Forms.TextBox();
 	 this.pb_minimap = new System.Windows.Forms.PictureBox();
@@ -352,18 +364,14 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.bt_find_minimap = new System.Windows.Forms.Button();
-	 this.bt_capture_minimap = new System.Windows.Forms.Button();
-	 this.button22 = new System.Windows.Forms.Button();
-	 this.bt_find_tracked = new System.Windows.Forms.Button();
-	 this.tb_probe_x = new System.Windows.Forms.TextBox();
-	 this.tb_probe_y = new System.Windows.Forms.TextBox();
-	 this.bt_calibra_fatores = new System.Windows.Forms.Button();
-	 this.label60 = new System.Windows.Forms.Label();
-	 this.bt_show_red_positions = new System.Windows.Forms.Button();
-	 this.cb_greedy_hunter = new System.Windows.Forms.CheckBox();
-	 this.textBox2 = new System.Windows.Forms.TextBox();
-	 this.label61 = new System.Windows.Forms.Label();
+	 this.button23 = new System.Windows.Forms.Button();
+	 this.tb_redscore = new System.Windows.Forms.TextBox();
+	 this.label62 = new System.Windows.Forms.Label();
+	 this.bt_getscore = new System.Windows.Forms.Button();
+	 this.label63 = new System.Windows.Forms.Label();
+	 this.tb_factory = new System.Windows.Forms.TextBox();
+	 this.tb_factorx = new System.Windows.Forms.TextBox();
+	 this.button25 = new System.Windows.Forms.Button();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -2448,7 +2456,7 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
-	 this.tabPage8.Controls.Add(this.textBox2);
+	 this.tabPage8.Controls.Add(this.tb_maxdistred);
 	 this.tabPage8.Controls.Add(this.label61);
 	 this.tabPage8.Controls.Add(this.cb_greedy_hunter);
 	 this.tabPage8.Controls.Add(this.tb_rangedhp);
@@ -2476,6 +2484,35 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // tb_maxdistred
+	 // 
+	 this.tb_maxdistred.Location = new System.Drawing.Point(267, 234);
+	 this.tb_maxdistred.Name = "tb_maxdistred";
+	 this.tb_maxdistred.Size = new System.Drawing.Size(35, 20);
+	 this.tb_maxdistred.TabIndex = 70;
+	 this.tb_maxdistred.Text = "200";
+	 // 
+	 // label61
+	 // 
+	 this.label61.AutoSize = true;
+	 this.label61.Location = new System.Drawing.Point(165, 237);
+	 this.label61.Name = "label61";
+	 this.label61.Size = new System.Drawing.Size(96, 13);
+	 this.label61.TabIndex = 69;
+	 this.label61.Text = "Max Dist from Path";
+	 // 
+	 // cb_greedy_hunter
+	 // 
+	 this.cb_greedy_hunter.AutoSize = true;
+	 this.cb_greedy_hunter.Checked = true;
+	 this.cb_greedy_hunter.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_greedy_hunter.Location = new System.Drawing.Point(6, 237);
+	 this.cb_greedy_hunter.Name = "cb_greedy_hunter";
+	 this.cb_greedy_hunter.Size = new System.Drawing.Size(133, 17);
+	 this.cb_greedy_hunter.TabIndex = 68;
+	 this.cb_greedy_hunter.Text = "Greedy Hunter (Radar)";
+	 this.cb_greedy_hunter.UseVisualStyleBackColor = true;
 	 // 
 	 // tb_rangedhp
 	 // 
@@ -3386,6 +3423,14 @@ namespace Discord
 	 // tabPage10
 	 // 
 	 this.tabPage10.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage10.Controls.Add(this.button25);
+	 this.tabPage10.Controls.Add(this.tb_factory);
+	 this.tabPage10.Controls.Add(this.tb_factorx);
+	 this.tabPage10.Controls.Add(this.label63);
+	 this.tabPage10.Controls.Add(this.bt_getscore);
+	 this.tabPage10.Controls.Add(this.label62);
+	 this.tabPage10.Controls.Add(this.tb_redscore);
+	 this.tabPage10.Controls.Add(this.button23);
 	 this.tabPage10.Controls.Add(this.bt_show_red_positions);
 	 this.tabPage10.Controls.Add(this.label60);
 	 this.tabPage10.Controls.Add(this.bt_calibra_fatores);
@@ -3407,6 +3452,92 @@ namespace Discord
 	 this.tabPage10.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage10.TabIndex = 5;
 	 this.tabPage10.Text = "Greedy";
+	 // 
+	 // bt_show_red_positions
+	 // 
+	 this.bt_show_red_positions.Location = new System.Drawing.Point(582, 426);
+	 this.bt_show_red_positions.Name = "bt_show_red_positions";
+	 this.bt_show_red_positions.Size = new System.Drawing.Size(88, 23);
+	 this.bt_show_red_positions.TabIndex = 77;
+	 this.bt_show_red_positions.Text = "Testa";
+	 this.bt_show_red_positions.UseVisualStyleBackColor = true;
+	 this.bt_show_red_positions.Click += new System.EventHandler(this.bt_show_red_positions_Click);
+	 // 
+	 // label60
+	 // 
+	 this.label60.AutoSize = true;
+	 this.label60.Location = new System.Drawing.Point(501, 352);
+	 this.label60.Name = "label60";
+	 this.label60.Size = new System.Drawing.Size(60, 13);
+	 this.label60.TabIndex = 76;
+	 this.label60.Text = "Dot Coords";
+	 // 
+	 // bt_calibra_fatores
+	 // 
+	 this.bt_calibra_fatores.Location = new System.Drawing.Point(654, 372);
+	 this.bt_calibra_fatores.Name = "bt_calibra_fatores";
+	 this.bt_calibra_fatores.Size = new System.Drawing.Size(36, 23);
+	 this.bt_calibra_fatores.TabIndex = 75;
+	 this.bt_calibra_fatores.Text = "Calc";
+	 this.bt_calibra_fatores.UseVisualStyleBackColor = true;
+	 this.bt_calibra_fatores.Click += new System.EventHandler(this.bt_calibra_fatores_Click);
+	 // 
+	 // tb_probe_y
+	 // 
+	 this.tb_probe_y.Location = new System.Drawing.Point(611, 349);
+	 this.tb_probe_y.Name = "tb_probe_y";
+	 this.tb_probe_y.Size = new System.Drawing.Size(37, 20);
+	 this.tb_probe_y.TabIndex = 74;
+	 this.tb_probe_y.Text = "1969";
+	 // 
+	 // tb_probe_x
+	 // 
+	 this.tb_probe_x.AccessibleRole = System.Windows.Forms.AccessibleRole.Border;
+	 this.tb_probe_x.Location = new System.Drawing.Point(567, 349);
+	 this.tb_probe_x.Name = "tb_probe_x";
+	 this.tb_probe_x.Size = new System.Drawing.Size(38, 20);
+	 this.tb_probe_x.TabIndex = 73;
+	 this.tb_probe_x.Text = "8192";
+	 // 
+	 // bt_find_tracked
+	 // 
+	 this.bt_find_tracked.Location = new System.Drawing.Point(201, 168);
+	 this.bt_find_tracked.Name = "bt_find_tracked";
+	 this.bt_find_tracked.Size = new System.Drawing.Size(75, 23);
+	 this.bt_find_tracked.TabIndex = 72;
+	 this.bt_find_tracked.Text = "button24";
+	 this.bt_find_tracked.UseVisualStyleBackColor = true;
+	 this.bt_find_tracked.Click += new System.EventHandler(this.bt_find_tracked_Click_1);
+	 // 
+	 // button22
+	 // 
+	 this.button22.Location = new System.Drawing.Point(108, 12);
+	 this.button22.Name = "button22";
+	 this.button22.Size = new System.Drawing.Size(123, 23);
+	 this.button22.TabIndex = 70;
+	 this.button22.Text = "Salva Congigurações";
+	 this.button22.UseVisualStyleBackColor = true;
+	 this.button22.Click += new System.EventHandler(this.button22_Click_1);
+	 // 
+	 // bt_capture_minimap
+	 // 
+	 this.bt_capture_minimap.Location = new System.Drawing.Point(582, 262);
+	 this.bt_capture_minimap.Name = "bt_capture_minimap";
+	 this.bt_capture_minimap.Size = new System.Drawing.Size(112, 23);
+	 this.bt_capture_minimap.TabIndex = 69;
+	 this.bt_capture_minimap.Text = "Desenha Minimap";
+	 this.bt_capture_minimap.UseVisualStyleBackColor = true;
+	 this.bt_capture_minimap.Click += new System.EventHandler(this.bt_capture_minimap_Click);
+	 // 
+	 // bt_find_minimap
+	 // 
+	 this.bt_find_minimap.Location = new System.Drawing.Point(604, 291);
+	 this.bt_find_minimap.Name = "bt_find_minimap";
+	 this.bt_find_minimap.Size = new System.Drawing.Size(93, 23);
+	 this.bt_find_minimap.TabIndex = 68;
+	 this.bt_find_minimap.Text = "Calibra Minimap";
+	 this.bt_find_minimap.UseVisualStyleBackColor = true;
+	 this.bt_find_minimap.Click += new System.EventHandler(this.bt_find_minimap_Click);
 	 // 
 	 // label59
 	 // 
@@ -3772,120 +3903,78 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // bt_find_minimap
+	 // button23
 	 // 
-	 this.bt_find_minimap.Location = new System.Drawing.Point(9, 12);
-	 this.bt_find_minimap.Name = "bt_find_minimap";
-	 this.bt_find_minimap.Size = new System.Drawing.Size(93, 23);
-	 this.bt_find_minimap.TabIndex = 68;
-	 this.bt_find_minimap.Text = "Calibra Minimap";
-	 this.bt_find_minimap.UseVisualStyleBackColor = true;
-	 this.bt_find_minimap.Click += new System.EventHandler(this.bt_find_minimap_Click);
+	 this.button23.Location = new System.Drawing.Point(239, 251);
+	 this.button23.Name = "button23";
+	 this.button23.Size = new System.Drawing.Size(75, 23);
+	 this.button23.TabIndex = 78;
+	 this.button23.Text = "ACHA RED DOT";
+	 this.button23.UseVisualStyleBackColor = true;
+	 this.button23.Click += new System.EventHandler(this.button23_Click_2);
 	 // 
-	 // bt_capture_minimap
+	 // tb_redscore
 	 // 
-	 this.bt_capture_minimap.Location = new System.Drawing.Point(237, 12);
-	 this.bt_capture_minimap.Name = "bt_capture_minimap";
-	 this.bt_capture_minimap.Size = new System.Drawing.Size(107, 23);
-	 this.bt_capture_minimap.TabIndex = 69;
-	 this.bt_capture_minimap.Text = "Desenha Minimap";
-	 this.bt_capture_minimap.UseVisualStyleBackColor = true;
-	 this.bt_capture_minimap.Click += new System.EventHandler(this.bt_capture_minimap_Click);
+	 this.tb_redscore.Location = new System.Drawing.Point(602, 322);
+	 this.tb_redscore.Name = "tb_redscore";
+	 this.tb_redscore.Size = new System.Drawing.Size(46, 20);
+	 this.tb_redscore.TabIndex = 79;
+	 this.tb_redscore.Text = "350";
 	 // 
-	 // button22
+	 // label62
 	 // 
-	 this.button22.Location = new System.Drawing.Point(108, 12);
-	 this.button22.Name = "button22";
-	 this.button22.Size = new System.Drawing.Size(123, 23);
-	 this.button22.TabIndex = 70;
-	 this.button22.Text = "Salva Congigurações";
-	 this.button22.UseVisualStyleBackColor = true;
-	 this.button22.Click += new System.EventHandler(this.button22_Click_1);
+	 this.label62.AutoSize = true;
+	 this.label62.Location = new System.Drawing.Point(542, 328);
+	 this.label62.Name = "label62";
+	 this.label62.Size = new System.Drawing.Size(58, 13);
+	 this.label62.TabIndex = 80;
+	 this.label62.Text = "Red Score";
 	 // 
-	 // bt_find_tracked
+	 // bt_getscore
 	 // 
-	 this.bt_find_tracked.Location = new System.Drawing.Point(201, 168);
-	 this.bt_find_tracked.Name = "bt_find_tracked";
-	 this.bt_find_tracked.Size = new System.Drawing.Size(75, 23);
-	 this.bt_find_tracked.TabIndex = 72;
-	 this.bt_find_tracked.Text = "button24";
-	 this.bt_find_tracked.UseVisualStyleBackColor = true;
-	 this.bt_find_tracked.Click += new System.EventHandler(this.bt_find_tracked_Click_1);
+	 this.bt_getscore.Location = new System.Drawing.Point(654, 320);
+	 this.bt_getscore.Name = "bt_getscore";
+	 this.bt_getscore.Size = new System.Drawing.Size(45, 23);
+	 this.bt_getscore.TabIndex = 81;
+	 this.bt_getscore.Text = "Get!";
+	 this.bt_getscore.UseVisualStyleBackColor = true;
+	 this.bt_getscore.Click += new System.EventHandler(this.bt_getscore_Click);
 	 // 
-	 // tb_probe_x
+	 // label63
 	 // 
-	 this.tb_probe_x.AccessibleRole = System.Windows.Forms.AccessibleRole.Border;
-	 this.tb_probe_x.Location = new System.Drawing.Point(108, 71);
-	 this.tb_probe_x.Name = "tb_probe_x";
-	 this.tb_probe_x.Size = new System.Drawing.Size(38, 20);
-	 this.tb_probe_x.TabIndex = 73;
-	 this.tb_probe_x.Text = "1527";
+	 this.label63.AutoSize = true;
+	 this.label63.Location = new System.Drawing.Point(503, 380);
+	 this.label63.Name = "label63";
+	 this.label63.Size = new System.Drawing.Size(59, 13);
+	 this.label63.TabIndex = 83;
+	 this.label63.Text = "Factor X/Y";
 	 // 
-	 // tb_probe_y
+	 // tb_factory
 	 // 
-	 this.tb_probe_y.Location = new System.Drawing.Point(152, 71);
-	 this.tb_probe_y.Name = "tb_probe_y";
-	 this.tb_probe_y.Size = new System.Drawing.Size(37, 20);
-	 this.tb_probe_y.TabIndex = 74;
-	 this.tb_probe_y.Text = "7146";
+	 this.tb_factory.Location = new System.Drawing.Point(611, 375);
+	 this.tb_factory.Name = "tb_factory";
+	 this.tb_factory.Size = new System.Drawing.Size(37, 20);
+	 this.tb_factory.TabIndex = 86;
+	 this.tb_factory.Text = "7146";
 	 // 
-	 // bt_calibra_fatores
+	 // tb_factorx
 	 // 
-	 this.bt_calibra_fatores.Location = new System.Drawing.Point(108, 41);
-	 this.bt_calibra_fatores.Name = "bt_calibra_fatores";
-	 this.bt_calibra_fatores.Size = new System.Drawing.Size(123, 23);
-	 this.bt_calibra_fatores.TabIndex = 75;
-	 this.bt_calibra_fatores.Text = "Calibra Fatores";
-	 this.bt_calibra_fatores.UseVisualStyleBackColor = true;
-	 this.bt_calibra_fatores.Click += new System.EventHandler(this.bt_calibra_fatores_Click);
+	 this.tb_factorx.AccessibleRole = System.Windows.Forms.AccessibleRole.Border;
+	 this.tb_factorx.Location = new System.Drawing.Point(567, 375);
+	 this.tb_factorx.Name = "tb_factorx";
+	 this.tb_factorx.Size = new System.Drawing.Size(38, 20);
+	 this.tb_factorx.TabIndex = 85;
+	 this.tb_factorx.Text = "1527";
 	 // 
-	 // label60
+	 // button25
 	 // 
-	 this.label60.AutoSize = true;
-	 this.label60.Location = new System.Drawing.Point(26, 74);
-	 this.label60.Name = "label60";
-	 this.label60.Size = new System.Drawing.Size(70, 13);
-	 this.label60.TabIndex = 76;
-	 this.label60.Text = "Guard Parker";
-	 // 
-	 // bt_show_red_positions
-	 // 
-	 this.bt_show_red_positions.Location = new System.Drawing.Point(252, 41);
-	 this.bt_show_red_positions.Name = "bt_show_red_positions";
-	 this.bt_show_red_positions.Size = new System.Drawing.Size(75, 23);
-	 this.bt_show_red_positions.TabIndex = 77;
-	 this.bt_show_red_positions.Text = "button23";
-	 this.bt_show_red_positions.UseVisualStyleBackColor = true;
-	 this.bt_show_red_positions.Click += new System.EventHandler(this.bt_show_red_positions_Click);
-	 // 
-	 // cb_greedy_hunter
-	 // 
-	 this.cb_greedy_hunter.AutoSize = true;
-	 this.cb_greedy_hunter.Checked = true;
-	 this.cb_greedy_hunter.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_greedy_hunter.Location = new System.Drawing.Point(6, 237);
-	 this.cb_greedy_hunter.Name = "cb_greedy_hunter";
-	 this.cb_greedy_hunter.Size = new System.Drawing.Size(133, 17);
-	 this.cb_greedy_hunter.TabIndex = 68;
-	 this.cb_greedy_hunter.Text = "Greedy Hunter (Radar)";
-	 this.cb_greedy_hunter.UseVisualStyleBackColor = true;
-	 // 
-	 // textBox2
-	 // 
-	 this.textBox2.Location = new System.Drawing.Point(267, 234);
-	 this.textBox2.Name = "textBox2";
-	 this.textBox2.Size = new System.Drawing.Size(35, 20);
-	 this.textBox2.TabIndex = 70;
-	 this.textBox2.Text = "200";
-	 // 
-	 // label61
-	 // 
-	 this.label61.AutoSize = true;
-	 this.label61.Location = new System.Drawing.Point(165, 237);
-	 this.label61.Name = "label61";
-	 this.label61.Size = new System.Drawing.Size(96, 13);
-	 this.label61.TabIndex = 69;
-	 this.label61.Text = "Max Dist from Path";
+	 this.button25.Location = new System.Drawing.Point(649, 349);
+	 this.button25.Name = "button25";
+	 this.button25.Size = new System.Drawing.Size(45, 20);
+	 this.button25.TabIndex = 87;
+	 this.button25.Text = "Set";
+	 this.button25.UseVisualStyleBackColor = true;
+	 this.button25.Click += new System.EventHandler(this.button25_Click);
 	 // 
 	 // Form1
 	 // 
@@ -4301,8 +4390,16 @@ namespace Discord
 	private Label label60;
 	private Button bt_show_red_positions;
 	private CheckBox cb_greedy_hunter;
-	private TextBox textBox2;
+	private TextBox tb_maxdistred;
 	private Label label61;
+	private Button button23;
+	private Button bt_getscore;
+	private Label label62;
+	private TextBox tb_redscore;
+	private Label label63;
+	private Button button25;
+	private TextBox tb_factory;
+	private TextBox tb_factorx;
  }
 }
 
