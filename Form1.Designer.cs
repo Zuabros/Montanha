@@ -315,6 +315,14 @@ namespace Discord
 	 this.button14 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.tabPage10 = new System.Windows.Forms.TabPage();
+	 this.button25 = new System.Windows.Forms.Button();
+	 this.tb_factory = new System.Windows.Forms.TextBox();
+	 this.tb_factorx = new System.Windows.Forms.TextBox();
+	 this.label63 = new System.Windows.Forms.Label();
+	 this.bt_getscore = new System.Windows.Forms.Button();
+	 this.label62 = new System.Windows.Forms.Label();
+	 this.tb_redscore = new System.Windows.Forms.TextBox();
+	 this.button23 = new System.Windows.Forms.Button();
 	 this.bt_show_red_positions = new System.Windows.Forms.Button();
 	 this.label60 = new System.Windows.Forms.Label();
 	 this.bt_calibra_fatores = new System.Windows.Forms.Button();
@@ -364,14 +372,11 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.button23 = new System.Windows.Forms.Button();
-	 this.tb_redscore = new System.Windows.Forms.TextBox();
-	 this.label62 = new System.Windows.Forms.Label();
-	 this.bt_getscore = new System.Windows.Forms.Button();
-	 this.label63 = new System.Windows.Forms.Label();
-	 this.tb_factory = new System.Windows.Forms.TextBox();
-	 this.tb_factorx = new System.Windows.Forms.TextBox();
-	 this.button25 = new System.Windows.Forms.Button();
+	 this.tb_feigndeathat = new System.Windows.Forms.TextBox();
+	 this.label64 = new System.Windows.Forms.Label();
+	 this.cb_onlybeast = new System.Windows.Forms.CheckBox();
+	 this.cb_scanneutral = new System.Windows.Forms.CheckBox();
+	 this.cb_nopet = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -830,6 +835,8 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_scanneutral);
+	 this.tabPage2.Controls.Add(this.cb_onlybeast);
 	 this.tabPage2.Controls.Add(this.cb_noelemental);
 	 this.tabPage2.Controls.Add(this.cb_allowcleave);
 	 this.tabPage2.Controls.Add(this.cb_prefer_distant);
@@ -2456,6 +2463,9 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.cb_nopet);
+	 this.tabPage8.Controls.Add(this.tb_feigndeathat);
+	 this.tabPage8.Controls.Add(this.label64);
 	 this.tabPage8.Controls.Add(this.tb_maxdistred);
 	 this.tabPage8.Controls.Add(this.label61);
 	 this.tabPage8.Controls.Add(this.cb_greedy_hunter);
@@ -3453,6 +3463,79 @@ namespace Discord
 	 this.tabPage10.TabIndex = 5;
 	 this.tabPage10.Text = "Greedy";
 	 // 
+	 // button25
+	 // 
+	 this.button25.Location = new System.Drawing.Point(649, 349);
+	 this.button25.Name = "button25";
+	 this.button25.Size = new System.Drawing.Size(45, 20);
+	 this.button25.TabIndex = 87;
+	 this.button25.Text = "Set";
+	 this.button25.UseVisualStyleBackColor = true;
+	 this.button25.Click += new System.EventHandler(this.button25_Click);
+	 // 
+	 // tb_factory
+	 // 
+	 this.tb_factory.Location = new System.Drawing.Point(611, 375);
+	 this.tb_factory.Name = "tb_factory";
+	 this.tb_factory.Size = new System.Drawing.Size(37, 20);
+	 this.tb_factory.TabIndex = 86;
+	 this.tb_factory.Text = "7146";
+	 // 
+	 // tb_factorx
+	 // 
+	 this.tb_factorx.AccessibleRole = System.Windows.Forms.AccessibleRole.Border;
+	 this.tb_factorx.Location = new System.Drawing.Point(567, 375);
+	 this.tb_factorx.Name = "tb_factorx";
+	 this.tb_factorx.Size = new System.Drawing.Size(38, 20);
+	 this.tb_factorx.TabIndex = 85;
+	 this.tb_factorx.Text = "1527";
+	 // 
+	 // label63
+	 // 
+	 this.label63.AutoSize = true;
+	 this.label63.Location = new System.Drawing.Point(503, 380);
+	 this.label63.Name = "label63";
+	 this.label63.Size = new System.Drawing.Size(59, 13);
+	 this.label63.TabIndex = 83;
+	 this.label63.Text = "Factor X/Y";
+	 // 
+	 // bt_getscore
+	 // 
+	 this.bt_getscore.Location = new System.Drawing.Point(654, 320);
+	 this.bt_getscore.Name = "bt_getscore";
+	 this.bt_getscore.Size = new System.Drawing.Size(45, 23);
+	 this.bt_getscore.TabIndex = 81;
+	 this.bt_getscore.Text = "Get!";
+	 this.bt_getscore.UseVisualStyleBackColor = true;
+	 this.bt_getscore.Click += new System.EventHandler(this.bt_getscore_Click);
+	 // 
+	 // label62
+	 // 
+	 this.label62.AutoSize = true;
+	 this.label62.Location = new System.Drawing.Point(542, 328);
+	 this.label62.Name = "label62";
+	 this.label62.Size = new System.Drawing.Size(58, 13);
+	 this.label62.TabIndex = 80;
+	 this.label62.Text = "Red Score";
+	 // 
+	 // tb_redscore
+	 // 
+	 this.tb_redscore.Location = new System.Drawing.Point(602, 322);
+	 this.tb_redscore.Name = "tb_redscore";
+	 this.tb_redscore.Size = new System.Drawing.Size(46, 20);
+	 this.tb_redscore.TabIndex = 79;
+	 this.tb_redscore.Text = "350";
+	 // 
+	 // button23
+	 // 
+	 this.button23.Location = new System.Drawing.Point(239, 251);
+	 this.button23.Name = "button23";
+	 this.button23.Size = new System.Drawing.Size(75, 23);
+	 this.button23.TabIndex = 78;
+	 this.button23.Text = "ACHA RED DOT";
+	 this.button23.UseVisualStyleBackColor = true;
+	 this.button23.Click += new System.EventHandler(this.button23_Click_2);
+	 // 
 	 // bt_show_red_positions
 	 // 
 	 this.bt_show_red_positions.Location = new System.Drawing.Point(582, 426);
@@ -3903,78 +3986,56 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // button23
+	 // tb_feigndeathat
 	 // 
-	 this.button23.Location = new System.Drawing.Point(239, 251);
-	 this.button23.Name = "button23";
-	 this.button23.Size = new System.Drawing.Size(75, 23);
-	 this.button23.TabIndex = 78;
-	 this.button23.Text = "ACHA RED DOT";
-	 this.button23.UseVisualStyleBackColor = true;
-	 this.button23.Click += new System.EventHandler(this.button23_Click_2);
+	 this.tb_feigndeathat.Location = new System.Drawing.Point(98, 264);
+	 this.tb_feigndeathat.Name = "tb_feigndeathat";
+	 this.tb_feigndeathat.Size = new System.Drawing.Size(26, 20);
+	 this.tb_feigndeathat.TabIndex = 72;
+	 this.tb_feigndeathat.Text = "90";
 	 // 
-	 // tb_redscore
+	 // label64
 	 // 
-	 this.tb_redscore.Location = new System.Drawing.Point(602, 322);
-	 this.tb_redscore.Name = "tb_redscore";
-	 this.tb_redscore.Size = new System.Drawing.Size(46, 20);
-	 this.tb_redscore.TabIndex = 79;
-	 this.tb_redscore.Text = "350";
+	 this.label64.AutoSize = true;
+	 this.label64.Location = new System.Drawing.Point(15, 267);
+	 this.label64.Name = "label64";
+	 this.label64.Size = new System.Drawing.Size(77, 13);
+	 this.label64.TabIndex = 71;
+	 this.label64.Text = "Feign Death at";
 	 // 
-	 // label62
+	 // cb_onlybeast
 	 // 
-	 this.label62.AutoSize = true;
-	 this.label62.Location = new System.Drawing.Point(542, 328);
-	 this.label62.Name = "label62";
-	 this.label62.Size = new System.Drawing.Size(58, 13);
-	 this.label62.TabIndex = 80;
-	 this.label62.Text = "Red Score";
+	 this.cb_onlybeast.AutoSize = true;
+	 this.cb_onlybeast.Checked = true;
+	 this.cb_onlybeast.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_onlybeast.Location = new System.Drawing.Point(432, 59);
+	 this.cb_onlybeast.Name = "cb_onlybeast";
+	 this.cb_onlybeast.Size = new System.Drawing.Size(82, 17);
+	 this.cb_onlybeast.TabIndex = 83;
+	 this.cb_onlybeast.Text = "Only Beasts";
+	 this.cb_onlybeast.UseVisualStyleBackColor = true;
 	 // 
-	 // bt_getscore
+	 // cb_scanneutral
 	 // 
-	 this.bt_getscore.Location = new System.Drawing.Point(654, 320);
-	 this.bt_getscore.Name = "bt_getscore";
-	 this.bt_getscore.Size = new System.Drawing.Size(45, 23);
-	 this.bt_getscore.TabIndex = 81;
-	 this.bt_getscore.Text = "Get!";
-	 this.bt_getscore.UseVisualStyleBackColor = true;
-	 this.bt_getscore.Click += new System.EventHandler(this.bt_getscore_Click);
+	 this.cb_scanneutral.AutoSize = true;
+	 this.cb_scanneutral.Location = new System.Drawing.Point(6, 392);
+	 this.cb_scanneutral.Name = "cb_scanneutral";
+	 this.cb_scanneutral.Size = new System.Drawing.Size(60, 17);
+	 this.cb_scanneutral.TabIndex = 84;
+	 this.cb_scanneutral.Text = "Neutral";
+	 this.cb_scanneutral.UseVisualStyleBackColor = true;
 	 // 
-	 // label63
+	 // cb_nopet
 	 // 
-	 this.label63.AutoSize = true;
-	 this.label63.Location = new System.Drawing.Point(503, 380);
-	 this.label63.Name = "label63";
-	 this.label63.Size = new System.Drawing.Size(59, 13);
-	 this.label63.TabIndex = 83;
-	 this.label63.Text = "Factor X/Y";
-	 // 
-	 // tb_factory
-	 // 
-	 this.tb_factory.Location = new System.Drawing.Point(611, 375);
-	 this.tb_factory.Name = "tb_factory";
-	 this.tb_factory.Size = new System.Drawing.Size(37, 20);
-	 this.tb_factory.TabIndex = 86;
-	 this.tb_factory.Text = "7146";
-	 // 
-	 // tb_factorx
-	 // 
-	 this.tb_factorx.AccessibleRole = System.Windows.Forms.AccessibleRole.Border;
-	 this.tb_factorx.Location = new System.Drawing.Point(567, 375);
-	 this.tb_factorx.Name = "tb_factorx";
-	 this.tb_factorx.Size = new System.Drawing.Size(38, 20);
-	 this.tb_factorx.TabIndex = 85;
-	 this.tb_factorx.Text = "1527";
-	 // 
-	 // button25
-	 // 
-	 this.button25.Location = new System.Drawing.Point(649, 349);
-	 this.button25.Name = "button25";
-	 this.button25.Size = new System.Drawing.Size(45, 20);
-	 this.button25.TabIndex = 87;
-	 this.button25.Text = "Set";
-	 this.button25.UseVisualStyleBackColor = true;
-	 this.button25.Click += new System.EventHandler(this.button25_Click);
+	 this.cb_nopet.AutoSize = true;
+	 this.cb_nopet.Checked = true;
+	 this.cb_nopet.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_nopet.Location = new System.Drawing.Point(105, 12);
+	 this.cb_nopet.Name = "cb_nopet";
+	 this.cb_nopet.Size = new System.Drawing.Size(89, 17);
+	 this.cb_nopet.TabIndex = 73;
+	 this.cb_nopet.Text = "I have no pet";
+	 this.cb_nopet.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -4400,6 +4461,11 @@ namespace Discord
 	private Button button25;
 	private TextBox tb_factory;
 	private TextBox tb_factorx;
+	private TextBox tb_feigndeathat;
+	private Label label64;
+	private CheckBox cb_onlybeast;
+	private CheckBox cb_scanneutral;
+	private CheckBox cb_nopet;
  }
 }
 

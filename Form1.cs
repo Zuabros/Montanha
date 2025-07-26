@@ -2807,6 +2807,8 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		tipo = "highlevel"; // alvo de nível alto
 	 else if (tar.type == ELEMENTAL && elemental_patrol.Checked)
 		tipo = "elemental"; // alvo de nível alto
+	 else if (tar.mood == 0 && cb_scanneutral.Checked)
+		tipo = "neutral";
 
 	 if (me.hastarget && tipo != "")
 	 {
@@ -2860,6 +2862,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		// Log de depuração
 		//loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
 
+		if (cb_onlybeast.Checked && tar.type != BEAST) return false;
 		if (cb_pacifist.Checked) return false;
 		if (tar.hp == 0 || tar.morreu) return false;
 		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
@@ -3184,7 +3187,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 			 // espera global cooldown da mudança de aspecto (VERSÃO ORIGINAL - FUNCIONA!)
 			 int tic = 0;
-			 if (cb_cheetah.Checked)
+			 if (cb_cheetah.Checked && me.level >= 20)
 			 {
 				while (hunt.auto_shot_range_ok && !hunt.arcane_shot_up && !me.melee && tic < 20)
 				{
@@ -4225,7 +4228,7 @@ else if (me.classe == HUNTER)
 			if (perigo)
 			 aperta(FEIGNDEATH);
 		 }
-		 else if (me.mobs >= me.mobs_pet && me.mobs > 0 && hunt.feigndeath_up && me.hp < 80)
+		 else if (me.mobs >= me.mobs_pet && me.mobs > 0 && hunt.feigndeath_up && me.hp < atoi(tb_feigndeathat))
 		 {
 			aperta(FEIGNDEATH); // Aggro dump para pet
 		 }
@@ -5241,25 +5244,27 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		if (me.level >= 10) // Hunter ganha pet no level 10
 		{
 		 // CASO 1: Pet morto (has_pet = true mas pet_hp = 0)
-		 if (!hunt.has_pet  && hunt.revive_pet_up)
+		 if (!hunt.has_pet && hunt.revive_pet_up)
 		 {
 			loga("Pet morto detectado. Revivendo pet.");
 			para(); // para de andar para reviver
 
 			// Aguarda um momento para garantir que parou
 			wait(500);
-
+		 }
 			// Verifica se tem mana suficiente (Revive Pet custa mana)
-			if (!hunt.revive_pet_up)
+			if (!hunt.revive_pet_up && !hunt.has_pet)
 			{
 			 loga("Mana insuficiente para reviver pet. Esperando recuperação.");
-			 aperta(F12); // COMIDA/BEBIDA para recuperar mana
-			 while (!hunt.revive_pet_up && !me.combat)
+//			 aperta(F12); // COMIDA/BEBIDA para recuperar mana
+			int tempcount = 0;
+			 while (!hunt.revive_pet_up && !me.combat && tempcount<25)
 			 {
 				wait(1000);
+			 tempcount++;
 				checkme();
 			 }
-			}
+			
 
 			// Revive o pet
 			if (me.hp == 0 && me.mana == 0) // feign death
