@@ -414,6 +414,7 @@ namespace Discord
 	// public const int SUMMONPET = F2;     // já definido no Warlock - reutilizar
 	// F6 = ASSIST (já definido globalmente)
 	public const int GROWLTOGGLE = F3;         // Multi-Shot (para futuras implementações)
+	public const int BANDAGEH = F4; // Bandage Hunter (cura com bandagem)
 	public const int DETERRENCE = F7;         // Multi-Shot (para futuras implementações)
 	public const int DISENGAGE = F10;         // Multi-Shot (para futuras implementações)
 	public const int ASPECTMONKEY = UM;
@@ -773,6 +774,7 @@ namespace Discord
 	 carregar_waypoints(); // Chama o carregamento automático	 
 	 tab_nav.SelectedIndex = 0; // Seleciona a tabPage2 (índice 1) por padrão - debug purposes
 	 lb_log.Clear(); // limpa todos os itens da ListBox log
+	 tb_maplog.Clear(); // limpa o TextBox de log do mapa
 	 lb_combatlog.Clear(); // limpa todos os itens da ListBox combatlog
 	 carrega_loot(); // carrega frequencia de pontos de loot 
 	 checkme(); // verifica se o player está em combate e ativa o botao de stop
@@ -1401,7 +1403,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 
 	 // ------------------------------------------
-	 // PIXEL 9 – AGGRO FLAGS + MOOD (2 BITS)
+	 // PIXEL 9 – AGGRO FLAGS + MOOD + BANDAGE
 	 // ------------------------------------------
 	 // R: bit 0 = player_aggro (mob atacando player)
 	 //    bit 1 = pet_aggro (mob atacando pet)
@@ -1410,29 +1412,32 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 	 //               01 (4)  = amigável (mood = 1)
 	 //               10 (8)  = hostil (mood = -1)
 	 //               11 (12) = LIVRE
-	 //    bits 4-7 = LIVRES
+	 //    bit 4 = bandage_ready (tem bandage na bag e sem debuff Recently Bandaged)
+	 //    bits 5-7 = LIVRES
 	 // G: livre
 	 // B: livre
 	 // ------------------------------------------
-
 	 if (pixels.Count > 9)
 	 {
 		int r9 = pixels[9].r; // canal vermelho com as flags
 
 		// Lê as flags booleanas de aggro
 		tar.player_aggro = (r9 & 1) != 0;    // bit 0 = player tem aggro
-		tar.pet_aggro = (r9 & 2) != 0;      // bit 1 = pet tem aggro
+		tar.pet_aggro = (r9 & 2) != 0;       // bit 1 = pet tem aggro
+
+		// Lê a flag de bandage
+		me.bandage_up = (r9 & 16) != 0;   // bit 4 = bandage disponível
 
 		// Lê o mood do target (2 bits: 2-3)
-		int mood_bits = (r9 & 12) >> 2;     // extrai bits 2-3 e desloca para posição 0-1
+		int mood_bits = (r9 & 12) >> 2;      // extrai bits 2-3 e desloca para posição 0-1
 
 		// Decodifica mood baseado nos 2 bits
 		switch (mood_bits)
 		{
-		 case 0: tar.mood = 0; break;    // 00 = neutro
-		 case 1: tar.mood = 1; break;    // 01 = amigável 
-		 case 2: tar.mood = -1; break;    // 10 = hostil
-		 case 3: tar.mood = 0; break;    // 11 = reservado/padrão neutro
+		 case 0: tar.mood = 0; break;      // 00 = neutro
+		 case 1: tar.mood = 1; break;      // 01 = amigável 
+		 case 2: tar.mood = -1; break;     // 10 = hostil
+		 case 3: tar.mood = 0; break;      // 11 = reservado/padrão neutro
 		}
 	 }
 
@@ -2573,7 +2578,15 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 	 //aperta(WKEY, 2); // solta W ao chegar no destino
 	}
+	
+	// RESETA VARIAVEIS DE MOVIMENTO 
 	bool catando_planta = false;
+
+
+
+
+
+
 	//--------------------------------------------
 	/// MÉTODO HEARTHHOME - USADO PARA VOLTAR PARA A CIDADE COM HEARTHSTONE
 	//--------------------------------------------
@@ -2872,6 +2885,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		if (tar.level > me.level + atoi(tb_pullcap)) return false;
 		if (cb_nomurloc.Checked && tar.type == MURLOC) return false;
 		if (cb_noelemental.Checked && tar.type == ELEMENTAL) return false;
+		if (cb_noneutral.Checked && tar.mood == 0) return false; // não aceita neutro
 
 		// Bloqueia apenas humanóides NPC
 		if (cb_nohumanoid.Checked && tar.type == HUMANOID)
@@ -3200,7 +3214,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			 // =================================
 			 // SEQUÊNCIA DE ABERTURA RANGED
 			 // =================================
-
+			 nao_afoga(); // verifica se não está afogando
 			 checkme();
 			 virahunter(true);
 			 if (hunt.auto_shot_range_ok && !me.combat)
@@ -3267,7 +3281,8 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 							(Environment.TickCount - pullStartTime) < MAX_PULL_TIME)
 			 {
 				checkme();
-			 virahunter(true);
+				nao_afoga(); // verifica se não está afogando
+				virahunter(true);
 				// Sequência de prioridade durante ranged phase
 				if (hunt.serpent_sting_up && cb_serpentsting.Checked &&
 						!hunt.tar_serpent && tar.type != MECHANICAL && tar.type != ELEMENTAL)
@@ -3301,7 +3316,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 			// =================================
 			// FASE 4: TRANSIÇÃO PARA MELEE/VERIFICAÇÃO
 			// =================================
-
+			nao_afoga(); // verifica se não está afogando
 			checkme();
 			currentTime = Environment.TickCount;
 
@@ -3333,7 +3348,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 							me.hastarget)
 			 {
 				checkme();
-
+				nao_afoga(); // verifica se não está afogando
 				currentTime = Environment.TickCount;
 
 				// 🔥🔥🔥 GOTO RAIZ AQUI! 🔥🔥🔥
@@ -3936,6 +3951,15 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 int curdecay = decay.Current(tracker.Average); // exibe o decay atual em hp/min (sliding window); nos primeiros 10s usa média dos combates anteriores
 		 if (curdecay < 2000) tbdecay.Text = curdecay.ToString(); // exibe o decay atual no textbox 
 		}
+		// ------------------------------------------
+		// INICIALIZAÇÃO DO TICKER MULTIUSO DE TEMPO DE COMBATE
+		// ------------------------------------------
+		if (!ticker_inicializado)
+		{
+		 ticker_start_time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+		 ticker_inicializado = true;
+		}
+		tb_combattime.Text = $"{Math.Min(ticker_ms / 60000, 59):00}:{(ticker_ms / 1000 % 60):00}"; // atualiza stopwatch de combate no formato MM:SS
 
 
 		// --------------------------------
@@ -4143,11 +4167,11 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 int delay = atoi(tb_purify_delay); // lê delay desejado da toolbox (em segundos)
 		 bool podepurify = Environment.TickCount - last_purify > delay * 1000; // verifica se passou tempo suficiente
 
-		 if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
+		 if (cb_dwarf.Checked && me.racialready && !me.casting)                     // é anão e o racial está pronto
 		 {
 			int limiar = Convert.ToInt32(tb_stoneform_at.Text);     // lê o valor do limiar de HP do textbox
 			if (!me.dazed && (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease))
-			 aperta(STONEFORM);                                // ativa Stoneform se atender condições
+			 if (!me.casting) aperta(STONEFORM);                                // ativa Stoneform se atender condições
 		 }
 		 else if (me.level >= 8 // checa level
 			 && cb_purify.Checked // checkbox ativo
@@ -4172,19 +4196,12 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 		}
 
-	//----------------------------------
-// ROTINA DE COMBATE HUNTER (HCR)
-//----------------------------------
-else if (me.classe == HUNTER)
+		//----------------------------------
+		// ROTINA DE COMBATE HUNTER (HCR)
+		//----------------------------------
+		else if (me.classe == HUNTER)
 		{
-		 // ------------------------------------------
-		 // ATUALIZAÇÃO DO TICKER
-		 // ------------------------------------------
-		 if (!ticker_inicializado)
-		 {
-			ticker_start_time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-			ticker_inicializado = true;
-		 }
+		 bool isfeign() => me.hp == 0 && me.mana == 0; // verifica se está em feign death (proxy: hp e mana zerados)
 
 		 ticker_ms = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - ticker_start_time;
 
@@ -4213,8 +4230,6 @@ else if (me.classe == HUNTER)
 		 {
 			if (!me.melee)
 			 loga("Hunter: Corrigindo distância (fora de melee) (code 303).");
-			//else
-			//loga("Interact de rotina: 305."); // loga o código de interação
 			aperta(INTERACT);
 		 }
 
@@ -4241,20 +4256,18 @@ else if (me.classe == HUNTER)
 				 (me.mobs > 1 && hunt.has_pet) ||
 				 (hunt.pet_hp < 90 && hunt.pet_hp > 1) ||
 				 (hunt.has_pet && (
-						 (me.hastarget && (tar.pet_aggro || tar.player_aggro)) ||
-						 !me.hastarget
+					 (me.hastarget && (tar.pet_aggro || tar.player_aggro)) ||
+					 !me.hastarget
 				 ))
 		 )
 		 {
 			if (cb_player_protect.Checked && tar.player_aggro) // o mob tá batendo no player → PET que deve ajudar
 			{
 			 aperta(PETATTACK); //F1, manda o pet. 
-			 clog("Pet atacando para proteger o player (aggro no player).");
 			}
 			else // qualquer outro caso → player que deve ajudar o pet
 			{
 			 aperta(ASSIST);
-			 //clog($"Player assistindo o pet (HP pet={hunt.pet_hp}%, mobs={me.mobs}).");
 			}
 		 }
 
@@ -4267,66 +4280,82 @@ else if (me.classe == HUNTER)
 			loga("Autoattack iniciado.");
 		 }
 
+		 // ------------------------------------------
+		 // AÇÕES POR TEMPO A SEREM EXECUTADAS (PULO, EVADE)
+		 // ------------------------------------------
 		 // PULO A CADA 6 SEGUNDOS (só se não está castando)
 		 if (ticker_ms % 6000 < 100 && !me.casting)
 		 {
-			aperta(PULA);
-			//clog("Pulo de rotina (6s)");
+			aperta(PULA); //clog("Pulo de rotina (6s)");
+		 }
+		 if (!assistmode && cb_maxtime.Checked && ticker_ms >= atoi(tb_maxtime) * 60 * 1000) // evade? 
+		 {
+			clog("Combate infinito? Feign death.");
+			if (hunt.feigndeath_up) aperta(FEIGNDEATH);
 		 }
 
 		 // ------------------------------------------
 		 // EMERGÊNCIA: POÇÃO SE MORRENDO
 		 // ------------------------------------------
-		 // -----------------------------------------------------------------------
-		 // DETERRENCE: Se o HP estiver abaixo do limiar configurado,
-		 // -----------------------------------------------------------------------
-		 if (me.hp < atoi(tb_deterrence_at))
-		 {
-			if (hunt.deterrence_up)                                   // se Deterrence está pronto
-			{
-			 if (me.mobs > 1 || tar.hp > 25)    // se NÃO é apenas 1 mob com 25% ou menos de vida
-				aperta(DETERRENCE);                              // então usa Deterrence
-			 clog($"Combat: Deterrence - HP: {me.hp}%");         // loga o uso de Deterrence
-			}
-		 }
-		 if (me.hp < 37 && me.hp_potion_rdy && me.mana > 0 && me.hp >0) // pra nao pegar feign death
+		 if (!isfeign() && me.hp < 37 && me.hp_potion_rdy)
 		 {
 			aperta(HEALTHPOTION); // usa poção de cura se HP < 37% e poção pronta
 			clog($"Combat: Health Potion - HP: {me.hp}%"); // loga o uso da poção
 		 }
-		 // Tenta curar o pet com Mend Pet se todas as seguintes condições forem verdadeiras:
-		 // - Raptor Strike **não está pronto** (não vale a pena usar melee agora)
-		 // - Raptor Strike **não está ativado** (não foi colocado em fila para o próximo ataque)
-		 // - Pet está com HP **abaixo de 60%**, indicando necessidade de cura
-		 // - Não há **mobs batendo no player** (me.mobs_player == 0), ou seja, é seguro curar o pet
-		 // - Pet está **vivo** (HP acima de 1%)
+
+		 // -----------------------------------------------------------------------
+		 // DETERRENCE: Se o HP estiver abaixo do limiar configurado,
+		 // -----------------------------------------------------------------------
+		 if (!isfeign() && me.hp < atoi(tb_deterrence_at))
+		 {
+			if (hunt.deterrence_up)
+			{
+			 if (me.mobs > 1 || tar.hp > 25)
+				aperta(DETERRENCE);
+			 clog($"Combat: Deterrence - HP: {me.hp}%");
+			}
+		 }
+
+		 // ==================================================
+		 // COMBAT: USO DE BANDAGEM (BANDAGEH)
+		 // ==================================================
+		 if (!isfeign()
+			 && me.hp < atoi(tb_bandageh_at)
+			 && cb_bandageh.Checked
+			 && me.bandage_up
+			 && tar.hp > 10
+			 && me.mobs_player == 0)
+		 {
+			casta(BANDAGEH);
+			wait_cast();
+			clog($"Combat: Bandage - HP: {me.hp}%");
+		 }
+
+		 // Tenta curar o pet com Mend Pet
 		 else if (!hunt.raptor_strike_up && !hunt.raptor_queued && hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
 		 {
 			casta(MENDPET);
 			wait_cast();
 		 }
-		 stonecheck(); // verifica se deve usar Stoneform (Dwarf racial)
+
+		 stonecheck(); // verifica se deve usar Stoneform
+
 		 // ------------------------------------------
-		 // AUTO GROWL - USA PET COMO LIFE BUFFER (VERSÃO OTIMIZADA)
+		 // AUTO GROWL - USA PET COMO LIFE BUFFER
 		 // ------------------------------------------
-		 if (cb_autogrowl.Checked && hunt.growl_available) // controle automatico do growl 
+		 if (cb_autogrowl.Checked && hunt.growl_available)
 		 {
-			// Variáveis de intenção para clareza
 			bool precisa_ligar = (me.hp < 30 && !me.hp_potion_rdy) ||
 													 (me.hp < atoi(tb_growlat) && hunt.pet_hp > me.hp);
 
 			bool precisa_desligar = (!precisa_ligar && (me.hp > atoi(tb_growlat) || hunt.pet_hp < me.hp));
 
-			// Prioridade: Emergência vem primeiro (já está coberta em precisa_ligar)
-
-			// Verifica se precisa ligar e está desligado
 			if (precisa_ligar && !hunt.growl_autocast)
 			{
 			 aperta(GROWLTOGGLE);
 			 clog(me.hp < 30 ? "Emergência: Ligando Growl para tentar salvar Hunter."
 											 : "Ativando Growl: Pet mais saudável que Hunter.");
 			}
-			// Verifica se precisa desligar e está ligado
 			else if (precisa_desligar && hunt.growl_autocast)
 			{
 			 aperta(GROWLTOGGLE);
@@ -4335,36 +4364,33 @@ else if (me.classe == HUNTER)
 		 }
 
 		 // ------------------------------------------
-		 // STONEFORM (COPIADO DO PALADINO)
+		 // STONEFORM
 		 // ------------------------------------------
-		 else if (cb_dwarf.Checked && me.racialready)                     // é anão e o racial está pronto
+		 else if (cb_dwarf.Checked && me.racialready && !me.casting)
 		 {
-			int limiar = Convert.ToInt32(tb_stoneform_at.Text);     // lê o valor do limiar de HP do textbox
+			int limiar = Convert.ToInt32(tb_stoneform_at.Text);
 			if (!me.dazed && me.hp > 1 && (me.hp < limiar || me.hasother || me.haspoison || me.hasdisease))
-			{ 
-			 aperta(STONEFORM);                                       // ativa Stoneform se atender condições
+			{
+			 if (!me.casting) aperta(STONEFORM);
 			 clog($"Hunter: Stoneform usado! HP: {me.hp}% Debuffs: {me.hasother}/{me.haspoison}/{me.hasdisease}");
 			}
 		 }
 
 		 // ------------------------------------------
 		 // RANGED TRY
-		 // Testa se está em range de Auto Shot antes
-		 // Aí prioriza Serpent > Arcane > Auto
-		 // Depois espera 3200ms se tinha range
 		 // ------------------------------------------
-		 checkme(); // atualiza estado do player
-		 if (me.wrongway) aperta(INTERACT); // corrige direção
-		 checkme(); // atualiza de novo
+		 checkme();
+		 if (me.wrongway) aperta(INTERACT);
+		 checkme();
 
-		 bool ranged = hunt.auto_shot_range_ok; // já armazena se estava em range
+		 bool ranged = hunt.auto_shot_range_ok;
 
-		 if (ranged) // só tenta ranged se está na range de Auto Shot
+		 if (ranged)
 		 {
-			virahunter(true); // vira só se tiver na direção errada 
+			virahunter(true);
 			if (hunt.serpent_sting_up && !me.melee && tar.type != MECHANICAL && tar.type != ELEMENTAL)
 			{
-			 aperta(SERPENTSTING); // cast Serpent Sting
+			 aperta(SERPENTSTING);
 			 clog("Casting Serpent Sting.");
 			}
 			else if (hunt.multishot_up && cb_allowcleave.Checked && (me.mobs_pet > 1 || me.mana > 70))
@@ -4374,16 +4400,16 @@ else if (me.classe == HUNTER)
 			}
 			else if (hunt.arcane_shot_up && cb_arcaneshot.Checked)
 			{
-			 aperta(ARCANESHOT); // cast Arcane Shot
+			 aperta(ARCANESHOT);
 			 clog("Casting Arcane Shot.");
 			}
 			else if (hunt.auto_shot_up && !hunt.auto_shot_ativo)
 			{
-			 aperta(AUTOSHOT); // inicia Auto Shot
+			 aperta(AUTOSHOT);
 			 clog("Start Auto Shot.");
 			}
 
-			wait(3200); // dá pelo menos 2 tiros
+			wait(3200);
 		 }
 
 		 // ------------------------------------------
@@ -4401,16 +4427,16 @@ else if (me.classe == HUNTER)
 			clog("Mongoose Bite");
 		 }
 
-
 		 // ------------------------------------------
-		 // DISENGAGE SE TEM AGGRO E DEVIA ESTAR PARA O PET
+		 // DISENGAGE
 		 // ------------------------------------------
 		 else if (!hunt.raptor_queued && !hunt.raptor_strike_up && hunt.growl_autocast && tar.player_aggro && hunt.disengage_up && hunt.pet_hp > 10)
 		 {
-			aperta(DISENGAGE); // usa Disengage se está em combate e tem aggro no player
+			aperta(DISENGAGE);
 		 }
+		}
+		//------------FIM ROTINA DE COMBATE HUNTER ------------------
 
-		}//------------FIM ROTINA DE COMBATE HUNTER ------------------
 
 		// -----------------------------------------------
 		// ROTINA DE COMBATE WARRIOR (WCR)
@@ -5190,10 +5216,10 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 
 	 } while (me.combat); // FIM DO LOOP DE COMBATE 
 	 aperta(STOPATTACK); // para o auto-ataque no final do combate
-											 //---------------------------------------------
-											 // TERMINA O COMBATE 
-											 // ---------------------------------------------
-	 clog($"Combate encerrado. Ciclos: {combat_ticker}");
+//---------------------------------------------
+// TERMINA O COMBATE 
+// ---------------------------------------------
+	 clog($"Combate encerrado. Ciclos: {combat_ticker} Duração: {tb_combattime.Text}" );
 	 killstats("save"); // atualiza stats de kills totais 
 	 // PALADINO (reseta variaveis de combate) 
 	 //----------------------------------------------
@@ -6215,6 +6241,8 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 int d = yaw - me.facing;                 // diferença bruta
 	 if (d > 180) d -= 360;                   // ajusta para -180 a +180
 	 if (d < -180) d += 360;                  // idem
+	 if (me.spd > 0 && me.classe == HUNTER && hunt.aspect_cheetah)
+		return (int)(d * 1.3);
 	 return d;                                // delta final
 	}
 
@@ -8912,9 +8940,10 @@ else
 	{
 	 checkme();
 
-	 clog("=== HUNTER PET STATUS ===");
-	 clog("WRONG WAY" + me.wrongway);
-	 virahunter();
+
+	 loga("BANDAGE");
+	 loga($"{me.bandage_up}");
+	 
 	 
 
 	}
@@ -10793,6 +10822,16 @@ else
 	 checkme();
 	 tb_probe_x.Text = me.pos.x.ToString();
 	 tb_probe_y.Text = me.pos.y.ToString();
+	}
+
+	private void cb_huntereat_Click(object sender, EventArgs e)
+	{
+
+	}
+
+	private void tb_huntereat_TextChanged(object sender, EventArgs e)
+	{
+
 	}
 
 

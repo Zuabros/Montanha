@@ -59,6 +59,7 @@ namespace Discord
 	public bool iscaster;        // é uma criatura do tipo caster (MAGE, LOCK, PRIEST, etc.)
 	public bool wandon; // wand ativa 1B7
 	public bool wand_up; // wand ativa 1B7
+	public bool bandage_up; // bandagem pronta (1B7)
 
 
 	// ----------- específicos do target (tar) -----------

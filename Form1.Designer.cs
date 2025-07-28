@@ -32,6 +32,7 @@ namespace Discord
 	{
 	 this.tab_nav = new System.Windows.Forms.TabControl();
 	 this.tabPage1 = new System.Windows.Forms.TabPage();
+	 this.tb_combattime = new System.Windows.Forms.TextBox();
 	 this.tb_debug = new System.Windows.Forms.TextBox();
 	 this.label38 = new System.Windows.Forms.Label();
 	 this.label37 = new System.Windows.Forms.Label();
@@ -73,6 +74,9 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_noneutral = new System.Windows.Forms.CheckBox();
+	 this.cb_scanneutral = new System.Windows.Forms.CheckBox();
+	 this.cb_onlybeast = new System.Windows.Forms.CheckBox();
 	 this.cb_noelemental = new System.Windows.Forms.CheckBox();
 	 this.cb_allowcleave = new System.Windows.Forms.CheckBox();
 	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
@@ -219,6 +223,15 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_bandageh = new System.Windows.Forms.CheckBox();
+	 this.tb_bandageh_at = new System.Windows.Forms.TextBox();
+	 this.label66 = new System.Windows.Forms.Label();
+	 this.label65 = new System.Windows.Forms.Label();
+	 this.cb_maxtime = new System.Windows.Forms.CheckBox();
+	 this.tb_maxtime = new System.Windows.Forms.TextBox();
+	 this.cb_nopet = new System.Windows.Forms.CheckBox();
+	 this.tb_feigndeathat = new System.Windows.Forms.TextBox();
+	 this.label64 = new System.Windows.Forms.Label();
 	 this.tb_maxdistred = new System.Windows.Forms.TextBox();
 	 this.label61 = new System.Windows.Forms.Label();
 	 this.cb_greedy_hunter = new System.Windows.Forms.CheckBox();
@@ -372,11 +385,6 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.tb_feigndeathat = new System.Windows.Forms.TextBox();
-	 this.label64 = new System.Windows.Forms.Label();
-	 this.cb_onlybeast = new System.Windows.Forms.CheckBox();
-	 this.cb_scanneutral = new System.Windows.Forms.CheckBox();
-	 this.cb_nopet = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -415,6 +423,7 @@ namespace Discord
 	 // tabPage1
 	 // 
 	 this.tabPage1.BackColor = System.Drawing.Color.DimGray;
+	 this.tabPage1.Controls.Add(this.tb_combattime);
 	 this.tabPage1.Controls.Add(this.tb_debug);
 	 this.tabPage1.Controls.Add(this.label38);
 	 this.tabPage1.Controls.Add(this.label37);
@@ -461,6 +470,15 @@ namespace Discord
 	 this.tabPage1.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage1.TabIndex = 0;
 	 this.tabPage1.Text = "Nav";
+	 // 
+	 // tb_combattime
+	 // 
+	 this.tb_combattime.Location = new System.Drawing.Point(77, 286);
+	 this.tb_combattime.Name = "tb_combattime";
+	 this.tb_combattime.Size = new System.Drawing.Size(38, 20);
+	 this.tb_combattime.TabIndex = 78;
+	 this.tb_combattime.Text = "00:00";
+	 this.tb_combattime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 	 // 
 	 // tb_debug
 	 // 
@@ -835,6 +853,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_noneutral);
 	 this.tabPage2.Controls.Add(this.cb_scanneutral);
 	 this.tabPage2.Controls.Add(this.cb_onlybeast);
 	 this.tabPage2.Controls.Add(this.cb_noelemental);
@@ -875,6 +894,40 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_noneutral
+	 // 
+	 this.cb_noneutral.AutoSize = true;
+	 this.cb_noneutral.Checked = true;
+	 this.cb_noneutral.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_noneutral.Location = new System.Drawing.Point(358, 57);
+	 this.cb_noneutral.Name = "cb_noneutral";
+	 this.cb_noneutral.Size = new System.Drawing.Size(77, 17);
+	 this.cb_noneutral.TabIndex = 85;
+	 this.cb_noneutral.Text = "No Neutral";
+	 this.cb_noneutral.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_scanneutral
+	 // 
+	 this.cb_scanneutral.AutoSize = true;
+	 this.cb_scanneutral.Location = new System.Drawing.Point(6, 392);
+	 this.cb_scanneutral.Name = "cb_scanneutral";
+	 this.cb_scanneutral.Size = new System.Drawing.Size(60, 17);
+	 this.cb_scanneutral.TabIndex = 84;
+	 this.cb_scanneutral.Text = "Neutral";
+	 this.cb_scanneutral.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_onlybeast
+	 // 
+	 this.cb_onlybeast.AutoSize = true;
+	 this.cb_onlybeast.Checked = true;
+	 this.cb_onlybeast.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_onlybeast.Location = new System.Drawing.Point(432, 59);
+	 this.cb_onlybeast.Name = "cb_onlybeast";
+	 this.cb_onlybeast.Size = new System.Drawing.Size(82, 17);
+	 this.cb_onlybeast.TabIndex = 83;
+	 this.cb_onlybeast.Text = "Only Beasts";
+	 this.cb_onlybeast.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_noelemental
 	 // 
@@ -2463,6 +2516,12 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.cb_bandageh);
+	 this.tabPage8.Controls.Add(this.tb_bandageh_at);
+	 this.tabPage8.Controls.Add(this.label66);
+	 this.tabPage8.Controls.Add(this.label65);
+	 this.tabPage8.Controls.Add(this.cb_maxtime);
+	 this.tabPage8.Controls.Add(this.tb_maxtime);
 	 this.tabPage8.Controls.Add(this.cb_nopet);
 	 this.tabPage8.Controls.Add(this.tb_feigndeathat);
 	 this.tabPage8.Controls.Add(this.label64);
@@ -2494,6 +2553,93 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // cb_bandageh
+	 // 
+	 this.cb_bandageh.AutoSize = true;
+	 this.cb_bandageh.Checked = true;
+	 this.cb_bandageh.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_bandageh.Location = new System.Drawing.Point(218, 43);
+	 this.cb_bandageh.Name = "cb_bandageh";
+	 this.cb_bandageh.Size = new System.Drawing.Size(84, 17);
+	 this.cb_bandageh.TabIndex = 80;
+	 this.cb_bandageh.Text = "Bandage at:";
+	 this.cb_bandageh.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_bandageh_at
+	 // 
+	 this.tb_bandageh_at.Location = new System.Drawing.Point(311, 41);
+	 this.tb_bandageh_at.Name = "tb_bandageh_at";
+	 this.tb_bandageh_at.Size = new System.Drawing.Size(26, 20);
+	 this.tb_bandageh_at.TabIndex = 79;
+	 this.tb_bandageh_at.Text = "80";
+	 // 
+	 // label66
+	 // 
+	 this.label66.AutoSize = true;
+	 this.label66.Location = new System.Drawing.Point(220, 121);
+	 this.label66.Name = "label66";
+	 this.label66.Size = new System.Drawing.Size(115, 13);
+	 this.label66.TabIndex = 78;
+	 this.label66.Text = "AP=0.768 CRIT=0.142";
+	 // 
+	 // label65
+	 // 
+	 this.label65.AutoSize = true;
+	 this.label65.Location = new System.Drawing.Point(220, 100);
+	 this.label65.Name = "label65";
+	 this.label65.Size = new System.Drawing.Size(98, 13);
+	 this.label65.TabIndex = 77;
+	 this.label65.Text = "AGI=1 STR=0,593 ";
+	 // 
+	 // cb_maxtime
+	 // 
+	 this.cb_maxtime.AutoSize = true;
+	 this.cb_maxtime.Checked = true;
+	 this.cb_maxtime.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_maxtime.Location = new System.Drawing.Point(204, 11);
+	 this.cb_maxtime.Name = "cb_maxtime";
+	 this.cb_maxtime.Size = new System.Drawing.Size(109, 17);
+	 this.cb_maxtime.TabIndex = 76;
+	 this.cb_maxtime.Text = "Max combat time:";
+	 this.cb_maxtime.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_maxtime
+	 // 
+	 this.tb_maxtime.Location = new System.Drawing.Point(313, 11);
+	 this.tb_maxtime.Name = "tb_maxtime";
+	 this.tb_maxtime.Size = new System.Drawing.Size(26, 20);
+	 this.tb_maxtime.TabIndex = 75;
+	 this.tb_maxtime.Text = "2";
+	 // 
+	 // cb_nopet
+	 // 
+	 this.cb_nopet.AutoSize = true;
+	 this.cb_nopet.Checked = true;
+	 this.cb_nopet.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_nopet.Location = new System.Drawing.Point(105, 12);
+	 this.cb_nopet.Name = "cb_nopet";
+	 this.cb_nopet.Size = new System.Drawing.Size(89, 17);
+	 this.cb_nopet.TabIndex = 73;
+	 this.cb_nopet.Text = "I have no pet";
+	 this.cb_nopet.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_feigndeathat
+	 // 
+	 this.tb_feigndeathat.Location = new System.Drawing.Point(98, 264);
+	 this.tb_feigndeathat.Name = "tb_feigndeathat";
+	 this.tb_feigndeathat.Size = new System.Drawing.Size(26, 20);
+	 this.tb_feigndeathat.TabIndex = 72;
+	 this.tb_feigndeathat.Text = "90";
+	 // 
+	 // label64
+	 // 
+	 this.label64.AutoSize = true;
+	 this.label64.Location = new System.Drawing.Point(15, 267);
+	 this.label64.Name = "label64";
+	 this.label64.Size = new System.Drawing.Size(77, 13);
+	 this.label64.TabIndex = 71;
+	 this.label64.Text = "Feign Death at";
 	 // 
 	 // tb_maxdistred
 	 // 
@@ -2570,20 +2716,22 @@ namespace Discord
 	 // 
 	 // tb_huntereat
 	 // 
-	 this.tb_huntereat.Location = new System.Drawing.Point(204, 40);
+	 this.tb_huntereat.Location = new System.Drawing.Point(158, 37);
 	 this.tb_huntereat.Name = "tb_huntereat";
 	 this.tb_huntereat.Size = new System.Drawing.Size(26, 20);
 	 this.tb_huntereat.TabIndex = 22;
 	 this.tb_huntereat.Text = "75";
+	 this.tb_huntereat.TextChanged += new System.EventHandler(this.tb_huntereat_TextChanged);
 	 // 
 	 // cb_huntereat
 	 // 
 	 this.cb_huntereat.AutoSize = true;
-	 this.cb_huntereat.Location = new System.Drawing.Point(150, 43);
+	 this.cb_huntereat.Location = new System.Drawing.Point(113, 41);
 	 this.cb_huntereat.Name = "cb_huntereat";
 	 this.cb_huntereat.Size = new System.Drawing.Size(35, 13);
 	 this.cb_huntereat.TabIndex = 21;
 	 this.cb_huntereat.Text = "Eat at";
+	 this.cb_huntereat.Click += new System.EventHandler(this.cb_huntereat_Click);
 	 // 
 	 // cb_serpentsting
 	 // 
@@ -3986,57 +4134,6 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // tb_feigndeathat
-	 // 
-	 this.tb_feigndeathat.Location = new System.Drawing.Point(98, 264);
-	 this.tb_feigndeathat.Name = "tb_feigndeathat";
-	 this.tb_feigndeathat.Size = new System.Drawing.Size(26, 20);
-	 this.tb_feigndeathat.TabIndex = 72;
-	 this.tb_feigndeathat.Text = "90";
-	 // 
-	 // label64
-	 // 
-	 this.label64.AutoSize = true;
-	 this.label64.Location = new System.Drawing.Point(15, 267);
-	 this.label64.Name = "label64";
-	 this.label64.Size = new System.Drawing.Size(77, 13);
-	 this.label64.TabIndex = 71;
-	 this.label64.Text = "Feign Death at";
-	 // 
-	 // cb_onlybeast
-	 // 
-	 this.cb_onlybeast.AutoSize = true;
-	 this.cb_onlybeast.Checked = true;
-	 this.cb_onlybeast.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_onlybeast.Location = new System.Drawing.Point(432, 59);
-	 this.cb_onlybeast.Name = "cb_onlybeast";
-	 this.cb_onlybeast.Size = new System.Drawing.Size(82, 17);
-	 this.cb_onlybeast.TabIndex = 83;
-	 this.cb_onlybeast.Text = "Only Beasts";
-	 this.cb_onlybeast.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_scanneutral
-	 // 
-	 this.cb_scanneutral.AutoSize = true;
-	 this.cb_scanneutral.Location = new System.Drawing.Point(6, 392);
-	 this.cb_scanneutral.Name = "cb_scanneutral";
-	 this.cb_scanneutral.Size = new System.Drawing.Size(60, 17);
-	 this.cb_scanneutral.TabIndex = 84;
-	 this.cb_scanneutral.Text = "Neutral";
-	 this.cb_scanneutral.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_nopet
-	 // 
-	 this.cb_nopet.AutoSize = true;
-	 this.cb_nopet.Checked = true;
-	 this.cb_nopet.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_nopet.Location = new System.Drawing.Point(105, 12);
-	 this.cb_nopet.Name = "cb_nopet";
-	 this.cb_nopet.Size = new System.Drawing.Size(89, 17);
-	 this.cb_nopet.TabIndex = 73;
-	 this.cb_nopet.Text = "I have no pet";
-	 this.cb_nopet.UseVisualStyleBackColor = true;
-	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -4466,6 +4563,14 @@ namespace Discord
 	private CheckBox cb_onlybeast;
 	private CheckBox cb_scanneutral;
 	private CheckBox cb_nopet;
+	private CheckBox cb_noneutral;
+	private CheckBox cb_maxtime;
+	private TextBox tb_maxtime;
+	private TextBox tb_combattime;
+	private Label label66;
+	private Label label65;
+	private CheckBox cb_bandageh;
+	private TextBox tb_bandageh_at;
  }
 }
 
