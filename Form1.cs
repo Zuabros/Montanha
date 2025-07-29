@@ -5318,7 +5318,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			// Não tenta invocar nada - precisa fazer tame de um animal
 		 }
 		 // CASO 3: Pet vivo (has_pet = true e pet_hp > 0) - tudo ok
-		 else if (hunt.has_pet && hunt.pet_hp > 0) // ALIMENTA O PET
+		 else if (hunt.has_pet && hunt.pet_hp > 0 && cb_anda.Checked) // ALIMENTA O PET SE NAO ESTIVER COMBAT ONLY
 		 {
 			// X = mesmo do botão de apagar cinza (5)
 			// Y = botão de apagar cinza (5) + 10 pixels = 15
@@ -5326,7 +5326,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 
 			loga("Alimentando pet...");
 			clica(botao_feed_pet, 1); // clica no botão de alimentar pet existente
-			wait(50); // pequena pausa para evitar spam
+			//wait(50); // pequena pausa para evitar spam
 		 }
 		}
 
