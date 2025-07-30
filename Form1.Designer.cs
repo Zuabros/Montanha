@@ -385,6 +385,7 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
+	 this.label67 = new System.Windows.Forms.Label();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -2516,6 +2517,7 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.label67);
 	 this.tabPage8.Controls.Add(this.cb_bandageh);
 	 this.tabPage8.Controls.Add(this.tb_bandageh_at);
 	 this.tabPage8.Controls.Add(this.label66);
@@ -2577,20 +2579,20 @@ namespace Discord
 	 // label66
 	 // 
 	 this.label66.AutoSize = true;
-	 this.label66.Location = new System.Drawing.Point(220, 121);
+	 this.label66.Location = new System.Drawing.Point(176, 121);
 	 this.label66.Name = "label66";
-	 this.label66.Size = new System.Drawing.Size(115, 13);
+	 this.label66.Size = new System.Drawing.Size(165, 13);
 	 this.label66.TabIndex = 78;
-	 this.label66.Text = "AP=0.768 CRIT=0.142";
+	 this.label66.Text = "AP=0.77  DODG = 3 CRIT=0.142";
 	 // 
 	 // label65
 	 // 
 	 this.label65.AutoSize = true;
-	 this.label65.Location = new System.Drawing.Point(220, 100);
+	 this.label65.Location = new System.Drawing.Point(201, 100);
 	 this.label65.Name = "label65";
-	 this.label65.Size = new System.Drawing.Size(98, 13);
+	 this.label65.Size = new System.Drawing.Size(140, 13);
 	 this.label65.TabIndex = 77;
-	 this.label65.Text = "AGI=1 STR=0,593 ";
+	 this.label65.Text = "AGI=1,16  STR=0,6  STA=1";
 	 // 
 	 // cb_maxtime
 	 // 
@@ -4134,6 +4136,15 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
+	 // label67
+	 // 
+	 this.label67.AutoSize = true;
+	 this.label67.Location = new System.Drawing.Point(215, 144);
+	 this.label67.Name = "label67";
+	 this.label67.Size = new System.Drawing.Size(73, 13);
+	 this.label67.TabIndex = 81;
+	 this.label67.Text = "Armor = 0,023";
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -4571,6 +4582,7 @@ namespace Discord
 	private Label label65;
 	private CheckBox cb_bandageh;
 	private TextBox tb_bandageh_at;
+	private Label label67;
  }
 }
 
