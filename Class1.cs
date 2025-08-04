@@ -12,7 +12,9 @@ namespace Discord
  public struct flag
  {
 	public int wandGCD;
+	public bool trinket1_up; // trinket 1 pronto (bit 0)
  }
+ 
 
  // --------------------------------
  // MÓDULO 12 - STRUCT ELEMENT
@@ -143,12 +145,15 @@ namespace Discord
 	public bool feigndeath_up;
 	public bool rapidfire_up;
 	public bool multishot_up;
+	public bool bestialwrath_up;
 	public bool raptor_queued; // captor strike aguardando 
+	public bool intimidation_up; // Intimidation pronto (spellready + manarange)
 	// ================================
 	// STATUS ATIVO (true se ativo)
 	// ================================
 	public bool auto_shot_ativo;          // Auto Shot ativo (como autoattack)
-	
+	public bool feign_death_ativo;      // Feign Death ativo (como autoattack)
+
 	// ================================
 	// DEBUFFS NO TARGET
 	// ================================

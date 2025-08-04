@@ -279,6 +279,7 @@ namespace Discord
 	public const int SLOW = F2;     // debuff de lentidão (genérico)
 	public const int ASSIST = F6;     // debuff de lentidão (genérico)
 	public const int GCD = 1501;  // Global Cooldown (tempo de recarga global em milissegundos)
+	public const int TRINKET1 = F11;     // ataque automático
 	public const int FOOD = F12;     // ataque automático
 	public const int STOPCAST = IGUAL;       // Stop Cast (para de lançar feitiço)
 	public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) MELEE
@@ -415,8 +416,10 @@ namespace Discord
 	// F6 = ASSIST (já definido globalmente)
 	public const int GROWLTOGGLE = F3;         // Multi-Shot (para futuras implementações)
 	public const int BANDAGEH = F4; // Bandage Hunter (cura com bandagem)
-	public const int DETERRENCE = F7;         // Multi-Shot (para futuras implementações)
-	public const int DISENGAGE = F10;         // Multi-Shot (para futuras implementações)
+	public const int DETERRENCE = F7;         // Deterrence
+	public const int BESTIALWRATH = F8;         // Deterrence
+	public const int INTIMIDATION = F9;       // Intimidation
+	public const int DISENGAGE = F10;         // Disengage
 	public const int ASPECTMONKEY = UM;
 	public const int ASPECTCHEETAH = ZERO;
 	public const int RAPIDFIRE = DOIS;
@@ -1395,11 +1398,14 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 	 // -------------------------------------
 	 // NOVO PIXEL 8: TIPO DA CRIATURA DO TARGET (Movido do antigo Pixel 14)
 	 // -------------------------------------
-	 if (pixels.Count > 8)
-	 {
+
 		tar.type = pixels[8].r; // lê valor bruto do canal R
 		tb_tartype.Text = tar.type.ToString(); // exibe no textbox
-	 }
+
+	 // ================================
+	 // PIXEL 8 - BLUE: Trinkets e cooldowns
+	 // ================================
+	 flags.trinket1_up = (pixels[8].b & 1) != 0;  // bit 0 = trinket disponível
 
 
 	 // ------------------------------------------
@@ -1648,16 +1654,18 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		hunt.disengage_up = (g10 & 4) != 0;            // bit 2 = Disengage pronto
 		hunt.aspect_monkey = (g10 & 8) != 0;           // bit 3 = Aspect of the Monkey ativo
 		hunt.aspect_cheetah = (g10 & 16) != 0;         // bit 4 = Aspect of the Cheetah ativo
-		hunt.raptor_queued = (g10 & 32) != 0;					 // bit 5 = Raptor Strike está ativado (queued)
+		hunt.raptor_queued = (g10 & 32) != 0;          // bit 5 = Raptor Strike está ativado (queued)
+		hunt.intimidation_up = (g10 & 64) != 0;        // bit 6 = Intimidation pronto
+		hunt.feign_death_ativo = (g10 & 128) != 0;     // bit 7 = Feign Death ativo
 
-		// ================================
-		// CANAL B: Pet status + Growl management
-		// ================================
-		hunt.growl_available = (b10 & 1) != 0;         // bit 0 = Pet possui Growl no spellbook
-		hunt.growl_autocast = (b10 & 2) != 0;          // bit 1 = Autocast do Growl está ativo
-		hunt.has_pet = (b10 & 4) != 0;                 // bit 2 = Pet vivo e ativo (MOVIDO do bit 1)
-		hunt.mongoose_bite_up = (b10 & 8) != 0;           // bit 3 ← CORRETO!
-
+// ================================
+// CANAL B: Pet status + Growl management
+// ================================
+hunt.growl_available = (b10 & 1) != 0;         // bit 0 = Pet possui Growl no spellbook
+hunt.growl_autocast = (b10 & 2) != 0;          // bit 1 = Autocast do Growl está ativo
+hunt.has_pet = (b10 & 4) != 0;                 // bit 2 = Pet vivo e ativo
+hunt.mongoose_bite_up = (b10 & 8) != 0;        // bit 3 = Mongoose Bite pronto e com mana
+hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e com mana
 
 		// ================================
 		// PIXEL 11: PET HP + DETERRENCE
@@ -3270,7 +3278,7 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 
 			 int rangedPhaseStart = Environment.TickCount;
 			 clog("Iniciando ranged sustain phase. ");
-			 if (!tar.trivial && me.combat && hunt.auto_shot_range_ok && hunt.rapidfire_up) aperta(RAPIDFIRE); // RAPID FIRE se já em combate e mob forte
+			 if (cb_rapidfire.Checked && !tar.trivial && me.combat && hunt.auto_shot_range_ok && hunt.rapidfire_up) aperta(RAPIDFIRE); // RAPID FIRE se já em combate e mob forte
 
 			 while ((Environment.TickCount - rangedPhaseStart) < RANGED_PHASE_DURATION &&
 				me.mobs_player==0 && // sem mobs no player, se tiver cola no pet pra ele puxar
@@ -3980,6 +3988,22 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 para();
 		 japarou2 = false;
 		}
+		// ------------------------------------------
+		// TRINKET 1: USO DEFENSIVO/OFENSIVO
+		// ------------------------------------------
+		if (cb_trinket1_use.Checked && flags.trinket1_up &&
+			 (me.classe != HUNTER || !hunt.feign_death_ativo))
+		{
+		 if ((rd_t1_def.Checked && me.hp <= atoi(tb_trinket1_at)) ||
+				 (rd_t1_of.Checked && me.mobs >= atoi(tb_trinket1_of_mobs)))
+		 {
+			aperta(TRINKET1);
+			clog($"Combat: Trinket 1 - Mode: {(rd_t1_def.Checked ? "Defense" : "Offense")}, HP: {me.hp}%, Mobs: {me.mobs}");
+		 }
+		}
+
+
+
 		// ------------------------
 		// LIMPA TARGET AMIGAVEL OU SELF
 		//---------------------------
@@ -4247,6 +4271,26 @@ me.mobs_pet    = (pixels[8].g >> 2) & 0b00000011; // bits 2–3
 		 {
 			aperta(FEIGNDEATH); // Aggro dump para pet
 		 }
+		 //------------------------
+		 // INTERRUPT (FEIGN DEATH / INTIMIDATION)
+		 //------------------------------
+
+		 if (hunt.intimidation_up && hunt.has_pet &&
+				(tar.casting || (me.hastarget && me.hp < 70 && tar.player_aggro)))
+			aperta(INTIMIDATION);
+		 else if (!hunt.intimidation_up && hunt.feigndeath_up && tar.casting && cb_feign_interrupt.Checked && tar.player_aggro) // mana burn?
+			aperta(FEIGNDEATH);
+
+
+		 //------------------------
+		 // BESTIAL WRATH  
+		 //------------------------------
+		 if (hunt.bestialwrath_up && hunt.has_pet &&
+				((me.mobs >= atoi(tb_bestialwrath_mobs)) ||
+				 (cb_bestial_at_tuffmobs.Checked && tar.level >= me.level && tar.hp > 80) ||
+				 tar.iselite))
+			aperta(BESTIALWRATH);
+
 
 		 //------------------------
 		 // ASSIST NO PET OU AJUDA DO PET 
@@ -6437,7 +6481,7 @@ getstats(ref me); // Chama o método getstats para atualizar o objeto player
 	 // VERIFICA A CADA 6 SEGUNDOS
 	 // ================================
 	 int elapsed = now - stuck_timer;
-	 if (elapsed >= 6000)
+	 if (elapsed >= 5000)
 	 {
 		int distance_moved = dist(me.pos, lastpos);
 		loga($"🚶 Movimento em 6s: {distance_moved} unidades");
@@ -6953,7 +6997,6 @@ return new loc { x = x, y = y };
 	// MODIFICAÇÃO 2: MÉTODO AUXILIAR CORRIGIDO
 	// ================================
 	// ADICIONAR/SUBSTITUIR este método no Form1.cs:
-
 	loc escolher_proximo_destino(ref int dir)
 	{
 	 // SISTEMA GULOSO: HUNTER + CHECKBOX ATIVADA
@@ -6966,9 +7009,17 @@ return new loc { x = x, y = y };
 		// Lê valor máximo de distância permitido (em unidades do seu sistema)
 		int max_dist_red = atoi(tb_maxdistred);
 
-		// Filtra apenas os red dots próximos da rota
+		// Filtra red dots válidas: próximas da rota MAS longe do player do que a distancia minima pra chagar
 		foreach (var mob in mobs)
 		{
+		 // Rejeita red dots muito próximas do player (já em range de combate)
+		 int dist_do_player = dist(me.pos, mob);
+		 if (dist_do_player <= 90)
+		 {
+			continue; // pula - muito próxima para ser objetivo
+		 }
+
+		 // Verifica se está próxima de algum waypoint da rota
 		 foreach (var wp in lwp)
 		 {
 			if (dist(mob, wp) <= max_dist_red)
@@ -6994,22 +7045,44 @@ return new loc { x = x, y = y };
 		 loga($"⚠️ Ignorando {mobs.Count} red dot(s) fora do alcance máximo da rota.");
 		}
 
-		// Prioridade 2: Se não há mobs válidos E precisa voltar à rota
+		// CORREÇÃO: Se não há mobs válidos E precisa voltar à rota
 		if (greedy_volta_rota)
 		{
-		 int idx_wp = nearest(me.pos, lwp);
-		 if (idx_wp >= 0)
+		 greedy_volta_rota = false; // reseta flag
+		 loga($"❌ Sem red dots válidos. Continuando rota normal no waypoint #{indexAtual}");
+		}
+
+		// CORREÇÃO PRINCIPAL: Se há red dots inválidos, força avanço na rota
+		if (mobs.Count > 0 && red_validos.Count == 0)
+		{
+		 loga($"🚫 Todos os {mobs.Count} red dot(s) são inválidos. Forçando avanço na rota.");
+		 indexAtual += dir; // força avanço para próximo waypoint
+
+		 // Controle de bounds
+		 if (indexAtual >= lwp.Count)
 		 {
-			indexAtual = idx_wp;
-			greedy_volta_rota = false;
-			dir = +1;
-			loga($"❌ Sem red dots válidos. Voltando à rota no ponto mais próximo: #{idx_wp}");
-			return lwp[idx_wp];
+			if (cb_round.Checked)
+			 indexAtual = 0;
+			else
+			{
+			 dir = -1;
+			 indexAtual = lwp.Count - 2;
+			}
+		 }
+		 else if (indexAtual < 0)
+		 {
+			if (cb_round.Checked)
+			 indexAtual = lwp.Count - 1;
+			else
+			{
+			 dir = +1;
+			 indexAtual = 1;
+			}
 		 }
 		}
 	 }
 
-	 // SISTEMA NORMAL: Usa indexAtual atual
+	 // SISTEMA NORMAL: Usa indexAtual atual (agora corrigido)
 	 return lwp[indexAtual];
 	}
 	// --------------------------------
@@ -7235,17 +7308,28 @@ loga("Log copiado para área de transferência.\r\n"); // confirma no próprio l
 
 		 if (dist(me.pos, destino) < 1)
 		 {
-			// Log de chegada
+			// Log de movimento
 			if (me.classe == HUNTER && cb_greedy_hunter.Checked)
 			{
-			 List<loc> mobs_check = get_all_red_mobs();
-			 if (mobs_check.Count > 0)
+			 // Verifica se realmente vai para red dot (comparando o destino)
+			 bool indo_para_red_dot = false;
+			 List<loc> mobs_moving = get_all_red_mobs();
+			 foreach (var mob in mobs_moving)
 			 {
-				loga($"✅ Chegou ao destino. {mobs_check.Count} red dot(s) ainda visível(is).");
+				if (dist(destino, mob) < 50) // se destino está próximo de algum mob
+				{
+				 indo_para_red_dot = true;
+				 break;
+				}
+			 }
+
+			 if (indo_para_red_dot)
+			 {
+				loga($"🚀 Movendo para red dot. Distância: {dist(me.pos, destino) / 100}m");
 			 }
 			 else
 			 {
-				loga($"✅ Chegou ao waypoint #{indexAtual}. Seguindo rota normal.");
+				loga($"🚀 Movendo para waypoint #{indexAtual}. Distância: {dist(me.pos, destino) / 100}m");
 			 }
 			}
 
@@ -8939,14 +9023,17 @@ else
 	private void button17_Click(object sender, EventArgs e)
 	{
 	 checkme();
-
-
 	 loga("BANDAGE");
 	 loga($"{me.bandage_up}");
-	 
-	 
 
+	 loga("BESTIAL WRATH");
+	 loga($"{hunt.bestialwrath_up}");
+
+	 loga("TRINKET 1");
+	 loga($"{flags.trinket1_up}");
 	}
+
+
 	void virahunter(bool sowrongway=false)
 	{
 
@@ -9780,7 +9867,7 @@ else
 	 pb_minimap.Image = bmp;
 
 	 // Log de confirmação
-	 loga($"Minimap capturado: {largura}x{altura} pixels na posição ({x_inicio},{y_inicio})");
+	 //loga($"Minimap capturado: {largura}x{altura} pixels na posição ({x_inicio},{y_inicio})");
 	}
 
 	// --------------------------------------------
@@ -10832,6 +10919,18 @@ else
 	private void tb_huntereat_TextChanged(object sender, EventArgs e)
 	{
 
+	}
+
+	private void rd_t1_def_CheckedChanged(object sender, EventArgs e)
+	{
+	 if (rd_t1_def.Checked)  // se defesa foi marcado
+		rd_t1_of.Checked = false;  // desmarca ataque
+	}
+
+	private void rd_t1_of_CheckedChanged(object sender, EventArgs e)
+	{
+	 if (rd_t1_of.Checked)  // se ataque foi marcado
+		rd_t1_def.Checked = false;  // desmarca defesa
 	}
 
 

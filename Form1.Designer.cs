@@ -74,9 +74,14 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.tb_trinket1_of_mobs = new System.Windows.Forms.TextBox();
+	 this.tb_trinket1_at = new System.Windows.Forms.TextBox();
 	 this.cb_noneutral = new System.Windows.Forms.CheckBox();
+	 this.rd_t1_of = new System.Windows.Forms.RadioButton();
 	 this.cb_scanneutral = new System.Windows.Forms.CheckBox();
+	 this.rd_t1_def = new System.Windows.Forms.RadioButton();
 	 this.cb_onlybeast = new System.Windows.Forms.CheckBox();
+	 this.cb_trinket1_use = new System.Windows.Forms.CheckBox();
 	 this.cb_noelemental = new System.Windows.Forms.CheckBox();
 	 this.cb_allowcleave = new System.Windows.Forms.CheckBox();
 	 this.cb_prefer_distant = new System.Windows.Forms.CheckBox();
@@ -223,6 +228,10 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_bestial_at_tuffmobs = new System.Windows.Forms.CheckBox();
+	 this.tb_bestialwrath_mobs = new System.Windows.Forms.TextBox();
+	 this.label68 = new System.Windows.Forms.Label();
+	 this.label67 = new System.Windows.Forms.Label();
 	 this.cb_bandageh = new System.Windows.Forms.CheckBox();
 	 this.tb_bandageh_at = new System.Windows.Forms.TextBox();
 	 this.label66 = new System.Windows.Forms.Label();
@@ -385,7 +394,8 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.label67 = new System.Windows.Forms.Label();
+	 this.cb_feign_interrupt = new System.Windows.Forms.CheckBox();
+	 this.cb_rapidfire = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -854,9 +864,14 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.tb_trinket1_of_mobs);
+	 this.tabPage2.Controls.Add(this.tb_trinket1_at);
 	 this.tabPage2.Controls.Add(this.cb_noneutral);
+	 this.tabPage2.Controls.Add(this.rd_t1_of);
 	 this.tabPage2.Controls.Add(this.cb_scanneutral);
+	 this.tabPage2.Controls.Add(this.rd_t1_def);
 	 this.tabPage2.Controls.Add(this.cb_onlybeast);
+	 this.tabPage2.Controls.Add(this.cb_trinket1_use);
 	 this.tabPage2.Controls.Add(this.cb_noelemental);
 	 this.tabPage2.Controls.Add(this.cb_allowcleave);
 	 this.tabPage2.Controls.Add(this.cb_prefer_distant);
@@ -896,6 +911,22 @@ namespace Discord
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
 	 // 
+	 // tb_trinket1_of_mobs
+	 // 
+	 this.tb_trinket1_of_mobs.Location = new System.Drawing.Point(636, 478);
+	 this.tb_trinket1_of_mobs.Name = "tb_trinket1_of_mobs";
+	 this.tb_trinket1_of_mobs.Size = new System.Drawing.Size(18, 20);
+	 this.tb_trinket1_of_mobs.TabIndex = 85;
+	 this.tb_trinket1_of_mobs.Text = "2";
+	 // 
+	 // tb_trinket1_at
+	 // 
+	 this.tb_trinket1_at.Location = new System.Drawing.Point(540, 478);
+	 this.tb_trinket1_at.Name = "tb_trinket1_at";
+	 this.tb_trinket1_at.Size = new System.Drawing.Size(26, 20);
+	 this.tb_trinket1_at.TabIndex = 88;
+	 this.tb_trinket1_at.Text = "55";
+	 // 
 	 // cb_noneutral
 	 // 
 	 this.cb_noneutral.AutoSize = true;
@@ -908,6 +939,17 @@ namespace Discord
 	 this.cb_noneutral.Text = "No Neutral";
 	 this.cb_noneutral.UseVisualStyleBackColor = true;
 	 // 
+	 // rd_t1_of
+	 // 
+	 this.rd_t1_of.AutoSize = true;
+	 this.rd_t1_of.Location = new System.Drawing.Point(572, 480);
+	 this.rd_t1_of.Name = "rd_t1_of";
+	 this.rd_t1_of.Size = new System.Drawing.Size(62, 17);
+	 this.rd_t1_of.TabIndex = 87;
+	 this.rd_t1_of.Text = "Offense";
+	 this.rd_t1_of.UseVisualStyleBackColor = true;
+	 this.rd_t1_of.CheckedChanged += new System.EventHandler(this.rd_t1_of_CheckedChanged);
+	 // 
 	 // cb_scanneutral
 	 // 
 	 this.cb_scanneutral.AutoSize = true;
@@ -917,6 +959,19 @@ namespace Discord
 	 this.cb_scanneutral.TabIndex = 84;
 	 this.cb_scanneutral.Text = "Neutral";
 	 this.cb_scanneutral.UseVisualStyleBackColor = true;
+	 // 
+	 // rd_t1_def
+	 // 
+	 this.rd_t1_def.AutoSize = true;
+	 this.rd_t1_def.Checked = true;
+	 this.rd_t1_def.Location = new System.Drawing.Point(490, 481);
+	 this.rd_t1_def.Name = "rd_t1_def";
+	 this.rd_t1_def.Size = new System.Drawing.Size(42, 17);
+	 this.rd_t1_def.TabIndex = 86;
+	 this.rd_t1_def.TabStop = true;
+	 this.rd_t1_def.Text = "Def";
+	 this.rd_t1_def.UseVisualStyleBackColor = true;
+	 this.rd_t1_def.CheckedChanged += new System.EventHandler(this.rd_t1_def_CheckedChanged);
 	 // 
 	 // cb_onlybeast
 	 // 
@@ -929,6 +984,18 @@ namespace Discord
 	 this.cb_onlybeast.TabIndex = 83;
 	 this.cb_onlybeast.Text = "Only Beasts";
 	 this.cb_onlybeast.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_trinket1_use
+	 // 
+	 this.cb_trinket1_use.AutoSize = true;
+	 this.cb_trinket1_use.Checked = true;
+	 this.cb_trinket1_use.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_trinket1_use.Location = new System.Drawing.Point(421, 481);
+	 this.cb_trinket1_use.Name = "cb_trinket1_use";
+	 this.cb_trinket1_use.Size = new System.Drawing.Size(68, 17);
+	 this.cb_trinket1_use.TabIndex = 85;
+	 this.cb_trinket1_use.Text = "Trinket 1";
+	 this.cb_trinket1_use.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_noelemental
 	 // 
@@ -1204,11 +1271,11 @@ namespace Discord
 	 // 
 	 // tb_stoneform_at
 	 // 
-	 this.tb_stoneform_at.Location = new System.Drawing.Point(515, 463);
+	 this.tb_stoneform_at.Location = new System.Drawing.Point(515, 458);
 	 this.tb_stoneform_at.Name = "tb_stoneform_at";
 	 this.tb_stoneform_at.Size = new System.Drawing.Size(33, 20);
 	 this.tb_stoneform_at.TabIndex = 58;
-	 this.tb_stoneform_at.Text = "60";
+	 this.tb_stoneform_at.Text = "55";
 	 // 
 	 // lb_map_zoom
 	 // 
@@ -1232,7 +1299,7 @@ namespace Discord
 	 this.cb_dwarf.AutoSize = true;
 	 this.cb_dwarf.Checked = true;
 	 this.cb_dwarf.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_dwarf.Location = new System.Drawing.Point(421, 466);
+	 this.cb_dwarf.Location = new System.Drawing.Point(421, 461);
 	 this.cb_dwarf.Name = "cb_dwarf";
 	 this.cb_dwarf.Size = new System.Drawing.Size(74, 17);
 	 this.cb_dwarf.TabIndex = 29;
@@ -2517,6 +2584,11 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.cb_rapidfire);
+	 this.tabPage8.Controls.Add(this.cb_feign_interrupt);
+	 this.tabPage8.Controls.Add(this.cb_bestial_at_tuffmobs);
+	 this.tabPage8.Controls.Add(this.tb_bestialwrath_mobs);
+	 this.tabPage8.Controls.Add(this.label68);
 	 this.tabPage8.Controls.Add(this.label67);
 	 this.tabPage8.Controls.Add(this.cb_bandageh);
 	 this.tabPage8.Controls.Add(this.tb_bandageh_at);
@@ -2555,6 +2627,44 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // cb_bestial_at_tuffmobs
+	 // 
+	 this.cb_bestial_at_tuffmobs.AutoSize = true;
+	 this.cb_bestial_at_tuffmobs.Checked = true;
+	 this.cb_bestial_at_tuffmobs.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_bestial_at_tuffmobs.Location = new System.Drawing.Point(135, 292);
+	 this.cb_bestial_at_tuffmobs.Name = "cb_bestial_at_tuffmobs";
+	 this.cb_bestial_at_tuffmobs.Size = new System.Drawing.Size(102, 17);
+	 this.cb_bestial_at_tuffmobs.TabIndex = 84;
+	 this.cb_bestial_at_tuffmobs.Text = "also challenging";
+	 this.cb_bestial_at_tuffmobs.UseVisualStyleBackColor = true;
+	 // 
+	 // tb_bestialwrath_mobs
+	 // 
+	 this.tb_bestialwrath_mobs.Location = new System.Drawing.Point(102, 290);
+	 this.tb_bestialwrath_mobs.Name = "tb_bestialwrath_mobs";
+	 this.tb_bestialwrath_mobs.Size = new System.Drawing.Size(18, 20);
+	 this.tb_bestialwrath_mobs.TabIndex = 83;
+	 this.tb_bestialwrath_mobs.Text = "2";
+	 // 
+	 // label68
+	 // 
+	 this.label68.AutoSize = true;
+	 this.label68.Location = new System.Drawing.Point(6, 294);
+	 this.label68.Name = "label68";
+	 this.label68.Size = new System.Drawing.Size(98, 13);
+	 this.label68.TabIndex = 82;
+	 this.label68.Text = "Bestial Wrath mobs";
+	 // 
+	 // label67
+	 // 
+	 this.label67.AutoSize = true;
+	 this.label67.Location = new System.Drawing.Point(215, 144);
+	 this.label67.Name = "label67";
+	 this.label67.Size = new System.Drawing.Size(73, 13);
+	 this.label67.TabIndex = 81;
+	 this.label67.Text = "Armor = 0,023";
 	 // 
 	 // cb_bandageh
 	 // 
@@ -4136,14 +4246,27 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // label67
+	 // cb_feign_interrupt
 	 // 
-	 this.label67.AutoSize = true;
-	 this.label67.Location = new System.Drawing.Point(215, 144);
-	 this.label67.Name = "label67";
-	 this.label67.Size = new System.Drawing.Size(73, 13);
-	 this.label67.TabIndex = 81;
-	 this.label67.Text = "Armor = 0,023";
+	 this.cb_feign_interrupt.AutoSize = true;
+	 this.cb_feign_interrupt.Checked = true;
+	 this.cb_feign_interrupt.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_feign_interrupt.Location = new System.Drawing.Point(135, 266);
+	 this.cb_feign_interrupt.Name = "cb_feign_interrupt";
+	 this.cb_feign_interrupt.Size = new System.Drawing.Size(100, 17);
+	 this.cb_feign_interrupt.TabIndex = 85;
+	 this.cb_feign_interrupt.Text = "as interrupt also";
+	 this.cb_feign_interrupt.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_rapidfire
+	 // 
+	 this.cb_rapidfire.AutoSize = true;
+	 this.cb_rapidfire.Location = new System.Drawing.Point(155, 191);
+	 this.cb_rapidfire.Name = "cb_rapidfire";
+	 this.cb_rapidfire.Size = new System.Drawing.Size(74, 17);
+	 this.cb_rapidfire.TabIndex = 86;
+	 this.cb_rapidfire.Text = "Rapid Fire";
+	 this.cb_rapidfire.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -4583,6 +4706,16 @@ namespace Discord
 	private CheckBox cb_bandageh;
 	private TextBox tb_bandageh_at;
 	private Label label67;
+	private TextBox tb_bestialwrath_mobs;
+	private Label label68;
+	private CheckBox cb_bestial_at_tuffmobs;
+	private CheckBox cb_trinket1_use;
+	private RadioButton rd_t1_of;
+	private RadioButton rd_t1_def;
+	private TextBox tb_trinket1_at;
+	private TextBox tb_trinket1_of_mobs;
+	private CheckBox cb_feign_interrupt;
+	private CheckBox cb_rapidfire;
  }
 }
 
