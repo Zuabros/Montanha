@@ -228,6 +228,8 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_rapidfire = new System.Windows.Forms.CheckBox();
+	 this.cb_feign_interrupt = new System.Windows.Forms.CheckBox();
 	 this.cb_bestial_at_tuffmobs = new System.Windows.Forms.CheckBox();
 	 this.tb_bestialwrath_mobs = new System.Windows.Forms.TextBox();
 	 this.label68 = new System.Windows.Forms.Label();
@@ -394,8 +396,7 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.cb_feign_interrupt = new System.Windows.Forms.CheckBox();
-	 this.cb_rapidfire = new System.Windows.Forms.CheckBox();
+	 this.cb_assistattack = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -2628,6 +2629,28 @@ namespace Discord
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
 	 // 
+	 // cb_rapidfire
+	 // 
+	 this.cb_rapidfire.AutoSize = true;
+	 this.cb_rapidfire.Location = new System.Drawing.Point(155, 191);
+	 this.cb_rapidfire.Name = "cb_rapidfire";
+	 this.cb_rapidfire.Size = new System.Drawing.Size(74, 17);
+	 this.cb_rapidfire.TabIndex = 86;
+	 this.cb_rapidfire.Text = "Rapid Fire";
+	 this.cb_rapidfire.UseVisualStyleBackColor = true;
+	 // 
+	 // cb_feign_interrupt
+	 // 
+	 this.cb_feign_interrupt.AutoSize = true;
+	 this.cb_feign_interrupt.Checked = true;
+	 this.cb_feign_interrupt.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_feign_interrupt.Location = new System.Drawing.Point(135, 266);
+	 this.cb_feign_interrupt.Name = "cb_feign_interrupt";
+	 this.cb_feign_interrupt.Size = new System.Drawing.Size(100, 17);
+	 this.cb_feign_interrupt.TabIndex = 85;
+	 this.cb_feign_interrupt.Text = "as interrupt also";
+	 this.cb_feign_interrupt.UseVisualStyleBackColor = true;
+	 // 
 	 // cb_bestial_at_tuffmobs
 	 // 
 	 this.cb_bestial_at_tuffmobs.AutoSize = true;
@@ -3651,6 +3674,7 @@ namespace Discord
 	 // tabPage9
 	 // 
 	 this.tabPage9.BackColor = System.Drawing.Color.DarkGray;
+	 this.tabPage9.Controls.Add(this.cb_assistattack);
 	 this.tabPage9.Controls.Add(this.checkBox1);
 	 this.tabPage9.Controls.Add(this.button14);
 	 this.tabPage9.Controls.Add(this.button9);
@@ -4246,27 +4270,15 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // cb_feign_interrupt
+	 // cb_assistattack
 	 // 
-	 this.cb_feign_interrupt.AutoSize = true;
-	 this.cb_feign_interrupt.Checked = true;
-	 this.cb_feign_interrupt.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_feign_interrupt.Location = new System.Drawing.Point(135, 266);
-	 this.cb_feign_interrupt.Name = "cb_feign_interrupt";
-	 this.cb_feign_interrupt.Size = new System.Drawing.Size(100, 17);
-	 this.cb_feign_interrupt.TabIndex = 85;
-	 this.cb_feign_interrupt.Text = "as interrupt also";
-	 this.cb_feign_interrupt.UseVisualStyleBackColor = true;
-	 // 
-	 // cb_rapidfire
-	 // 
-	 this.cb_rapidfire.AutoSize = true;
-	 this.cb_rapidfire.Location = new System.Drawing.Point(155, 191);
-	 this.cb_rapidfire.Name = "cb_rapidfire";
-	 this.cb_rapidfire.Size = new System.Drawing.Size(74, 17);
-	 this.cb_rapidfire.TabIndex = 86;
-	 this.cb_rapidfire.Text = "Rapid Fire";
-	 this.cb_rapidfire.UseVisualStyleBackColor = true;
+	 this.cb_assistattack.AutoSize = true;
+	 this.cb_assistattack.Location = new System.Drawing.Point(364, 41);
+	 this.cb_assistattack.Name = "cb_assistattack";
+	 this.cb_assistattack.Size = new System.Drawing.Size(92, 17);
+	 this.cb_assistattack.TabIndex = 3;
+	 this.cb_assistattack.Text = "Hunter Attack";
+	 this.cb_assistattack.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -4716,6 +4728,7 @@ namespace Discord
 	private TextBox tb_trinket1_of_mobs;
 	private CheckBox cb_feign_interrupt;
 	private CheckBox cb_rapidfire;
+	private CheckBox cb_assistattack;
  }
 }
 

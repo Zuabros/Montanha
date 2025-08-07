@@ -394,7 +394,6 @@ namespace Discord
 
 	// ============================================
 	// SKILLS EXCLUSIVAS DO HUNTER (VERSÃO EXPANDIDA)
-	// Adicionar esta seção após as outras classes (após ROGUE e antes de TIPOS DE CRIATURAS)
 	// ============================================
 
 	public const int RAPTORS = N1;           // Raptor Strike (análogo ao HEROICS do Warrior)
@@ -9649,8 +9648,8 @@ else
 	 {
 		wait(300);
 		
-		if (!me.combat) aperta(XIS);
-		aperta(ZE);
+		if (!me.combat) aperta(XIS); // follow
+		aperta(ZE); // assist
 		// COMBATMODE
 		if (!checkBox1.Checked || me.combat)
 		{
@@ -9658,11 +9657,11 @@ else
 		 if (me.hastarget && tar.hp < 100 && tar.hp > 0 && tar.mood < 1)
 		 {
 			if (hunt.has_pet) aperta(PETATTACK);
-			if (hunt.serpent_sting_up) aperta(SERPENTSTING);
-			else if (hunt.arcane_shot_up) aperta(ARCANESHOT);
+			if (hunt.serpent_sting_up && cb_assistattack.Checked) aperta(SERPENTSTING);
+			else if (hunt.arcane_shot_up && cb_assistattack.Checked) aperta(ARCANESHOT);
 			virahunter(true);
 			if (me.swim) aperta(SPACEBAR);
-			if (!hunt.auto_shot_range_ok && hunt.raptor_strike_up)
+			if (!hunt.auto_shot_range_ok && hunt.raptor_strike_up && cb_assistattack.Checked)
 			{
 			 aperta(RAPTORS);
 			 aperta(INTERACT);
