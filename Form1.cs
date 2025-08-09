@@ -2444,6 +2444,14 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 		 if (!hunt.has_pet && me.level >= 10 && !me.combat && hunt.revive_pet_up) // sem pet
 		 {
 
+			int ticker = 0;
+			while (!hunt.revive_pet_up && !me.combat && ticker < 50)
+			{
+			 espera(1); // espera até 30 segundos o pet poder ser revivido
+			 ticker++;
+			 checkme();
+			}
+
 
 			loga("Invocando pet.");
 
@@ -5327,11 +5335,11 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			 loga("Mana insuficiente para reviver pet. Esperando recuperação.");
 //			 aperta(F12); // COMIDA/BEBIDA para recuperar mana
 			int tempcount = 0;
-			 while (!hunt.revive_pet_up && !me.combat && tempcount<25)
+			 while (!hunt.revive_pet_up && !me.combat && tempcount<50 && !me.combat)
 			 {
-				wait(1000);
+			 espera(1);
 			 tempcount++;
-				checkme();
+				
 			 }
 			
 
@@ -5339,7 +5347,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			if (me.hp == 0 && me.mana == 0) // feign death
 			 aperta(ANDA, 200);
 			loga("Revivendo pet...");
-			casta(SUMMONPET); // usa o método casta para reviver o pet
+			castslow(SUMMONPET); // usa o método casta para reviver o pet
 
 			// Aguarda um pouco para o pet ser revivido
 			wait(3000);
