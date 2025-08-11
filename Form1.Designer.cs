@@ -228,6 +228,7 @@ namespace Discord
 	 this.label34 = new System.Windows.Forms.Label();
 	 this.tb_priest_pullheal = new System.Windows.Forms.TextBox();
 	 this.tabPage8 = new System.Windows.Forms.TabPage();
+	 this.cb_getnear = new System.Windows.Forms.CheckBox();
 	 this.cb_rapidfire = new System.Windows.Forms.CheckBox();
 	 this.cb_feign_interrupt = new System.Windows.Forms.CheckBox();
 	 this.cb_bestial_at_tuffmobs = new System.Windows.Forms.CheckBox();
@@ -335,6 +336,7 @@ namespace Discord
 	 this.label40 = new System.Windows.Forms.Label();
 	 this.label39 = new System.Windows.Forms.Label();
 	 this.tabPage9 = new System.Windows.Forms.TabPage();
+	 this.cb_assistattack = new System.Windows.Forms.CheckBox();
 	 this.checkBox1 = new System.Windows.Forms.CheckBox();
 	 this.button14 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
@@ -396,7 +398,6 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.cb_assistattack = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -2585,6 +2586,7 @@ namespace Discord
 	 // tabPage8
 	 // 
 	 this.tabPage8.BackColor = System.Drawing.Color.Black;
+	 this.tabPage8.Controls.Add(this.cb_getnear);
 	 this.tabPage8.Controls.Add(this.cb_rapidfire);
 	 this.tabPage8.Controls.Add(this.cb_feign_interrupt);
 	 this.tabPage8.Controls.Add(this.cb_bestial_at_tuffmobs);
@@ -2628,6 +2630,18 @@ namespace Discord
 	 this.tabPage8.Size = new System.Drawing.Size(351, 347);
 	 this.tabPage8.TabIndex = 5;
 	 this.tabPage8.Text = "Hunter";
+	 // 
+	 // cb_getnear
+	 // 
+	 this.cb_getnear.AutoSize = true;
+	 this.cb_getnear.Checked = true;
+	 this.cb_getnear.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_getnear.Location = new System.Drawing.Point(288, 237);
+	 this.cb_getnear.Name = "cb_getnear";
+	 this.cb_getnear.Size = new System.Drawing.Size(67, 17);
+	 this.cb_getnear.TabIndex = 87;
+	 this.cb_getnear.Text = "Get near";
+	 this.cb_getnear.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_rapidfire
 	 // 
@@ -2778,7 +2792,7 @@ namespace Discord
 	 // 
 	 // tb_maxdistred
 	 // 
-	 this.tb_maxdistred.Location = new System.Drawing.Point(267, 234);
+	 this.tb_maxdistred.Location = new System.Drawing.Point(247, 235);
 	 this.tb_maxdistred.Name = "tb_maxdistred";
 	 this.tb_maxdistred.Size = new System.Drawing.Size(35, 20);
 	 this.tb_maxdistred.TabIndex = 70;
@@ -2787,7 +2801,7 @@ namespace Discord
 	 // label61
 	 // 
 	 this.label61.AutoSize = true;
-	 this.label61.Location = new System.Drawing.Point(165, 237);
+	 this.label61.Location = new System.Drawing.Point(145, 238);
 	 this.label61.Name = "label61";
 	 this.label61.Size = new System.Drawing.Size(96, 13);
 	 this.label61.TabIndex = 69;
@@ -3684,6 +3698,16 @@ namespace Discord
 	 this.tabPage9.TabIndex = 4;
 	 this.tabPage9.Text = "Assist";
 	 // 
+	 // cb_assistattack
+	 // 
+	 this.cb_assistattack.AutoSize = true;
+	 this.cb_assistattack.Location = new System.Drawing.Point(364, 41);
+	 this.cb_assistattack.Name = "cb_assistattack";
+	 this.cb_assistattack.Size = new System.Drawing.Size(92, 17);
+	 this.cb_assistattack.TabIndex = 3;
+	 this.cb_assistattack.Text = "Hunter Attack";
+	 this.cb_assistattack.UseVisualStyleBackColor = true;
+	 // 
 	 // checkBox1
 	 // 
 	 this.checkBox1.AutoSize = true;
@@ -4270,16 +4294,6 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // cb_assistattack
-	 // 
-	 this.cb_assistattack.AutoSize = true;
-	 this.cb_assistattack.Location = new System.Drawing.Point(364, 41);
-	 this.cb_assistattack.Name = "cb_assistattack";
-	 this.cb_assistattack.Size = new System.Drawing.Size(92, 17);
-	 this.cb_assistattack.TabIndex = 3;
-	 this.cb_assistattack.Text = "Hunter Attack";
-	 this.cb_assistattack.UseVisualStyleBackColor = true;
-	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -4729,6 +4743,7 @@ namespace Discord
 	private CheckBox cb_feign_interrupt;
 	private CheckBox cb_rapidfire;
 	private CheckBox cb_assistattack;
+	private CheckBox cb_getnear;
  }
 }
 

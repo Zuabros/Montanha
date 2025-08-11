@@ -3998,13 +3998,13 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 		// ------------------------------------------
 		// TRINKET 1: USO DEFENSIVO/OFENSIVO
 		// ------------------------------------------
-		if (cb_trinket1_use.Checked && flags.trinket1_up &&
+		if (me.mana > 1 && cb_trinket1_use.Checked && flags.trinket1_up &&
 			 (me.classe != HUNTER || !hunt.feign_death_ativo))
 		{
 		 if ((rd_t1_def.Checked && me.hp <= atoi(tb_trinket1_at)) ||
 				 (rd_t1_of.Checked && me.mobs >= atoi(tb_trinket1_of_mobs)))
 		 {
-			aperta(TRINKET1);
+			if (me.hp > 1 && me.mana >1) aperta(TRINKET1);
 			clog($"Combat: Trinket 1 - Mode: {(rd_t1_def.Checked ? "Defense" : "Offense")}, HP: {me.hp}%, Mobs: {me.mobs}");
 		 }
 		}
@@ -7056,7 +7056,27 @@ return new loc { x = x, y = y };
 		if (greedy_volta_rota)
 		{
 		 greedy_volta_rota = false; // reseta flag
-		 loga($"❌ Sem red dots válidos. Continuando rota normal no waypoint #{indexAtual}");
+
+		 // NOVA LÓGICA: cb_getnear.Checked
+		 if (cb_getnear.Checked)
+		 {
+			// Usa nearest() para encontrar waypoint mais próximo (igual ao button1_Click_1)
+			checkme(); // atualiza posição atual
+			int idx = nearest(me.pos, lwp); // encontra waypoint mais próximo
+			if (idx != -1)
+			{
+			 indexAtual = idx; // atualiza para waypoint mais próximo
+			 loga($"🧭 Get Near ativado: Indo para waypoint #{indexAtual} mais próximo");
+			}
+			else
+			{
+			 loga("❌ Erro: nearest() não encontrou waypoint válido");
+			}
+		 }
+		 else
+		 {
+			loga($"❌ Sem red dots válidos. Continuando rota normal no waypoint #{indexAtual}");
+		 }
 		}
 
 		// CORREÇÃO PRINCIPAL: Se há red dots inválidos, força avanço na rota
@@ -10938,6 +10958,11 @@ else
 	{
 	 if (rd_t1_of.Checked)  // se ataque foi marcado
 		rd_t1_def.Checked = false;  // desmarca defesa
+	}
+
+	private void button24_Click(object sender, EventArgs e)
+	{
+	 MessageBox.Show("OI AMIGO");
 	}
 
 
