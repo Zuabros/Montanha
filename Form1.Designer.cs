@@ -337,7 +337,7 @@ namespace Discord
 	 this.label39 = new System.Windows.Forms.Label();
 	 this.tabPage9 = new System.Windows.Forms.TabPage();
 	 this.cb_assistattack = new System.Windows.Forms.CheckBox();
-	 this.checkBox1 = new System.Windows.Forms.CheckBox();
+	 this.cb_dungeon_assist = new System.Windows.Forms.CheckBox();
 	 this.button14 = new System.Windows.Forms.Button();
 	 this.button9 = new System.Windows.Forms.Button();
 	 this.tabPage10 = new System.Windows.Forms.TabPage();
@@ -3689,7 +3689,7 @@ namespace Discord
 	 // 
 	 this.tabPage9.BackColor = System.Drawing.Color.DarkGray;
 	 this.tabPage9.Controls.Add(this.cb_assistattack);
-	 this.tabPage9.Controls.Add(this.checkBox1);
+	 this.tabPage9.Controls.Add(this.cb_dungeon_assist);
 	 this.tabPage9.Controls.Add(this.button14);
 	 this.tabPage9.Controls.Add(this.button9);
 	 this.tabPage9.Location = new System.Drawing.Point(4, 22);
@@ -3708,15 +3708,15 @@ namespace Discord
 	 this.cb_assistattack.Text = "Hunter Attack";
 	 this.cb_assistattack.UseVisualStyleBackColor = true;
 	 // 
-	 // checkBox1
+	 // cb_dungeon_assist
 	 // 
-	 this.checkBox1.AutoSize = true;
-	 this.checkBox1.Location = new System.Drawing.Point(364, 17);
-	 this.checkBox1.Name = "checkBox1";
-	 this.checkBox1.Size = new System.Drawing.Size(70, 17);
-	 this.checkBox1.TabIndex = 2;
-	 this.checkBox1.Text = "Dungeon";
-	 this.checkBox1.UseVisualStyleBackColor = true;
+	 this.cb_dungeon_assist.AutoSize = true;
+	 this.cb_dungeon_assist.Location = new System.Drawing.Point(364, 17);
+	 this.cb_dungeon_assist.Name = "cb_dungeon_assist";
+	 this.cb_dungeon_assist.Size = new System.Drawing.Size(70, 17);
+	 this.cb_dungeon_assist.TabIndex = 2;
+	 this.cb_dungeon_assist.Text = "Dungeon";
+	 this.cb_dungeon_assist.UseVisualStyleBackColor = true;
 	 // 
 	 // button14
 	 // 
@@ -4690,7 +4690,7 @@ namespace Discord
 	private TabPage tabPage9;
 	private Button button9;
 	private Button button14;
-	private CheckBox checkBox1;
+	private CheckBox cb_dungeon_assist;
 	private TextBox tb_rangedhp;
 	private Label label57;
 	private TextBox tb_rangedseconds;

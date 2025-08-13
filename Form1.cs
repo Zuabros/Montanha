@@ -283,7 +283,14 @@ namespace Discord
 	public const int FOOD = F12;     // ataque automático
 	public const int STOPCAST = IGUAL;       // Stop Cast (para de lançar feitiço)
 	public const int STOPATTACK = IGUAL;         // Stop Attack (para de atacar) MELEE
+	// --------------------------------
+	// DUNGEON MODE
+	// --------------------------------
 
+	public const int ASSISTTANK = ZE;  // Global Cooldown (tempo de recarga global em milissegundos)
+	public const int PETPASSIVE = XIS;  // Global Cooldown (tempo de recarga global em milissegundos)
+
+	// --------------------------------
 	// --------------------------------
 	// ALIASES PRIEST
 	// --------------------------------
@@ -1973,6 +1980,9 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 															 // --------------------------------
 	public void giralvo(loc alvo)
 	{
+	 giraface(getyaw(me.pos, alvo), dist(me.pos, alvo));
+	 permitido_giro = podegirar(alvo); // atualiza se pode girar ou não
+	 checkme();
 	 giraface(getyaw(me.pos, alvo), dist(me.pos, alvo));
 	 permitido_giro = podegirar(alvo); // atualiza se pode girar ou não
 	}
@@ -9671,16 +9681,97 @@ else
 	bool assistmode = false;
 	private void button9_Click_3(object sender, EventArgs e)
 	{
-	 assistmode = true;
+	 assistmode = true; // ativa modo assist
+
 	 while (assistmode)
 	 {
-		wait(300);
-		
-		if (!me.combat) aperta(XIS); // follow
-		aperta(ZE); // assist
-		// COMBATMODE
-		if (!checkBox1.Checked || me.combat)
+		wait(300); // delay fixo
+		checkme(); // atualiza status player/target
+
+		// ================================
+		// FORÇA GROWL OFF SEMPRE
+		// ================================
+		if (hunt.growl_autocast)
+		 aperta(GROWLTOGGLE);
+
+		// ================================
+		// DUNGEON MODE
+		// ================================
+		if (cb_dungeon_assist.Checked)
 		{
+		 // --- EMERGÊNCIAS ---
+		 if (me.hp < 50 && me.hp_potion_rdy)
+			aperta(HEALTHPOTION);
+
+		 if (hunt.has_pet && hunt.pet_hp < 50 && hunt.pet_hp > 1)
+			casta(MENDPET);
+
+		 // PET recolhe se muito ferido (<30%)
+		 if (hunt.has_pet && hunt.pet_hp < 30)
+		 {
+			aperta(PETPASSIVE);
+		 }
+
+		 // --- SEM TARGET OU TARGET MORTO ---
+		 if (me.hastarget && tar.hp == 0)
+		 {
+			aperta(CLEARTGT);
+			aperta(ASSISTTANK);
+		 }
+		 else if (!me.hastarget)
+		 {
+			aperta(ASSISTTANK);
+		 }
+
+		 // --- FORA DE COMBATE ---
+		 if (!me.combat)
+		 {
+			if (me.hastarget && tar.hp == 100)
+			{
+			 aperta(PETPASSIVE);   // não iniciar ataque
+			 aperta(STOPATTACK);   // para de bater
+			}
+			else if (me.hastarget && tar.hp < 100)
+			{
+			 if (hunt.has_pet && hunt.pet_hp >= 65)
+				aperta(PETATTACK); // spam controlado
+			}
+			else
+			{
+			 aperta(PETPASSIVE);
+			}
+		 }
+
+		 // --- EM COMBATE ---
+		 if (me.combat)
+		 {
+			aperta(ASSISTTANK);
+
+			if (tar.hp == 100)
+			{
+			 aperta(PETPASSIVE);
+			 aperta(STOPATTACK);
+			}
+			else if (tar.hp < 100)
+			{
+			 if (hunt.has_pet && hunt.pet_hp >= 65)
+				aperta(PETATTACK); // spam controlado
+
+			 // rotação mínima
+			 if (tar.hp > 50 && hunt.serpent_sting_up)
+				aperta(SERPENTSTING);
+
+			 aperta(AUTOSHOT);
+			}
+		 }
+		}
+		// ================================
+		// MODO NORMAL (FORA DE DUNGEON)
+		// ================================
+		else
+		{
+		 if (!me.combat) aperta(XIS); // follow
+		 aperta(ZE); // assist
 
 		 if (me.hastarget && tar.hp < 100 && tar.hp > 0 && tar.mood < 1)
 		 {
@@ -9695,14 +9786,14 @@ else
 			 aperta(INTERACT);
 			}
 		 }
-
 		}
 
-
-		checkme();
-
+		checkme(); // atualiza status no fim do loop
 	 }
+
+	 assistmode = false; // desativa assistmode quando sair do loop
 	}
+
 
 	private void button14_Click_1(object sender, EventArgs e)
 	{
