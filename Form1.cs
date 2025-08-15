@@ -4393,7 +4393,7 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 		 }
 
 		 // Tenta curar o pet com Mend Pet
-		 else if (!hunt.raptor_strike_up && !hunt.raptor_queued && hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
+		 else if (me.level >= 12 && !hunt.raptor_strike_up && !hunt.raptor_queued && hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
 		 {
 			casta(MENDPET);
 			wait_cast();
@@ -5406,7 +5406,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 loga($"Esperando recuperação de HP: {Math.Min(me.hp, hunt.pet_hp)}");
 		 if (me.hp < limite) aperta(F12); // COMIDA 
 		 espera(2);
-		 if (hunt.pet_hp < 70 && !me.eating) casta(MENDPET); // cura o pet se necessário
+		 if (me.level >= 12 && hunt.pet_hp < 70 && !me.eating) casta(MENDPET); // cura o pet se necessário
 		 // se começou a comer, espera até 100%; senão, só até o limite normal
 		 if (me.eating)
 		 {
@@ -9703,7 +9703,7 @@ else
 		 if (me.hp < 50 && me.hp_potion_rdy)
 			aperta(HEALTHPOTION);
 
-		 if (hunt.has_pet && hunt.pet_hp < 50 && hunt.pet_hp > 1)
+		 if (me.level >= 12 && hunt.has_pet && hunt.pet_hp < 50 && hunt.pet_hp > 1)
 			casta(MENDPET);
 
 		 // PET recolhe se muito ferido (<30%)
