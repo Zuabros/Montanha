@@ -188,18 +188,21 @@ namespace Discord
 	// --------------------------------------------
 	// TECLAS BÁSICAS - NOMES DE TECLAS FÍSICAS
 	// --------------------------------------------
-	public const int TAB = 0x09; // tecla Tab
-	public const int QKEY = 0x51; // tecla Q 
-	public const int WKEY = 0x57; // tecla W 
-	public const int EKEY = 0x45; // tecla E 
-	public const int SKEY = 0x53; // tecla S 
-	public const int IKEY = 0x49; // tecla I 
-	public const int AKEY = 0x41; // tecla A 
-	public const int DKEY = 0x44; // tecla D 
+	public const int TAB = 0x09;   // tecla Tab
+	public const int QKEY = 0x51;  // tecla Q 
+	public const int WKEY = 0x57;  // tecla W 
+	public const int EKEY = 0x45;  // tecla E 
+	public const int SKEY = 0x53;  // tecla S 
+	public const int IKEY = 0x49;  // tecla I 
+	public const int AKEY = 0x41;  // tecla A 
+	public const int DKEY = 0x44;  // tecla D 
+	public const int YKEY = 0x59;  // tecla Y
 	public const int SPACEBAR = 0x20; // espaço
 	public const int ENTER = 0x0D; // tecla ENTER 
 	public const int BARRA = 0x6E; // NumPad Slash
 	public const int IGUAL = 0xBB; // tecla "=" padrão (igual normal, perto do Backspace)
+	public const int COLCH_ABRE = 0xDB; // tecla [
+	public const int COLCH_FECHA = 0xDD; // tecla ]
 
 	// --------------------------------------------
 	// TECLAS NUMÉRICAS SUPERIORES
@@ -428,8 +431,10 @@ namespace Discord
 	public const int DISENGAGE = F10;         // Disengage
 	public const int ASPECTMONKEY = UM;
 	public const int ASPECTCHEETAH = ZERO;
+	public const int ASPECTHAWK = COLCH_ABRE;
 	public const int RAPIDFIRE = DOIS;
 	public const int MULTISHOT = TRES;
+
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO ROGUE
 	// --------------------------------------------
@@ -4432,8 +4437,7 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 			 && tar.hp > 10
 			 && me.mobs_player == 0)
 		 {
-			casta(BANDAGEH);
-			wait_cast();
+			castslow(BANDAGEH);
 			clog($"Combat: Bandage - HP: {me.hp}%");
 		 }
 
@@ -6817,7 +6821,7 @@ tb_debug2.Text = me.pos.y.ToString();
 	 do
 	 { 
 	 checkme();
-		wait (10); // espera 10ms
+		wait (50); // espera 10ms
 	 } while (me.casting); // enquanto estiver castando, continua esperando
 	}
 
@@ -9792,8 +9796,14 @@ else
 		if (cb_dungeon_assist.Checked)
 		{
 		 // --- EMERGÊNCIAS / MANUTENÇÃO ---
-		 if (me.hp < 50 && me.hp_potion_rdy)
+		 if (me.hp < 70 && me.hp_potion_rdy)
 			aperta(HEALTHPOTION);                    // usa potion de vida se pronto
+		 else if (me.hp < 70 && !me.hp_potion_rdy && me.bandage_up)
+		 {
+			castslow(BANDAGEH);
+			clog($"Assist: Bandage - HP: {me.hp}%");
+		 }
+
 
 		 if (me.level >= 12 && hunt.has_pet && hunt.pet_hp < 50 && hunt.pet_hp > 1)
 		 {
@@ -9807,7 +9817,50 @@ else
 			aperta(PETPASSIVE);
 		 }
 
+		 //-------------------------------------
+		 // SELECIONA O ASPECTO CORRETO 
+		 //-------------------------------------
+
+		 // Variável calculada: se não tem Monkey nem Cheetah = tem Hawk
+		 bool HASHAWK = !hunt.aspect_monkey && !hunt.aspect_cheetah;
+		 if (cb_aspect_auto.Checked && me.combat) // nao troca aspecto fora de combate 
+		 {
+			// REGRA 1: Vida < 80% e sem range → MONKEY (prioritário)
+			if (me.hp < 80 &&
+					!hunt.auto_shot_range_ok &&
+					!hunt.aspect_monkey 
+					 )
+
+			{
+			 aperta(ASPECTMONKEY);
+			 clog($"Aspect of the Monkey ativado - HP: {me.hp}%, melee range");
+			}
+			// REGRA 2: Com range e vida > 90% → HAWK (histerese)
+			else if (hunt.auto_shot_range_ok &&
+							 me.hp > 90 &&
+							 !HASHAWK)
+			{
+			 aperta(ASPECTHAWK); // evita tirar da cheetah no deslocamento
+			 clog($"Aspect of the Hawk ativado - HP: {me.hp}%, ranged range");
+			}
+			// REGRA 3: Em combate - nunca Cheetah
+			else if (hunt.aspect_cheetah)
+			{
+			 if (me.melee)
+			 {
+				aperta(ASPECTMONKEY);
+				clog("Combat: Cheetah → Monkey (melee)");
+			 }
+			 else
+			 {
+				if (false) aperta(ASPECTHAWK);
+				clog("Combat: Cheetah → Hawk (ranged)");
+			 }
+			}
+		 }
+		 //----------------------------------
 		 // --- SEM TARGET OU TARGET MORTO ---
+		 //-------------------------------
 		 if (me.hastarget && tar.hp == 0)
 		 {
 			// (Já tratado no handler de morto acima; este bloco é redundante por segurança)
@@ -9887,15 +9940,26 @@ else
 				para();                         // para para evitar falha de cast
 				aperta(AUTOSHOT);               // inicia/força o autocast
 			 }
+
+			 // Se estou em melee mas fora do auto shot range, ativa Raptor Strike
+			 if (me.melee && !hunt.auto_shot_range_ok && hunt.raptor_strike_up)
+			 {
+				aperta(RAPTORS);
+				clog("Dead Zone: Ativando Raptor Strike");
+			 }
+			 else if (me.melee & !me.autoattack && me.combat && tar.hp < 95)
+				aperta(AUTOATTACK);
+
+
 			}
 		 }
 		}
 		// -------------------------------------------------
-		// MODO NORMAL (FORA DE DUNGEON) – mantido com guards
+		// MODO NORMAL (FORA DE DUNGEON) – CÓDIGO LEGADO. NAO É USADO
 		// -------------------------------------------------
 		else
 		{
-		 if (!me.combat) aperta(XIS);                // follow (comportamento original)
+		 
 		 aperta(ZE);                                  // assist padrão (comportamento original)
 
 		 if (me.hastarget && tar.hp < 100 && tar.hp > 0 && tar.mood < 1)
