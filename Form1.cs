@@ -5323,6 +5323,9 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 	 else if (me.classe == HUNTER)
 	 {
 		japarou = japarou2 = false;
+		if (hunt.has_pet) cb_nopet.Checked = false; // desmarca checkbox de combate sem pet se já tiver pet
+		if (me.level <10) cb_nopet.Checked = true; // desmarca checkbox de combate sem pet se for level < 10
+
 		if (me.hp == 0 && me.mana == 0) // feign death
 		 aperta(ANDA, 200);
 		// ================================
@@ -5340,7 +5343,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 			wait(500);
 		 }
 			// Verifica se tem mana suficiente (Revive Pet custa mana)
-			if (!hunt.revive_pet_up && !hunt.has_pet)
+			if (!hunt.revive_pet_up && !hunt.has_pet && !(cb_nopet.Checked && me.level <12))
 			{
 			 loga("Mana insuficiente para reviver pet. Esperando recuperação.");
 //			 aperta(F12); // COMIDA/BEBIDA para recuperar mana
