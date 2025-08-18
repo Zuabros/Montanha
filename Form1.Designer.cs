@@ -74,6 +74,7 @@ namespace Discord
 	 this.button2 = new System.Windows.Forms.Button();
 	 this.lbwp = new System.Windows.Forms.ListBox();
 	 this.tabPage2 = new System.Windows.Forms.TabPage();
+	 this.cb_berserker_mode = new System.Windows.Forms.CheckBox();
 	 this.tb_trinket1_of_mobs = new System.Windows.Forms.TextBox();
 	 this.tb_trinket1_at = new System.Windows.Forms.TextBox();
 	 this.cb_noneutral = new System.Windows.Forms.CheckBox();
@@ -336,6 +337,11 @@ namespace Discord
 	 this.label40 = new System.Windows.Forms.Label();
 	 this.label39 = new System.Windows.Forms.Label();
 	 this.tabPage9 = new System.Windows.Forms.TabPage();
+	 this.cb_hunters_mark_dungeon = new System.Windows.Forms.CheckBox();
+	 this.label70 = new System.Windows.Forms.Label();
+	 this.label69 = new System.Windows.Forms.Label();
+	 this.tb_mobs_seen = new System.Windows.Forms.TextBox();
+	 this.tb_average_level = new System.Windows.Forms.TextBox();
 	 this.cb_assistattack = new System.Windows.Forms.CheckBox();
 	 this.cb_dungeon_assist = new System.Windows.Forms.CheckBox();
 	 this.button14 = new System.Windows.Forms.Button();
@@ -398,6 +404,7 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
+	 this.cb_aspect_auto = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -866,6 +873,7 @@ namespace Discord
 	 // tabPage2
 	 // 
 	 this.tabPage2.BackColor = System.Drawing.Color.Gray;
+	 this.tabPage2.Controls.Add(this.cb_berserker_mode);
 	 this.tabPage2.Controls.Add(this.tb_trinket1_of_mobs);
 	 this.tabPage2.Controls.Add(this.tb_trinket1_at);
 	 this.tabPage2.Controls.Add(this.cb_noneutral);
@@ -912,6 +920,16 @@ namespace Discord
 	 this.tabPage2.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage2.TabIndex = 1;
 	 this.tabPage2.Text = "Combat";
+	 // 
+	 // cb_berserker_mode
+	 // 
+	 this.cb_berserker_mode.AutoSize = true;
+	 this.cb_berserker_mode.Location = new System.Drawing.Point(139, 483);
+	 this.cb_berserker_mode.Name = "cb_berserker_mode";
+	 this.cb_berserker_mode.Size = new System.Drawing.Size(100, 17);
+	 this.cb_berserker_mode.TabIndex = 89;
+	 this.cb_berserker_mode.Text = "Berseker! mode";
+	 this.cb_berserker_mode.UseVisualStyleBackColor = true;
 	 // 
 	 // tb_trinket1_of_mobs
 	 // 
@@ -2856,7 +2874,7 @@ namespace Discord
 	 // cb_huntermeleepull
 	 // 
 	 this.cb_huntermeleepull.AutoSize = true;
-	 this.cb_huntermeleepull.Location = new System.Drawing.Point(4, 214);
+	 this.cb_huntermeleepull.Location = new System.Drawing.Point(3, 214);
 	 this.cb_huntermeleepull.Name = "cb_huntermeleepull";
 	 this.cb_huntermeleepull.Size = new System.Drawing.Size(75, 17);
 	 this.cb_huntermeleepull.TabIndex = 23;
@@ -3688,6 +3706,12 @@ namespace Discord
 	 // tabPage9
 	 // 
 	 this.tabPage9.BackColor = System.Drawing.Color.DarkGray;
+	 this.tabPage9.Controls.Add(this.cb_aspect_auto);
+	 this.tabPage9.Controls.Add(this.cb_hunters_mark_dungeon);
+	 this.tabPage9.Controls.Add(this.label70);
+	 this.tabPage9.Controls.Add(this.label69);
+	 this.tabPage9.Controls.Add(this.tb_mobs_seen);
+	 this.tabPage9.Controls.Add(this.tb_average_level);
 	 this.tabPage9.Controls.Add(this.cb_assistattack);
 	 this.tabPage9.Controls.Add(this.cb_dungeon_assist);
 	 this.tabPage9.Controls.Add(this.button14);
@@ -3697,6 +3721,52 @@ namespace Discord
 	 this.tabPage9.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage9.TabIndex = 4;
 	 this.tabPage9.Text = "Assist";
+	 // 
+	 // cb_hunters_mark_dungeon
+	 // 
+	 this.cb_hunters_mark_dungeon.AutoSize = true;
+	 this.cb_hunters_mark_dungeon.Checked = true;
+	 this.cb_hunters_mark_dungeon.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_hunters_mark_dungeon.Location = new System.Drawing.Point(364, 61);
+	 this.cb_hunters_mark_dungeon.Name = "cb_hunters_mark_dungeon";
+	 this.cb_hunters_mark_dungeon.Size = new System.Drawing.Size(92, 17);
+	 this.cb_hunters_mark_dungeon.TabIndex = 8;
+	 this.cb_hunters_mark_dungeon.Text = "Hunter\'s Mark";
+	 this.cb_hunters_mark_dungeon.UseVisualStyleBackColor = true;
+	 // 
+	 // label70
+	 // 
+	 this.label70.AutoSize = true;
+	 this.label70.Location = new System.Drawing.Point(377, 87);
+	 this.label70.Name = "label70";
+	 this.label70.Size = new System.Drawing.Size(79, 13);
+	 this.label70.TabIndex = 7;
+	 this.label70.Text = "Average Level:";
+	 // 
+	 // label69
+	 // 
+	 this.label69.AutoSize = true;
+	 this.label69.Location = new System.Drawing.Point(244, 87);
+	 this.label69.Name = "label69";
+	 this.label69.Size = new System.Drawing.Size(64, 13);
+	 this.label69.TabIndex = 6;
+	 this.label69.Text = "Mobs Seen:";
+	 // 
+	 // tb_mobs_seen
+	 // 
+	 this.tb_mobs_seen.Location = new System.Drawing.Point(314, 83);
+	 this.tb_mobs_seen.Name = "tb_mobs_seen";
+	 this.tb_mobs_seen.Size = new System.Drawing.Size(46, 20);
+	 this.tb_mobs_seen.TabIndex = 5;
+	 this.tb_mobs_seen.Text = "1";
+	 // 
+	 // tb_average_level
+	 // 
+	 this.tb_average_level.Location = new System.Drawing.Point(458, 84);
+	 this.tb_average_level.Name = "tb_average_level";
+	 this.tb_average_level.Size = new System.Drawing.Size(27, 20);
+	 this.tb_average_level.TabIndex = 4;
+	 this.tb_average_level.Text = "1";
 	 // 
 	 // cb_assistattack
 	 // 
@@ -4294,6 +4364,18 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
+	 // cb_aspect_auto
+	 // 
+	 this.cb_aspect_auto.AutoSize = true;
+	 this.cb_aspect_auto.Checked = true;
+	 this.cb_aspect_auto.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_aspect_auto.Location = new System.Drawing.Point(364, 115);
+	 this.cb_aspect_auto.Name = "cb_aspect_auto";
+	 this.cb_aspect_auto.Size = new System.Drawing.Size(84, 17);
+	 this.cb_aspect_auto.TabIndex = 9;
+	 this.cb_aspect_auto.Text = "Auto Aspect";
+	 this.cb_aspect_auto.UseVisualStyleBackColor = true;
+	 // 
 	 // Form1
 	 // 
 	 this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -4744,6 +4826,13 @@ namespace Discord
 	private CheckBox cb_rapidfire;
 	private CheckBox cb_assistattack;
 	private CheckBox cb_getnear;
+	private CheckBox cb_berserker_mode;
+	private Label label70;
+	private Label label69;
+	private TextBox tb_mobs_seen;
+	private TextBox tb_average_level;
+	private CheckBox cb_hunters_mark_dungeon;
+	private CheckBox cb_aspect_auto;
  }
 }
 

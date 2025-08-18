@@ -188,18 +188,21 @@ namespace Discord
 	// --------------------------------------------
 	// TECLAS BÁSICAS - NOMES DE TECLAS FÍSICAS
 	// --------------------------------------------
-	public const int TAB = 0x09; // tecla Tab
-	public const int QKEY = 0x51; // tecla Q 
-	public const int WKEY = 0x57; // tecla W 
-	public const int EKEY = 0x45; // tecla E 
-	public const int SKEY = 0x53; // tecla S 
-	public const int IKEY = 0x49; // tecla I 
-	public const int AKEY = 0x41; // tecla A 
-	public const int DKEY = 0x44; // tecla D 
+	public const int TAB = 0x09;   // tecla Tab
+	public const int QKEY = 0x51;  // tecla Q 
+	public const int WKEY = 0x57;  // tecla W 
+	public const int EKEY = 0x45;  // tecla E 
+	public const int SKEY = 0x53;  // tecla S 
+	public const int IKEY = 0x49;  // tecla I 
+	public const int AKEY = 0x41;  // tecla A 
+	public const int DKEY = 0x44;  // tecla D 
+	public const int YKEY = 0x59;  // tecla Y
 	public const int SPACEBAR = 0x20; // espaço
 	public const int ENTER = 0x0D; // tecla ENTER 
 	public const int BARRA = 0x6E; // NumPad Slash
 	public const int IGUAL = 0xBB; // tecla "=" padrão (igual normal, perto do Backspace)
+	public const int COLCH_ABRE = 0xDB; // tecla [
+	public const int COLCH_FECHA = 0xDD; // tecla ]
 
 	// --------------------------------------------
 	// TECLAS NUMÉRICAS SUPERIORES
@@ -428,8 +431,10 @@ namespace Discord
 	public const int DISENGAGE = F10;         // Disengage
 	public const int ASPECTMONKEY = UM;
 	public const int ASPECTCHEETAH = ZERO;
+	public const int ASPECTHAWK = COLCH_ABRE;
 	public const int RAPIDFIRE = DOIS;
 	public const int MULTISHOT = TRES;
+
 	// --------------------------------------------
 	// SKILLS EXCLUSIVAS DO ROGUE
 	// --------------------------------------------
@@ -2870,144 +2875,189 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 													// MÉTODO puxa - Versão Paladino com verificação organizada
 													// Inicia o combate apenas se o target for válido
 													// --------------------------------------------
+													// --------------------------------------------
+													// MÉTODO puxa - Versão UNIFICADA com Modo Berserker
+													// Uma única rotina linear com condições pontuais para Berserker
+													// --------------------------------------------
 	void puxa()
 	{
 	 Func<bool> has_seal = () => pala.sor || pala.soc || pala.sow || pala.sol || pala.sotc; // verifica se tem algum Seal
 	 Func<int, bool> mana = (p) => me.mana > p;
 
-	 checkme();                                                                 // atualiza status depois do tab
+	 checkme(); // atualiza status depois do tab
 
 	 // NAO DEIXA AFOGAR 
 	 //------------------------------
 	 nao_afoga(); // nada para cima se estiver afogando
 	 fazendopull = true;
 
-
 	 // --------------------------------------------
-	 // VERIFICAÇÃO DO TARGET - ESCOLHA ENTRE DOIS
-	 // --------------------------------------------
-
-	 // --------------------------------------------
-	 // VERIFICAÇÃO DO TARGET - ESCOLHA ENTRE DOIS
+	 // FUNÇÃO bomtarget() - UNIVERSAL PARA AMBOS OS MODOS
 	 // --------------------------------------------
 	 bool bomtarget()
 	 {
-		// Delay curto para garantir leitura completa
-		//wait(50);  // 50ms de delay
-		// Rejeita target inválido ou sem tipo
+		// Verificações básicas obrigatórias (sempre primeiro)
 		if (!me.hastarget || tar.type == 0) return false;
-
-		// Log de depuração
-		//loga($"🕵️ Verificando target: Type={tar.type}, CB_NoHumanoid={cb_nohumanoid.Checked}");
-
-		if (cb_onlybeast.Checked && tar.type != BEAST) return false;
 		if (cb_pacifist.Checked) return false;
 		if (tar.hp == 0 || tar.morreu) return false;
-		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
-		if (tar.mood == 1) return false; // amarelo = não hostil
-		if (tar.iselite && cb_noelite.Checked) return false; // não é elite se não estiver marcado
 		if (tar.hp < 100) return false; // já apanhou
+
+		// Verificações de level/hostilidade (muito comuns)
+		if (tar.mood == 1) return false; // amarelo = não hostil
 		if (tar.level > me.level + atoi(tb_pullcap)) return false;
-		if (cb_nomurloc.Checked && tar.type == MURLOC) return false;
-		if (cb_noelemental.Checked && tar.type == ELEMENTAL) return false;
-		if (cb_noneutral.Checked && tar.mood == 0) return false; // não aceita neutro
+		if (isgray(me.level, tar.level) && !cb_killgray.Checked) return false;
+		if (tar.iselite && cb_noelite.Checked) return false;
 
-		// Bloqueia apenas humanóides NPC
-		if (cb_nohumanoid.Checked && tar.type == HUMANOID)
-		{
-		 loga($"🚫 Humanóide rejeitado: Type={tar.type}");
-		 return false;
-		}
-
-		if (cb_nodragonkin.Checked && tar.type == DRAGONKIN) return false;
-		if (cb_nomech.Checked && tar.type == MECHANICAL) return false;
-
+		// Verificações de tipo de criatura (ordem por frequência)
+		if (cb_nohumanoid.Checked && tar.type == HUMANOID) return false; // muito comum
+		if (cb_onlybeast.Checked && tar.type != BEAST) return false; // usado em farm
+		if (cb_noneutral.Checked && tar.mood == 0) return false; // comum
+		if (cb_nomurloc.Checked && tar.type == MURLOC) return false; // zonas específicas
+		if (cb_noelemental.Checked && tar.type == ELEMENTAL) return false; // menos comum
+		if (cb_nodragonkin.Checked && tar.type == DRAGONKIN) return false; // raro
+		if (cb_nomech.Checked && tar.type == MECHANICAL) return false; // muito raro
 
 		return true;
 	 }
+
 	 checkme();
-	 // pega primeiro target
 
+	 // ============================================
+	 // PRIMEIRO TAB - Condição inteligente
+	 // Skip se: já tem target E está no modo Berserker
+	 // ============================================
+	 if (!me.hastarget || !cb_berserker_mode.Checked)
+	 {
+		aperta(TAB, 120);
+		checkme();
+		if (me.hastarget) loga("Pegando target. Code 1.");
+	 }
 
-	 aperta(TAB, 120);
-	 checkme(); // atualiza status do segundo target
-	 if (me.hastarget) loga("Pegando target. Code 1.");
-
+	 // ============================================
+	 // ANÁLISE DO PRIMEIRO TARGET
+	 // ============================================
 	 int mood1 = tar.mood;
 	 bool t1_ok = bomtarget();
 	 int t1_id = tar.id;
-	 scan_elites(); // verifica se tem elite no target e ajusta o pull se necessário
-	 checkme(); // atualiza status após o TAB inicial
-							// pega segundo target
+	 scan_elites(); // SEMPRE executa - segurança universal
+	 checkme();
+
+	 // BERSERKER: Se primeiro target é válido → JÁ ERA!
+	 if (cb_berserker_mode.Checked && t1_ok)
+	 {
+		loga("🔥 BERSERKER: Primeiro target válido - ATACANDO!");
+		// Pula direto para o PULL
+		goto iniciar_pull;
+	 }
+
+	 // ============================================
+	 // SEGUNDO TAB - Sempre executa se chegou aqui
+	 // ============================================
 	 if (me.hastarget)
 		loga($"Target 1 mood: {mood1}");
 	 aperta(TAB, 120);
 	 checkme();
 	 if (me.hastarget) loga("Pegando target. Code 2.");
 
+	 // ============================================
+	 // ANÁLISE DO SEGUNDO TARGET
+	 // ============================================
 	 int mood2 = tar.mood;
 	 if (me.hastarget)
 		loga($"Target 2 mood: {mood2}");
 	 bool t2_ok = bomtarget();
 	 int t2_id = tar.id;
-	 if (t2_id != t1_id) scan_elites(); // verifica se tem target novo
+	 if (t2_id != t1_id) scan_elites(); // SEMPRE executa se target novo
+
+	 // BERSERKER: Se segundo target é válido → JÁ ERA!
+	 if (cb_berserker_mode.Checked && t2_ok)
+	 {
+		loga("🔥 BERSERKER: Segundo target válido - ATACANDO!");
+		// Pula direto para o PULL
+		goto iniciar_pull;
+	 }
+
+	 // ============================================
+	 // ANÁLISE DE TARGETS - UNIVERSAL
+	 // ============================================
 	 if (t1_id == 0) // se nenhum target foi encontrado inicialmente
+	 {
 		loga("Procurando targets.");
+	 }
 	 else if (!t1_ok && !t2_ok) // nenhum dos dois é válido
 	 {
 		loga("Nenhum dos dois targets é válido. Limpando o target.");
 		aperta(CLEARTGT);
+		return;
 	 }
-	 else if (t1_id == t2_id) // TAB não achou outro mob, manteve o mesmo
-		loga("Um target localizado.");
-	 else if (t1_ok && !t2_ok) // só o primeiro é bom
+	 else if (t1_id == t2_id) // MESMO TARGET - só tem um mob na área
 	 {
-		loga("Apenas o primeiro target é válido. Retornando para ele.");
-		aperta(TARGETLAST);
-	 }
-	 else if (!t1_ok && t2_ok) // só o segundo é bom
-		loga("Apenas o segundo target é válido. Mantido.");
-	 else if (mood1 == mood2) // mesmo comportamento (hostis ou pacíficos)
-	 {
-
-		if ((cb_prefer_distant.Checked && me.classe == HUNTER && mood1 == 0))
-		 loga("Escolhendo o mais distante para ranged class.");
+		if (t1_ok)
+		{
+		 loga("🎯 Um target localizado e válido - atacando!");
+		 // Vai direto pro pull - não importa o modo
+		}
 		else
 		{
-		 loga("Dois targets com mesmo comportamento. Priorizando o mais próximo.");
-		 aperta(TARGETLAST);
+		 loga("❌ Único target inválido - limpando.");
+		 aperta(CLEARTGT);
+		 return;
 		}
-
 	 }
-	 else if (mood1 < mood2) // primeiro é mais hostil
+	 else if (cb_berserker_mode.Checked)
 	 {
-		loga("Primeiro target é mais hostil que o segundo. Retornando para ele.");
-		aperta(TARGETLAST);
-	 }
-	 else if (mood2 < mood1) // segundo é mais hostil
-		loga("Segundo target é mais hostil que o primeiro. Mantido.");
-	 else // empate total ou condição rara
-	 {
-		loga("Empate total inesperado. Escolhendo o primeiro.");
-		aperta(TARGETLAST);
-	 }
-	 checkme(); // atualiza status após a escolha do target
-	 if (cb_nomurloc.Checked && tar.type == MURLOC)
-	 {
+		// BERSERKER: Dois targets diferentes, nenhum passou no teste anterior
+		loga("❌ BERSERKER: Nenhum target válido encontrado - desistindo...");
 		aperta(CLEARTGT);
 		return;
 	 }
+	 else
+	 {
+		// MODO NORMAL: Análise completa entre dois targets diferentes
+		if (t1_ok && !t2_ok) // só o primeiro é bom
+		{
+		 loga("Apenas o primeiro target é válido. Retornando para ele.");
+		 aperta(TARGETLAST);
+		}
+		else if (!t1_ok && t2_ok) // só o segundo é bom
+		 loga("Apenas o segundo target é válido. Mantido.");
+		else if (mood1 == mood2) // mesmo comportamento (hostis ou pacíficos)
+		{
+		 if ((cb_prefer_distant.Checked && (me.iscaster || me.classe == HUNTER) && mood1 == 0))
+			loga("Escolhendo o mais distante para ranged class.");
+		 else
+		 {
+			loga("Dois targets com mesmo comportamento. Priorizando o mais próximo.");
+			aperta(TARGETLAST);
+		 }
+		}
+		else if (mood1 < mood2) // primeiro é mais hostil
+		{
+		 loga("Primeiro target é mais hostil que o segundo. Retornando para ele.");
+		 aperta(TARGETLAST);
+		}
+		else if (mood2 < mood1) // segundo é mais hostil
+		 loga("Segundo target é mais hostil que o primeiro. Mantido.");
+		else // empate total ou condição rara
+		{
+		 loga("Empate total inesperado. Escolhendo o primeiro.");
+		 aperta(TARGETLAST);
+		}
 
+		checkme();
+	 }
 
-	 // --------------------------------------------
-	 // CORRE ATE O MOB E ATACA (PULL)
-	 // --------------------------------------------
-	 int ticker = 0; // contador de ciclos
+	// ============================================
+	// PULL - CÓDIGO COMUM PARA AMBOS OS MODOS
+	// ============================================
+	iniciar_pull:
+	 int ticker = 0;
 
-	 if (me.hastarget && tar.hp == 100 && !me.combat) // alvo válido e fora de combate
+	 if (me.hastarget && tar.hp == 100 && !me.combat)
 	 {
 		loga($"Target type: {tar.type}.");
-		loga("Target locked. Iniciando pull.");
+		string modoMsg = cb_berserker_mode.Checked ? "🔥 BERSERKER" : "🛡️ NORMAL";
+		loga($"Target locked. Iniciando pull - Modo: {modoMsg}");
 		do // while (me.hastarget && !me.combat && tar.hp == 100) // alvo válido e ainda fora de combate
 		{
 		 checkme();
@@ -4387,13 +4437,12 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 			 && tar.hp > 10
 			 && me.mobs_player == 0)
 		 {
-			casta(BANDAGEH);
-			wait_cast();
+			castslow(BANDAGEH);
 			clog($"Combat: Bandage - HP: {me.hp}%");
 		 }
 
 		 // Tenta curar o pet com Mend Pet
-		 else if (!hunt.raptor_strike_up && !hunt.raptor_queued && hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
+		 else if (me.level >= 12 && !hunt.raptor_strike_up && !hunt.raptor_queued && hunt.pet_hp < 60 && me.mobs_player == 0 && hunt.pet_hp > 1)
 		 {
 			casta(MENDPET);
 			wait_cast();
@@ -5409,7 +5458,7 @@ else if ((war.shield_block_up && !war.revenge_proc) && !tafacil())
 		 loga($"Esperando recuperação de HP: {Math.Min(me.hp, hunt.pet_hp)}");
 		 if (me.hp < limite) aperta(F12); // COMIDA 
 		 espera(2);
-		 if (hunt.pet_hp < 70 && !me.eating) casta(MENDPET); // cura o pet se necessário
+		 if (me.level >= 12 && hunt.pet_hp < 70 && !me.eating) casta(MENDPET); // cura o pet se necessário
 		 // se começou a comer, espera até 100%; senão, só até o limite normal
 		 if (me.eating)
 		 {
@@ -6775,7 +6824,7 @@ tb_debug2.Text = me.pos.y.ToString();
 	 do
 	 { 
 	 checkme();
-		wait (10); // espera 10ms
+		wait (50); // espera 10ms
 	 } while (me.casting); // enquanto estiver castando, continua esperando
 	}
 
@@ -9682,43 +9731,146 @@ else
 	 if (!cb_nomurloc.Checked) MessageBox.Show("Atenção: Ataque a murlocs habilitado!");
 	}
 	bool assistmode = false;
+	// -------------------------------------------------------------
+	// BOTÃO: ASSIST (Dungeon Mode com Assist Contínuo e Anti-Clip)
+	// Autor: Montanha
+	// Objetivo: Hunter dá assist no tank, só ataca alvo não virgem,
+	//           inicia ataque mesmo fora de combate quando tar.hp < 100,
+	//           para de atacar alvos mortos, evita clipe de Auto Shot,
+	//           e usa para() antes de abrir Auto Shot.
+	// Regras principais:
+	//  - Flood de ASSISTTANK sempre (fora e dentro de combate) para "colar" no alvo do tank
+	//  - Nunca atacar se não houver target ou se tar.hp == 0
+	//  - Fora de combate: se tar.hp < 100, já pode iniciar PETATTACK e AUTOSHOT
+	//  - Auto Shot: só apertar se hunt.auto_shot_ativo == false e sempre chamar para() antes
+	//  - Growl: macro com !growl já garante estado (não alterado aqui)
+	//  - Mend Pet: casta(MENDPET); wait_cast();
+	//  - Pequenos waits de 100ms nos pontos críticos solicitados
+	// -------------------------------------------------------------
 	private void button9_Click_3(object sender, EventArgs e)
 	{
-	 assistmode = true; // ativa modo assist
-
+	 assistmode = true;                                     // ativa modo assist
+	 tb_mobs_seen.Text = "1";                          // reseta contagem de mobs vistos
+	 tb_average_level.Text = me.level.ToString(); // reseta nível médio para o do player
+	 int last_mob_seen_id = -1;                // reseta ID do último mob visto
+	 int mobs_seen = 1; // contador de mobs vistos (inicializado em 0) 
 	 while (assistmode)
 	 {
-		wait(300); // delay fixo
-		checkme(); // atualiza status player/target
+		wait(300);                                        // delay fixo do loop
+		checkme();                                       // atualiza status player/target (me / tar / hunt)
+		if (me.hastarget && tar.hp > 0 && tar.mood == -1)
+		{
+		 if (tar.id != last_mob_seen_id) // se é um mob novo
+		 {
+			last_mob_seen_id = tar.id; // atualiza ID do último mob visto
+			mobs_seen++; // incrementa contador de mobs vistos
+			tb_mobs_seen.Text = mobs_seen.ToString(); // atualiza textbox
+			tb_average_level.Text = ((atoi(tb_average_level) * (mobs_seen - 1) + tar.level) / mobs_seen).ToString(); // atualiza nível médio
+		 }
+		}
+		// -------------------------------------------------
+		// ASSIST CONTÍNUO (sempre manter alvo do tank)
+		// -------------------------------------------------
+		aperta(ASSISTTANK);                               // flood intencional para colar no alvo do tank
 
-		// ================================
-		// FORÇA GROWL OFF SEMPRE
-		// ================================
+		// -------------------------------------------------
+		// HANDLER DE ALVO MORTO (para tudo e reassiste)
+		// -------------------------------------------------
+		if (me.hastarget && tar.hp == 0)                  // se tem target mas está morto
+		{
+		 aperta(STOPATTACK);                          // para ataques do player
+		 aperta(PETPASSIVE);                          // recolhe pet para evitar travas / hits no cadáver
+		 aperta(CLEARTGT);                            // limpa target atual
+		 wait(100);                                   // pequena pausa solicitada
+		 aperta(ASSISTTANK);                          // reassiste imediatamente o tank
+		 checkme();                                    // revalida estado após reassistir
+		 continue;                                     // recomeça ciclo evitando ações com alvo morto
+		}
+
+		// -------------------------------------------------
+		// FORÇA GROWL OFF SEMPRE (seu !growl da macro já garante toggle correto)
+		// -------------------------------------------------
 		if (hunt.growl_autocast)
 		 aperta(GROWLTOGGLE);
 
-		// ================================
-		// DUNGEON MODE
-		// ================================
+		// -------------------------------------------------
+		// DUNGEON MODE (assist ao tank dentro de dungeon)
+		// -------------------------------------------------
 		if (cb_dungeon_assist.Checked)
 		{
-		 // --- EMERGÊNCIAS ---
-		 if (me.hp < 50 && me.hp_potion_rdy)
-			aperta(HEALTHPOTION);
+		 // --- EMERGÊNCIAS / MANUTENÇÃO ---
+		 if (me.hp < 70 && me.hp_potion_rdy)
+			aperta(HEALTHPOTION);                    // usa potion de vida se pronto
+		 else if (me.hp < 70 && !me.hp_potion_rdy && me.bandage_up)
+		 {
+			castslow(BANDAGEH);
+			clog($"Assist: Bandage - HP: {me.hp}%");
+		 }
 
-		 if (hunt.has_pet && hunt.pet_hp < 50 && hunt.pet_hp > 1)
-			casta(MENDPET);
 
-		 // PET recolhe se muito ferido (<30%)
+		 if (me.level >= 12 && hunt.has_pet && hunt.pet_hp < 50 && hunt.pet_hp > 1)
+		 {
+			casta(MENDPET);                         // mend pet sem interromper
+			wait_cast();                            // espera canalização/conclusão
+		 }
+
+		 // Pet recolhe se muito ferido (<30%) – mantido como você definiu
 		 if (hunt.has_pet && hunt.pet_hp < 30)
 		 {
 			aperta(PETPASSIVE);
 		 }
 
+		 //-------------------------------------
+		 // SELECIONA O ASPECTO CORRETO 
+		 //-------------------------------------
+
+		 // Variável calculada: se não tem Monkey nem Cheetah = tem Hawk
+		 bool HASHAWK = !hunt.aspect_monkey && !hunt.aspect_cheetah;
+		 if (cb_aspect_auto.Checked && me.combat) // nao troca aspecto fora de combate 
+		 {
+			// REGRA 1: Vida < 80% e sem range → MONKEY (prioritário)
+			if (me.hp < 80 &&
+					!hunt.auto_shot_range_ok &&
+					!hunt.aspect_monkey 
+					 )
+
+			{
+			 aperta(ASPECTMONKEY);
+			 clog($"Aspect of the Monkey ativado - HP: {me.hp}%, melee range");
+			}
+			// REGRA 2: Com range e vida > 90% → HAWK (histerese)
+			else if (hunt.auto_shot_range_ok &&
+							 me.hp > 90 &&
+							 !HASHAWK)
+			{
+			 aperta(ASPECTHAWK); // evita tirar da cheetah no deslocamento
+			 clog($"Aspect of the Hawk ativado - HP: {me.hp}%, ranged range");
+			}
+			// REGRA 3: Em combate - nunca Cheetah
+			else if (hunt.aspect_cheetah)
+			{
+			 if (me.melee)
+			 {
+				aperta(ASPECTMONKEY);
+				clog("Combat: Cheetah → Monkey (melee)");
+			 }
+			 else
+			 {
+				if (false) aperta(ASPECTHAWK);
+				clog("Combat: Cheetah → Hawk (ranged)");
+			 }
+			}
+		 }
+		 //----------------------------------
 		 // --- SEM TARGET OU TARGET MORTO ---
+		 //-------------------------------
 		 if (me.hastarget && tar.hp == 0)
 		 {
+			// (Já tratado no handler de morto acima; este bloco é redundante por segurança)
+			aperta(STOPATTACK);
+			aperta(PETPASSIVE);
 			aperta(CLEARTGT);
+			wait(100);
 			aperta(ASSISTTANK);
 		 }
 		 else if (!me.hastarget)
@@ -9726,76 +9878,123 @@ else
 			aperta(ASSISTTANK);
 		 }
 
-		 // --- FORA DE COMBATE ---
+		 // -------------------------------------------------
+		 // FORA DE COMBATE
+		 // -------------------------------------------------
 		 if (!me.combat)
 		 {
 			if (me.hastarget && tar.hp == 100)
 			{
-			 aperta(PETPASSIVE);   // não iniciar ataque
-			 aperta(STOPATTACK);   // para de bater
+			 aperta(PETPASSIVE);                 // não iniciar ataque em alvo virgem
+			 aperta(STOPATTACK);                 // garante que não estamos atacando
 			}
-			else if (me.hastarget && tar.hp < 100)
+			else if (me.hastarget && tar.hp > 0 && tar.hp < 98)
 			{
-			 if (hunt.has_pet && hunt.pet_hp >= 65)
-				aperta(PETATTACK); // spam controlado
+			 // Tank já abriu: pode iniciar ataque mesmo fora de combate
+			 if (hunt.has_pet && hunt.pet_hp >= 65 && tar.hp < 94)
+				aperta(PETATTACK);              // envia pet (resposta rápida, sem throttle)
+
+			 // Auto Shot: anti-clip + para() antes
+			 if (!hunt.auto_shot_ativo)          // só abrir se não estiver no autocast
+			 {
+				para();                         // para de se mover para poder iniciar Auto Shot
+				aperta(AUTOSHOT);               // inicia auto shot
+			 }
+
+			 // Rotação mínima opcional: Serpent Sting só se NÃO estiver aplicado (sua flag já cobre)
+			 if (tar.hp > 50 && !hunt.serpent_sting_up)
+				aperta(SERPENTSTING);
 			}
 			else
 			{
-			 aperta(PETPASSIVE);
+			 aperta(PETPASSIVE);                 // sem target válido, garante passivo
 			}
 		 }
 
-		 // --- EM COMBATE ---
+		 // -------------------------------------------------
+		 // EM COMBATE
+		 // -------------------------------------------------
 		 if (me.combat)
 		 {
-			aperta(ASSISTTANK);
+			aperta(ASSISTTANK);                     // mantém assist também em combate
 
-			if (tar.hp == 100)
+			if (!me.hastarget)                      // sem alvo em combate → reassistir
 			{
-			 aperta(PETPASSIVE);
+			 aperta(ASSISTTANK);
+			}
+			else if (tar.hp == 100)
+			{
+			 aperta(PETPASSIVE);                 // não bater em alvo virgem
 			 aperta(STOPATTACK);
 			}
-			else if (tar.hp < 100)
+			else if (tar.hp > 0 && tar.hp < 100 && tar.mood != 1)
 			{
+			 // Pet: ataca se saudável
 			 if (hunt.has_pet && hunt.pet_hp >= 65)
-				aperta(PETATTACK); // spam controlado
+				aperta(PETATTACK);
 
-			 // rotação mínima
+			 // Rotação mínima: Serpent Sting se ainda não aplicado
 			 if (tar.hp > 50 && hunt.serpent_sting_up)
 				aperta(SERPENTSTING);
 
-			 aperta(AUTOSHOT);
+			 // Auto Shot: anti-clip + para() antes
+			 if (!hunt.auto_shot_ativo)
+			 {
+				para();                         // para para evitar falha de cast
+				aperta(AUTOSHOT);               // inicia/força o autocast
+			 }
+
+			 // Se estou em melee mas fora do auto shot range, ativa Raptor Strike
+			 if (me.melee && !hunt.auto_shot_range_ok && hunt.raptor_strike_up)
+			 {
+				aperta(RAPTORS);
+				clog("Dead Zone: Ativando Raptor Strike");
+			 }
+			 else if (me.melee & !me.autoattack && me.combat && tar.hp < 95)
+				aperta(AUTOATTACK);
+
+
 			}
 		 }
 		}
-		// ================================
-		// MODO NORMAL (FORA DE DUNGEON)
-		// ================================
+		// -------------------------------------------------
+		// MODO NORMAL (FORA DE DUNGEON) – CÓDIGO LEGADO. NAO É USADO
+		// -------------------------------------------------
 		else
 		{
-		 if (!me.combat) aperta(XIS); // follow
-		 aperta(ZE); // assist
+		 
+		 aperta(ZE);                                  // assist padrão (comportamento original)
 
 		 if (me.hastarget && tar.hp < 100 && tar.hp > 0 && tar.mood < 1)
 		 {
 			if (hunt.has_pet) aperta(PETATTACK);
-			if (hunt.serpent_sting_up && cb_assistattack.Checked) aperta(SERPENTSTING);
+			if (!hunt.serpent_sting_up && cb_assistattack.Checked) aperta(SERPENTSTING);
 			else if (hunt.arcane_shot_up && cb_assistattack.Checked) aperta(ARCANESHOT);
-			virahunter(true);
-			if (me.swim) aperta(SPACEBAR);
+
+			virahunter(true);                       // virar para o alvo (mantido)
+			if (me.swim) aperta(SPACEBAR);          // pulo na água (mantido)
+
 			if (!hunt.auto_shot_range_ok && hunt.raptor_strike_up && cb_assistattack.Checked)
 			{
 			 aperta(RAPTORS);
 			 aperta(INTERACT);
 			}
+
+			// Auto Shot no modo normal: anti-clip + para() antes (opcionalmente útil)
+			if (!hunt.auto_shot_ativo)
+			{
+			 para();
+			 aperta(AUTOSHOT);
+			}
 		 }
 		}
 
-		checkme(); // atualiza status no fim do loop
+		checkme();                                       // atualiza status no fim do loop
 	 }
 
-	 assistmode = false; // desativa assistmode quando sair do loop
+	 assistmode = false;                                  // desativa assistmode quando sair do loop
 	}
+
 
 
 	private void button14_Click_1(object sender, EventArgs e)
