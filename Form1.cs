@@ -336,7 +336,7 @@ namespace Discord
 
 	public const int DEVAURA = F3;     // Devotion Aura
 	public const int RETAURA = F4;     // Retribution Aura
-	public const int BOP = F7;     // Retribution Aura
+	public const int BOP = F7;      
 	public const int CONAURA = F8;     // Concentration Aura
 	public const int DSHIELD = F9;     // Divine Shield (Bubble)
 	public const int FLASHHEAL = F10;     // Divine Shield (Bubble)
@@ -3096,8 +3096,10 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 			 aperta(PULA);
 			 viramob(); // gira para o mob
 			 aperta(JUDGEMENT);
+			 para(); // PARA APOS JULGAR 
 			 aperta(AUTOATTACK);
 			 viramob();
+			 
 			}
 			else
 			{
@@ -3909,10 +3911,10 @@ hunt.bestialwrath_up = (b10 & 16) != 0;        // bit 4 = Bestial Wrath pronto e
 	private void rastreia_mob_combate()
 	{
 	 // só adiciona se target válido, com aggro, e levou porrada significativa
-	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro) && tar.hp < 80)
+	 if (me.hastarget && (tar.player_aggro || tar.pet_aggro) && tar.hp < 95)
 	 {
 		// verifica se é mob skinnable
-		if (tar.type == HUMANOID || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
+		if ((tar.type == HUMANOID && rb_skinhumanoid.Checked) || tar.type == BEAST || tar.type == DEMON || tar.type == DRAGONKIN)
 		{
 		 if (killed_skin.Add(tar.id)) // Add retorna true se foi novo elemento
 		 {

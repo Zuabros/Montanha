@@ -337,6 +337,7 @@ namespace Discord
 	 this.label40 = new System.Windows.Forms.Label();
 	 this.label39 = new System.Windows.Forms.Label();
 	 this.tabPage9 = new System.Windows.Forms.TabPage();
+	 this.cb_aspect_auto = new System.Windows.Forms.CheckBox();
 	 this.cb_hunters_mark_dungeon = new System.Windows.Forms.CheckBox();
 	 this.label70 = new System.Windows.Forms.Label();
 	 this.label69 = new System.Windows.Forms.Label();
@@ -404,7 +405,7 @@ namespace Discord
 	 this.tb_prob_zero = new System.Windows.Forms.TextBox();
 	 this.tb_prob_minus1 = new System.Windows.Forms.TextBox();
 	 this.bt_loadWP = new System.Windows.Forms.Button();
-	 this.cb_aspect_auto = new System.Windows.Forms.CheckBox();
+	 this.rb_skinhumanoid = new System.Windows.Forms.CheckBox();
 	 this.tab_nav.SuspendLayout();
 	 this.tabPage1.SuspendLayout();
 	 this.tabPage2.SuspendLayout();
@@ -3147,6 +3148,7 @@ namespace Discord
 	 // 
 	 // pan_me
 	 // 
+	 this.pan_me.Controls.Add(this.rb_skinhumanoid);
 	 this.pan_me.Controls.Add(this.cb_apagacinza);
 	 this.pan_me.Controls.Add(this.cb_pacifist);
 	 this.pan_me.Controls.Add(this.cb_skinning);
@@ -3721,6 +3723,18 @@ namespace Discord
 	 this.tabPage9.Size = new System.Drawing.Size(697, 502);
 	 this.tabPage9.TabIndex = 4;
 	 this.tabPage9.Text = "Assist";
+	 // 
+	 // cb_aspect_auto
+	 // 
+	 this.cb_aspect_auto.AutoSize = true;
+	 this.cb_aspect_auto.Checked = true;
+	 this.cb_aspect_auto.CheckState = System.Windows.Forms.CheckState.Checked;
+	 this.cb_aspect_auto.Location = new System.Drawing.Point(364, 115);
+	 this.cb_aspect_auto.Name = "cb_aspect_auto";
+	 this.cb_aspect_auto.Size = new System.Drawing.Size(84, 17);
+	 this.cb_aspect_auto.TabIndex = 9;
+	 this.cb_aspect_auto.Text = "Auto Aspect";
+	 this.cb_aspect_auto.UseVisualStyleBackColor = true;
 	 // 
 	 // cb_hunters_mark_dungeon
 	 // 
@@ -4364,17 +4378,15 @@ namespace Discord
 	 this.bt_loadWP.UseVisualStyleBackColor = true;
 	 this.bt_loadWP.Click += new System.EventHandler(this.bt_loadWP_Click);
 	 // 
-	 // cb_aspect_auto
+	 // rb_skinhumanoid
 	 // 
-	 this.cb_aspect_auto.AutoSize = true;
-	 this.cb_aspect_auto.Checked = true;
-	 this.cb_aspect_auto.CheckState = System.Windows.Forms.CheckState.Checked;
-	 this.cb_aspect_auto.Location = new System.Drawing.Point(364, 115);
-	 this.cb_aspect_auto.Name = "cb_aspect_auto";
-	 this.cb_aspect_auto.Size = new System.Drawing.Size(84, 17);
-	 this.cb_aspect_auto.TabIndex = 9;
-	 this.cb_aspect_auto.Text = "Auto Aspect";
-	 this.cb_aspect_auto.UseVisualStyleBackColor = true;
+	 this.rb_skinhumanoid.AutoSize = true;
+	 this.rb_skinhumanoid.Location = new System.Drawing.Point(74, 139);
+	 this.rb_skinhumanoid.Name = "rb_skinhumanoid";
+	 this.rb_skinhumanoid.Size = new System.Drawing.Size(74, 17);
+	 this.rb_skinhumanoid.TabIndex = 49;
+	 this.rb_skinhumanoid.Text = "Humanoid";
+	 this.rb_skinhumanoid.UseVisualStyleBackColor = true;
 	 // 
 	 // Form1
 	 // 
@@ -4833,6 +4845,7 @@ namespace Discord
 	private TextBox tb_average_level;
 	private CheckBox cb_hunters_mark_dungeon;
 	private CheckBox cb_aspect_auto;
+	private CheckBox rb_skinhumanoid;
  }
 }
 
